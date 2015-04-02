@@ -2,13 +2,25 @@ package protocol;
 
 import java.util.ArrayList;
 
+/**
+ * Tool for processing bArduino protocol messages.
+ * 
+ * States has to be set accordingly for the parser to return 
+ * appropriate messages.
+ *  
+ * @author Jonathan B�cker
+ * @version 0.1
+ * 
+ * 2015-04-02
+ *
+ */
 public class ServerProtocolParser {
 	public static final int VACANT = 0;
 	public static final int BUSY = 1;
 	public static final int MISSING_ARDUINO = 2;
 	
 	private int numberOfAvailableFluids = 0;
-	private ArrayList<Integer> fluidAmounts = new ArrayList<Integer>();
+	private ArrayList<String> arduinoMessages = new ArrayList<String>();
 	private boolean grogAvailable = false;
 	private int state;
 
@@ -77,17 +89,20 @@ public class ServerProtocolParser {
 	public String processGrogRequest(String message) {
 		String response = null;
 		String[] request = message.split(" ");
-		fluidAmounts.clear();
+		arduinoMessages.clear();
+		char fluid = 'A';
 
 		if (!(request[0].equals("GROG"))
-				&& (request.length - 1) > numberOfAvailableFluids) {
+				|| (request.length - 1) > numberOfAvailableFluids) {
 			response = "ERROR WRONGFORMAT";
 
 		} else {
 
 			try {
 				for (int i = 1; i < request.length; i++) {
-					fluidAmounts.add(Integer.parseInt(request[i]));
+					Integer.parseInt(request[i]);
+					arduinoMessages.add(fluid + request[i]);
+					fluid++;
 				}
 				response = "GROGOK";
 				grogAvailable = true;
@@ -115,10 +130,10 @@ public class ServerProtocolParser {
 	 * @return An {@link ArrayList} with Integer values representing the amount
 	 *         of fluid of each fluid
 	 */
-	public ArrayList<Integer> getGrog() {
+	public ArrayList<String> getGrog() {
 		if (grogAvailable) {
 			grogAvailable = false;
-			return fluidAmounts;
+			return arduinoMessages;
 		} else {
 			return null;
 		}
