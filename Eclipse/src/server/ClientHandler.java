@@ -32,21 +32,36 @@ public class ClientHandler extends Thread {
 		}
 
 		try {
-			while (client.isConnected()) {
+			while (true) {
 				String message = null;
 				message = in.readLine();
+				
 				if (message != null) {
+					if(message.equals("STOP")){
+						mOut.println("STOP");
+						break;
+					}						
+						
 					// call the method messageReceived from ServerBoard class
 					mOut.println(parser.processClientMessage(message));
 				}
 			}
+			
 		} catch (SocketException e) {
-			System.out.println("Client: Dissconnected");
 			e.printStackTrace();
 		} catch (IOException e) {
-			System.out.println("H�r ska st� n�got smart");
 			e.printStackTrace();
 		}
+		System.out.println("Client: Disconnected");
+		
+		try {
+			mOut.close();
+			in.close();
+			client.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
 
 	}
 }
