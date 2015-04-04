@@ -70,12 +70,16 @@ public class TCPServer extends Thread {
                 //this while it's like a listener for messages
                 while (running) {
                     String message = in.readLine();
-
+                    if(message.equals("hej")) {
+                    	running = false;
+                    	break;
+                    }
                     if (message != null && messageListener != null) {
                         //call the method messageReceived from ServerBoard class
                         messageListener.messageReceived(message);
                     }
                 }
+            System.out.println("Ute");    
 
             } catch (Exception e) {
                 System.out.println("S: Error");
