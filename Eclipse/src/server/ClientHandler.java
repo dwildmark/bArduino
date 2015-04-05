@@ -19,8 +19,7 @@ public class ClientHandler extends Thread {
 
 	public ClientHandler(Socket client) {
 		this.client = client;
-		this.parser = new ServerProtocolParser(4);
-
+		this.parser = ServerProtocolParser.getInstance();
 	}
 
 	public void run() {
@@ -34,6 +33,7 @@ public class ClientHandler extends Thread {
 		try {
 			while (true) {
 				String message = null;
+				String answer = null;
 				message = in.readLine();
 				
 				if (message != null) {
@@ -42,8 +42,10 @@ public class ClientHandler extends Thread {
 						break;
 					}						
 						
-					// call the method messageReceived from ServerBoard class
-					mOut.println(parser.processClientMessage(message));
+					answer = parser.processClientMessage(message);
+					System.out.println("Client: " + client.getInetAddress() + " said: " + message);
+					System.out.println("Server answers: " + answer);
+					mOut.println(answer);
 				}
 			}
 			
@@ -52,7 +54,7 @@ public class ClientHandler extends Thread {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		System.out.println("Client: Disconnected");
+		System.out.println("Client: Disconnected " + client.getInetAddress());
 		
 		try {
 			mOut.close();
@@ -61,7 +63,5 @@ public class ClientHandler extends Thread {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
-
 	}
 }

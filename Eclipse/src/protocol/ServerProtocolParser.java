@@ -1,6 +1,8 @@
 package protocol;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
 
 /**
  * Tool for processing bArduino protocol messages.
@@ -8,7 +10,7 @@ import java.util.ArrayList;
  * States has to be set accordingly for the parser to return 
  * appropriate messages.
  *  
- * @author Jonathan B�cker
+ * @author Jonathan Bocker
  * @version 0.1
  * 
  * 2015-04-02
@@ -19,18 +21,22 @@ public class ServerProtocolParser {
 	public static final int BUSY = 1;
 	public static final int MISSING_ARDUINO = 2;
 	
-	private int numberOfAvailableFluids = 0;
-	private ArrayList<String> arduinoMessages = new ArrayList<String>();
+	private int numberOfAvailableFluids = 4;
+	private Queue<String> arduinoMessages = new LinkedList<String>();
 	private boolean grogAvailable = false;
 	private int state;
 
-	/**
-	 * 
-	 * @param numberOfFluids Number of available fluids in the machine
+	private static ServerProtocolParser parser = new ServerProtocolParser();
+	
+	private ServerProtocolParser(){}
+	
+	/** 
+	 * @return An instance of {@link ServerProtocolParser}
 	 */
-	public ServerProtocolParser(int numberOfFluids){
-		numberOfAvailableFluids = numberOfFluids;
+	public static ServerProtocolParser getInstance(){		
+		return parser;		
 	}
+	
 	/**
 	 * Sets state of server service. Available states are defined as constants
 	 * in the {@link ServerProtocolParser} class
@@ -40,12 +46,29 @@ public class ServerProtocolParser {
 	 * @throws IllegalArgumentException
 	 *             if no such state is defined
 	 */
-	public void setState(int nextState) {
-		if (nextState >= VACANT && nextState <= MISSING_ARDUINO)
+	public synchronized void setState(int nextState) {
+		if (nextState >= VACANT && nextState <= MISSING_ARDUINO){
 			state = nextState;
+			notify();
+		}
 
 		else
 			throw new IllegalArgumentException("No Such State: " + nextState);
+	}
+	
+	/**
+	 * Gets state of server service. Available states are defined as constants
+	 * in the {@link ServerProtocolParser} class
+	 * 
+	 * @return State of server at the moment
+	 */
+	public synchronized int getState(){
+		try {
+			wait();
+		} catch (InterruptedException e) {
+			
+		}
+		return state;
 	}
 
 	/**
@@ -57,8 +80,9 @@ public class ServerProtocolParser {
 	 * @return An appropriate response depending of the state of server and
 	 *         content of message
 	 */
-	public String processClientMessage(String message) {
+	public synchronized String processClientMessage(String message) {
 		String response = null;
+	
 		if (state == VACANT) {
 			if (message.equals("AVAREQ"))
 				response = "AVAILABLE";
@@ -72,6 +96,7 @@ public class ServerProtocolParser {
 			response = "ERROR NOCONNECTION";
 		}
 
+		notify();
 		return response;
 	}
 
@@ -86,7 +111,7 @@ public class ServerProtocolParser {
 	 * @return Returns "ERROR WRONGFORMAT" if the format is wrong and "GROGOK"
 	 *         if the formatting is accepted.
 	 */
-	public String processGrogRequest(String message) {
+	public synchronized String processGrogRequest(String message) {
 		String response = null;
 		String[] request = message.split(" ");
 		arduinoMessages.clear();
@@ -105,7 +130,9 @@ public class ServerProtocolParser {
 					fluid++;
 				}
 				response = "GROGOK";
+				state = BUSY;
 				grogAvailable = true;
+				notify();
 			} catch (NumberFormatException e) {
 				response = "ERROR WRONGFORMAT";
 			}
@@ -121,7 +148,7 @@ public class ServerProtocolParser {
 	 * 
 	 * @return True if a grog is available, False if not.
 	 */
-	public boolean isGrogAvailable() {
+	public synchronized boolean isGrogAvailable() {
 		return grogAvailable;
 	}
 
@@ -130,11 +157,14 @@ public class ServerProtocolParser {
 	 * @return An {@link ArrayList} with Integer values representing the amount
 	 *         of fluid of each fluid
 	 */
-	public ArrayList<String> getGrog() {
-		if (grogAvailable) {
-			grogAvailable = false;
-			return arduinoMessages;
+	public synchronized String dequeueGrog() {		
+		if (!arduinoMessages.isEmpty()) {
+			String str = arduinoMessages.remove();
+			if(arduinoMessages.isEmpty())
+				grogAvailable = false;
+			return str;
 		} else {
+			grogAvailable = false;
 			return null;
 		}
 	}

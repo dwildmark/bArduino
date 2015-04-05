@@ -95,11 +95,10 @@ public class ServerProtocolTester extends JPanel{
 				taClient.setText(parser.processClientMessage("GROG " + tfGrog.getText()));
 				
 				if(parser.isGrogAvailable()){
-					Iterator<String> arduinoMessage = parser.getGrog().iterator();
 					String str = "";
 					
-					while(arduinoMessage.hasNext()){
-						str += arduinoMessage.next() + "\n";
+					while(parser.isGrogAvailable()){
+						str += parser.dequeueGrog() + "\n";
 					}
 					
 					taArduino.setText(str);
@@ -120,7 +119,7 @@ public class ServerProtocolTester extends JPanel{
 	}
 
 	public static void main(String[] args) {
-		ServerProtocolParser parser = new ServerProtocolParser(4);
+		ServerProtocolParser parser = ServerProtocolParser.getInstance();
 		JFrame frame = new JFrame();
 		
 		frame.add(new ServerProtocolTester(parser));
