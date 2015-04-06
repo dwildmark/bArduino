@@ -35,6 +35,9 @@ public class ClientHandler extends Thread {
 				String message = null;
 				String answer = null;
 				message = in.readLine();
+				if(message == null)
+					break;
+				System.out.println("Client: " + client.getInetAddress() + " said: " + message);
 				
 				if (message != null) {
 					if(message.equals("STOP")){
@@ -42,8 +45,7 @@ public class ClientHandler extends Thread {
 						break;
 					}						
 						
-					answer = parser.processClientMessage(message);
-					System.out.println("Client: " + client.getInetAddress() + " said: " + message);
+					answer = parser.processClientMessage(message);					
 					System.out.println("Server answers: " + answer);
 					mOut.println(answer);
 				}

@@ -2,6 +2,7 @@ package server;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -24,28 +25,50 @@ public class ArduinoHandler extends Thread {
 	@Override
 	public void run() {
 		Socket arduino;
+		String message;
+		String answer;
+		try {
+			arduinoServerSocket = new ServerSocket(SERVERPORT);
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
 		while (true) {
-			try {
-				arduinoServerSocket = new ServerSocket(SERVERPORT);
+			try {				
 				while (true) {
 					arduino = arduinoServerSocket.accept();
-					mOut = new PrintWriter(new BufferedWriter(new OutputStreamWriter(arduino.getOutputStream())), true);
-					in = new BufferedReader(new InputStreamReader(arduino.getInputStream()));
-					
-					System.out.println("Server: Arduino connected at " + arduino.getInetAddress());
+					mOut = new PrintWriter(new BufferedWriter(
+							new OutputStreamWriter(arduino.getOutputStream())),
+							true);
+					in = new BufferedReader(new InputStreamReader(
+							arduino.getInputStream()));
+
+					System.out.println("Server: Arduino connected at "
+							+ arduino.getInetAddress());
 					parser.setState(ServerProtocolParser.VACANT);
-					
+
 					while (true) {
-						mOut.println(parser.dequeueGrog());
-						if(!(in.readLine().equals("ACK"))){
-							break;
+						if (parser.isGrogAvailable()) {
+							message = parser.dequeueGrog();
+							if (message != null) {
+								mOut.println(message);
+								System.out.println("Server to Arduino: "
+										+ message);
+								answer = in.readLine();
+								System.out.println("Arduino said: " + answer);
+								if (!(answer.equals("ACK"))) {
+									// TODO
+								}
+							}
 						}
 					}
+					
 				}
 
 			} catch (Exception e) {
-
+				parser.setState(ServerProtocolParser.MISSING_ARDUINO);
+				e.printStackTrace();
 			}
+
 		}
 
 	}
