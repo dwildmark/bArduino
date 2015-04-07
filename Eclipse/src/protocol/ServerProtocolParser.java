@@ -48,7 +48,8 @@ public class ServerProtocolParser {
 	 */
 	public synchronized void setState(int nextState) {
 		if (nextState >= VACANT && nextState <= MISSING_ARDUINO){
-			state = nextState;			
+			state = nextState;
+			notify();
 		}
 
 		else
@@ -62,6 +63,11 @@ public class ServerProtocolParser {
 	 * @return State of server at the moment
 	 */
 	public synchronized int getState(){
+		try {
+			wait();
+		} catch (InterruptedException e) {
+			
+		}
 		return state;
 	}
 
@@ -90,6 +96,7 @@ public class ServerProtocolParser {
 			response = "ERROR NOCONNECTION";
 		}
 
+		notify();
 		return response;
 	}
 
@@ -125,13 +132,12 @@ public class ServerProtocolParser {
 				response = "GROGOK";
 				state = BUSY;
 				grogAvailable = true;
-				System.out.println("Server: GROG available, now BUSY");
-
+				notify();
 			} catch (NumberFormatException e) {
 				response = "ERROR WRONGFORMAT";
 			}
 		}
-		
+
 		return response;
 	}
 
@@ -145,25 +151,22 @@ public class ServerProtocolParser {
 	public synchronized boolean isGrogAvailable() {
 		return grogAvailable;
 	}
+
 	/**
 	 * 
 	 * @return An {@link ArrayList} with Integer values representing the amount
 	 *         of fluid of each fluid
 	 */
-	public synchronized String dequeueGrog() {	
-		String str = null;
-		if (grogAvailable) {
-			str = arduinoMessages.remove();
+	public synchronized String dequeueGrog() {		
+		if (!arduinoMessages.isEmpty()) {
+			String str = arduinoMessages.remove();
 			if(arduinoMessages.isEmpty())
 				grogAvailable = false;
 				state = VACANT;
+			return str;
+		} else {
+			grogAvailable = false;
+			return null;
 		}
-		return str;
-	}
-	
-	public synchronized void clearGrog(){
-		arduinoMessages.clear();
-		grogAvailable = false;
-		state = VACANT;
 	}
 }
