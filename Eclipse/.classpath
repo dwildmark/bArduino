@@ -2,5 +2,12 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="imgscalr-lib-4.2-javadoc.jar"/>
+	<classpathentry kind="lib" path="imgscalr-lib-4.2-sources.jar"/>
+	<classpathentry kind="lib" path="imgscalr-lib-4.2.jar" sourcepath="imgscalr-lib-4.2-sources.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/Eclipse/imgscalr-lib-4.2-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

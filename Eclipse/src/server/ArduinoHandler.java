@@ -16,7 +16,7 @@ public class ArduinoHandler extends Thread {
 	private ServerSocket arduinoServerSocket;
 	private PrintWriter mOut;
 	private BufferedReader in;
-	public static final int SERVERPORT = 666;
+	public static final int SERVERPORT = 10002;
 
 	public ArduinoHandler() {
 		this.parser = ServerProtocolParser.getInstance();

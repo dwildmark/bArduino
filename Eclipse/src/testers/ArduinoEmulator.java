@@ -94,7 +94,7 @@ public class ArduinoEmulator extends JFrame{
 			Socket client = null;
 			while(true){
 				try{
-					client = new Socket("localhost", 666);
+					client = new Socket("localhost", 10002);
 					mOut = new PrintWriter(new BufferedWriter(new OutputStreamWriter(client.getOutputStream())), true);
 					in = new BufferedReader(new InputStreamReader(client.getInputStream()));
 					lblConnect.setForeground(Color.GREEN);
