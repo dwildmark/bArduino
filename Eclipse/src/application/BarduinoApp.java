@@ -1,13 +1,18 @@
 package application;
 
 import java.io.File;
+
 import java.io.IOException;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 
+/**
+ * 
+ * @author Jonathan Böcker, Dennis Wildmark
+ *
+ */
 public class BarduinoApp {
 	public static void main(String[] args) throws IOException {
 		try {
