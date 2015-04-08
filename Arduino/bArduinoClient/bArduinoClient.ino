@@ -8,7 +8,7 @@ byte mac[] = {
 IPAddress ip(192, 168, 1, 74);
 
 //Enter the server IP address below.
-IPAddress server(192, 168, 1, 62);
+IPAddress server(192, 168, 1, 53);
 
 EthernetClient client;
 
@@ -29,11 +29,11 @@ void setup()
   while (!Serial) {
     ; // wait for serial port to connect. Needed for Leonardo only
   }
-  // give the Ethernet shield a second to initialize:
+  //give the Ethernet shield a second to initialize:
   delay(1000);
-  Serial.println("connecting...");
+  //Serial.println("connecting...");
   // if you get a connection, report back via serial:
-  if (client.connect(server, 10002)) {
+  if (client.connect(server, 666)) {
     Serial.println("connected");
   }
   else {
@@ -60,12 +60,16 @@ void loop()
       }
       chooseLiquid(c[0]);
       int amount = 10 * ((int)c[1] - 48) + ((int)c[2] - 48);
-      Serial.println("Drink and amount is selected");
-      if (chosen_liquid > 0 && amount > 0 && amount < 100) {
+      if ((char)c[0] == 'Q') {
+        client.print("OK");
+      } else if (chosen_liquid > 0 && amount > 0 && amount < 100) {
+        Serial.println("Drink and amount is selected");
         pourDrink(chosen_liquid, amount);
+        client.println("ACK");
+      } else {
+        client.println("BADFORMAT");
       }
     }
-
     if (!client.connected()) {
       Serial.println();
       Serial.println("disconnecting.");
@@ -75,19 +79,15 @@ void loop()
     }
   }
 }
-
-void addPulse()
-{
+void addPulse() {
   pulses++;
-  Serial.println("pulse");
+  Serial.println(pulses);
 }
 
-void pourDrink(int pin, int amount)
-{
+void pourDrink(int pin, int amount) {
   attachInterrupt(0, addPulse, RISING);
   pulses = 0;
-  while ( pulses < amount)
-  {
+  while ( pulses < amount) {
     digitalWrite(pin, HIGH);
   }
   digitalWrite(pin, LOW);
