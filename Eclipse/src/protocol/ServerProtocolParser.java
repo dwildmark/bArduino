@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 
+import server.ArduinoHandler;
+
 /**
  * Tool for processing bArduino protocol messages.
  * 
@@ -20,23 +22,23 @@ public class ServerProtocolParser {
 	public static final int VACANT = 0;
 	public static final int BUSY = 1;
 	public static final int MISSING_ARDUINO = 2;
-	
+
 	private int numberOfAvailableFluids = 4;
 	private Queue<String> arduinoMessages = new LinkedList<String>();
 	private boolean grogAvailable = false;
 	private int state;
 
 	private static ServerProtocolParser parser = new ServerProtocolParser();
-	
+
 	private ServerProtocolParser(){}
-	
+
 	/** 
 	 * @return An instance of {@link ServerProtocolParser}
 	 */
 	public static ServerProtocolParser getInstance(){		
 		return parser;		
 	}
-	
+
 	/**
 	 * Sets state of server service. Available states are defined as constants
 	 * in the {@link ServerProtocolParser} class
@@ -50,11 +52,10 @@ public class ServerProtocolParser {
 		if (nextState >= VACANT && nextState <= MISSING_ARDUINO){
 			state = nextState;			
 		}
-
 		else
 			throw new IllegalArgumentException("No Such State: " + nextState);
 	}
-	
+
 	/**
 	 * Gets state of server service. Available states are defined as constants
 	 * in the {@link ServerProtocolParser} class
@@ -76,7 +77,7 @@ public class ServerProtocolParser {
 	 */
 	public synchronized String processClientMessage(String message) {
 		String response = null;
-	
+
 		if (state == VACANT) {
 			if (message.equals("AVAREQ"))
 				response = "AVAILABLE";
@@ -111,59 +112,61 @@ public class ServerProtocolParser {
 		char fluid = 'A';
 
 		if (!(request[0].equals("GROG"))
-				|| (request.length - 1) > numberOfAvailableFluids) {
+				|| (request.length - 1) > numberOfAvailableFluids)  {
 			response = "ERROR WRONGFORMAT";
+		}else if(grogAvailable){
+			response = "ERROR BUSY";
+		}else {
 
-		} else {
-
-			try {
-				for (int i = 1; i < request.length; i++) {
-					Integer.parseInt(request[i]);
-					arduinoMessages.add(fluid + request[i]);
-					fluid++;
-				}
-				response = "GROGOK";
-				state = BUSY;
-				grogAvailable = true;
-				System.out.println("Server: GROG available, now BUSY");
-
-			} catch (NumberFormatException e) {
-				response = "ERROR WRONGFORMAT";
+		try {
+			for (int i = 1; i < request.length; i++) {
+				Integer.parseInt(request[i]);
+				arduinoMessages.add(fluid + request[i]);
+				fluid++;
 			}
+			response = "GROGOK";
+//			state = BUSY;
+			grogAvailable = true;
+			System.out.println("Server: GROG available, now BUSY");
+			state = BUSY;
+
+		} catch (NumberFormatException e) {
+			response = "ERROR WRONGFORMAT";
 		}
-		
-		return response;
 	}
 
-	/**
-	 * This method is used for making sure there is a grog to be sent to the
-	 * Arduino, so that the method getGrog() can be called safely and return a
-	 * grog
-	 * 
-	 * @return True if a grog is available, False if not.
-	 */
-	public synchronized boolean isGrogAvailable() {
-		return grogAvailable;
+	return response;
+}
+
+/**
+ * This method is used for making sure there is a grog to be sent to the
+ * Arduino, so that the method getGrog() can be called safely and return a
+ * grog
+ * 
+ * @return True if a grog is available, False if not.
+ */
+public synchronized boolean isGrogAvailable() {
+	return grogAvailable;
+}
+/**
+ * 
+ * @return An {@link ArrayList} with Integer values representing the amount
+ *         of fluid of each fluid
+ */
+public synchronized String dequeueGrog() {	
+	String str = null;
+	if (grogAvailable) {
+		str = arduinoMessages.remove();
+		if(arduinoMessages.isEmpty()){
+			grogAvailable = false;
+		}		
 	}
-	/**
-	 * 
-	 * @return An {@link ArrayList} with Integer values representing the amount
-	 *         of fluid of each fluid
-	 */
-	public synchronized String dequeueGrog() {	
-		String str = null;
-		if (grogAvailable) {
-			str = arduinoMessages.remove();
-			if(arduinoMessages.isEmpty())
-				grogAvailable = false;
-				state = VACANT;
-		}
-		return str;
-	}
-	
-	public synchronized void clearGrog(){
-		arduinoMessages.clear();
-		grogAvailable = false;
-		state = VACANT;
-	}
+	return str;
+}
+
+public synchronized void clearGrog(){
+	arduinoMessages.clear();
+	grogAvailable = false;
+	state = VACANT;
+}
 }

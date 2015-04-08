@@ -45,6 +45,7 @@ public class ArduinoHandler extends Thread {
 					System.out.println("Server: Arduino connected at "
 							+ arduino.getInetAddress());
 					parser.setState(ServerProtocolParser.VACANT);
+					
 
 					while (true) {
 						if (parser.isGrogAvailable()) {
@@ -59,7 +60,10 @@ public class ArduinoHandler extends Thread {
 									// TODO
 								}
 							}
+						}else{
+							parser.setState(ServerProtocolParser.VACANT);
 						}
+						
 					}
 					
 				}
