@@ -1,5 +1,6 @@
 package server;
 
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -25,17 +26,18 @@ public class Server extends Thread {
 		running = true;
 		
 		try {
-			System.out.println("Server: Running");
-
 			// create a server socket. A server socket waits for requests to
 			// come in over the network.
 			serverSocket = new ServerSocket(SERVERPORT);
+			System.out.println("Server: Running " + InetAddress.getLocalHost() + "/ " 
+					+ serverSocket.getLocalPort());
 			new ArduinoHandler().start();
 			while (running) {
 				// create client socket... the method accept() listens for a
 				// connection to be made to this socket and accepts it.
 				client = serverSocket.accept();
-				System.out.println("Server: Client connected " + client.getInetAddress());
+				System.out.println("Server: Client connected " + client.getInetAddress() 
+						+ "/ " + client.getPort());
 				new ClientHandler(client).start();
 			}
 			serverSocket.close();

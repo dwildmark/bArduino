@@ -55,6 +55,8 @@ public class ArduinoEmulator extends JFrame{
 				System.out.println(message);
 				if(message.length() == 2 && message.charAt(0)>='A' && message.charAt(0)<='D'){
 					btnAck.setEnabled(true);
+				}else if(message.equals("Q")) {
+					connection.sendMessage("ACK");
 				}
 				
 			}
@@ -94,7 +96,7 @@ public class ArduinoEmulator extends JFrame{
 			Socket client = null;
 			while(true){
 				try{
-					client = new Socket("localhost", 10002);
+					client = new Socket("localhost", 8008);
 					mOut = new PrintWriter(new BufferedWriter(new OutputStreamWriter(client.getOutputStream())), true);
 					in = new BufferedReader(new InputStreamReader(client.getInputStream()));
 					lblConnect.setForeground(Color.GREEN);
