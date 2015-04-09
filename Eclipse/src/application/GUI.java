@@ -10,6 +10,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
@@ -19,10 +21,10 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
+import javax.swing.JTextArea;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -44,6 +46,9 @@ public class GUI extends JPanel {
 	private ArrayList<JLabel> ratioLbls = new ArrayList<JLabel>();
 	private JButton orderBtn, arrowUp, arrowDown;
 	private int glassSize = 25;
+	private TCPClient tcpClient;
+	private JTextArea hiddenLog;
+	private Timer timer;
 
 	public GUI(String relPath) throws IOException {
 		File absolutePath = new File(relPath);
@@ -104,7 +109,33 @@ public class GUI extends JPanel {
 		add(Box.createRigidArea(new Dimension(0, 5)));
 		add(orderBtn);
 
+		hiddenLog = new JTextArea();
 		addActionListeners();
+		tcpClient = new TCPClient(new TCPClient.OnMessageReceived() {
+			@Override
+			// this method declared in the interface from TCPServer
+			// class is implemented here
+			// this method is actually a callback method, because it
+			// will run every time when it will be called from
+			// TCPServer class (at while)
+			public void messageReceived(String message) {
+				if(message.split(" ")[0].equals("ERROR")) {
+					orderBtn.setEnabled(false);
+					if(message.split(" ")[1].equals("NOCONNECTION")) {
+						orderBtn.setText("Barduino not connected!");
+					} else {
+						orderBtn.setText("Barduino busy!");
+					}
+				} else {
+					orderBtn.setText("Place Order");
+					orderBtn.setEnabled(true);
+				}
+				hiddenLog.append("/n" + message);
+			}
+		}, 4444, "192.168.1.53");
+		tcpClient.start();
+		timer = new Timer();
+		timer.scheduleAtFixedRate(new ToDoTask(), 0, 1000);
 	}
 
 	public void setIngredients(String[] ingredients) {
@@ -129,7 +160,7 @@ public class GUI extends JPanel {
 			tempSlider.addChangeListener(sliderListener);
 			sliders.add(tempSlider);
 
-			tempRatioLbl = new JLabel("n/a");
+			tempRatioLbl = new JLabel("0 cl");
 			ratioLbls.add(tempRatioLbl);
 
 			tempPanel = new JPanel(new BorderLayout());
@@ -231,21 +262,38 @@ public class GUI extends JPanel {
 	}
 
 	private class OrderButtonListener implements ActionListener {
-		@Override
+		
 		public void actionPerformed(ActionEvent e) {
-			JOptionPane.showMessageDialog(overallPanel,
-					"Children are not allowed to order");
-
+			if(tcpClient != null) {
+				String message = "GROG";
+				for(JLabel amount : ratioLbls) {
+					message += " " + amount.getText().split(" ")[0];
+				}
+				tcpClient.sendMessage(message);
+				hiddenLog.append("\n" + message);
+			}
 		}
 	}
 
 	private class SliderListener implements ChangeListener {
-
-		@Override
+		
 		public void stateChanged(ChangeEvent e) {
 			updateValues(e.getSource());
 		}
 
+	}
+	
+	private class ToDoTask extends TimerTask {
+
+		public void run() {
+			try {
+				tcpClient.sendMessage("AVAREQ");
+				lblNoConnection.setVisible(false);
+			} catch( Exception e) {
+				lblNoConnection.setVisible(true);
+			}
+		}
+		
 	}
 
 }
