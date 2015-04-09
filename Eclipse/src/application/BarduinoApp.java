@@ -22,7 +22,7 @@ public class BarduinoApp {
 			e.printStackTrace();
 		} 
 		GUI gui = new GUI("src/application/Barduino.png");
-		gui.setIngredients(new String[]{"Vodka","Juice,Orange"});
+		gui.setIngredients(new String[]{"Vodka", "Contreau","Apelsinjuice", "Äppeljuice"});
 		JFrame frame = new JFrame();
 		String absolutePath = new File("src/application/bArduino_icon.png").getAbsolutePath();
 		frame.setIconImage(new ImageIcon(absolutePath).getImage());

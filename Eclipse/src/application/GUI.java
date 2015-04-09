@@ -44,8 +44,8 @@ public class GUI extends JPanel {
 	private ArrayList<JLabel> ratioLbls = new ArrayList<JLabel>();
 	private JButton orderBtn, arrowUp, arrowDown;
 	private int glassSize = 25;
-	
-	public GUI( String relPath) throws IOException {
+
+	public GUI(String relPath) throws IOException {
 		File absolutePath = new File(relPath);
 		BufferedImage image = ImageIO.read(absolutePath);
 		BufferedImage scaledImage = Scalr.resize(image, 320);
@@ -54,7 +54,7 @@ public class GUI extends JPanel {
 		lblNoConnection = new JLabel("No connection!");
 		lblNoConnection.setAlignmentX(Component.CENTER_ALIGNMENT);
 		lblNoConnection.setVisible(false);
-		glassSizeLbl = new JLabel(glassSize + "");
+		glassSizeLbl = new JLabel(glassSize + " cl");
 		glassSizeLbl.setAlignmentX(Component.CENTER_ALIGNMENT);
 		arrowUp = new JButton("More");
 		arrowUp.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -62,8 +62,8 @@ public class GUI extends JPanel {
 		arrowDown.setAlignmentX(Component.CENTER_ALIGNMENT);
 		orderBtn = new JButton("Place Order");
 		orderBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
-		//OptionsPanel
-		optionsPanel = new JPanel();		
+		// OptionsPanel
+		optionsPanel = new JPanel();
 		optionsPanel.setLayout(new BoxLayout(optionsPanel, BoxLayout.Y_AXIS));
 		optionsPanel.add(Box.createVerticalGlue());
 		optionsPanel.add(arrowUp);
@@ -72,136 +72,180 @@ public class GUI extends JPanel {
 		optionsPanel.add(Box.createRigidArea(new Dimension(0, 5)));
 		optionsPanel.add(arrowDown);
 		optionsPanel.add(Box.createVerticalGlue());
-		optionsPanel.setBorder(BorderFactory.createTitledBorder(null, "Size [ CL ]"));
-		//sliderPanel
+		optionsPanel.setBorder(BorderFactory.createTitledBorder(null, "Size"));
+		// sliderPanel
 		sliderPanel = new JPanel();
 		sliderPanel.setLayout(new BoxLayout(sliderPanel, BoxLayout.Y_AXIS));
 		JLabel initLabel = new JLabel("Nothing here yet");
 		initLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 		sliderPanel.add(initLabel);
-		sliderPanel.setBorder(BorderFactory.createTitledBorder("Choose your drink"));
-		//drinkPanel
+		sliderPanel.setBorder(BorderFactory
+				.createTitledBorder("Choose your drink"));
+		// drinkPanel
 		drinkPanel = new JPanel(new BorderLayout());
 		drinkPanel.add(sliderPanel, BorderLayout.CENTER);
 		drinkPanel.add(optionsPanel, BorderLayout.EAST);
-		//scrollSuggestionPanel
+		// scrollSuggestionPanel
 		drinkList = new JList<String>();
 		scrollSuggestionPanel = new JScrollPane(drinkList);
-		scrollSuggestionPanel.setBorder(BorderFactory.createTitledBorder("Suggestions"));
-		//overallPanel
+		scrollSuggestionPanel.setBorder(BorderFactory
+				.createTitledBorder("Suggestions"));
+		// overallPanel
 		overallPanel = new JPanel(new BorderLayout());
 		overallPanel.add(scrollSuggestionPanel, BorderLayout.EAST);
 		overallPanel.add(drinkPanel, BorderLayout.CENTER);
-		
-		//main panel
-		setLayout( new BoxLayout(this, BoxLayout.Y_AXIS));
+
+		// main panel
+		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		add(lblLogo);
 		add(lblNoConnection);
 		add(overallPanel);
 		add(Box.createRigidArea(new Dimension(0, 5)));
 		add(orderBtn);
-		
-		addActionListeners();		
+
+		addActionListeners();
 	}
-	
-	public void setIngredients(String[] ingredients){
+
+	public void setIngredients(String[] ingredients) {
 		JLabel tempNameLabel, tempRatioLbl;
 		JSlider tempSlider;
 		JPanel tempPanel;
 		SliderListener sliderListener = new SliderListener();
-		
+
 		sliderPanel.removeAll();
 		ingredientLbls.clear();
 		ratioLbls.clear();
 		sliders.clear();
-		
-		for(int i = 0; i < ingredients.length; i++){
+
+		for (int i = 0; i < ingredients.length; i++) {
 			tempNameLabel = new JLabel(ingredients[i]);
 			tempNameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 			ingredientLbls.add(tempNameLabel);
 			sliderPanel.add(tempNameLabel);
-			
-			tempSlider = new JSlider(0, 100);
+
+			tempSlider = new JSlider(0, glassSize);
+			tempSlider.setValue(0);
 			tempSlider.addChangeListener(sliderListener);
 			sliders.add(tempSlider);
-			
+
 			tempRatioLbl = new JLabel("n/a");
 			ratioLbls.add(tempRatioLbl);
-			
+
 			tempPanel = new JPanel(new BorderLayout());
 			tempPanel.add(tempSlider, BorderLayout.CENTER);
 			tempPanel.add(tempRatioLbl, BorderLayout.EAST);
-			
-			sliderPanel.add(tempPanel);			
+
+			sliderPanel.add(tempPanel);
 			sliderPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-			
+
 		}
 	}
-	
-	private void addActionListeners(){
+
+	private void addActionListeners() {
 		IncOrDecListener incOrDecListener = new IncOrDecListener();
 		arrowUp.addActionListener(incOrDecListener);
 		arrowDown.addActionListener(incOrDecListener);
-		
+
 		orderBtn.addActionListener(new OrderButtonListener());
-		
-		Iterator<JSlider> iter = sliders.iterator();
 	}
-	
-	private class IncOrDecListener implements ActionListener{
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			if(e.getSource() == arrowUp) {
-				glassSize++;
-				glassSizeLbl.setText(glassSize + "");
-				
-			} else if(e.getSource() == arrowDown) {
-				glassSize--;
-				glassSizeLbl.setText(glassSize + "");
+
+	private void updateValues(Object object) {
+		int sumSliders = 0;
+		Iterator<JLabel> iterLabel;
+		Iterator<JSlider> iterSlider = sliders.iterator();
+		JSlider tempSlider;
+		JLabel tempLabel;
+
+		while (iterSlider.hasNext()) {
+			tempSlider = iterSlider.next();
+			tempSlider.setMaximum(glassSize);
+			sumSliders += tempSlider.getValue();
+		}
+
+		iterSlider = sliders.iterator();
+		iterLabel = ratioLbls.iterator();
+		int sliderValue;
+		double percentageDouble;
+		int percentage;
+
+		if (sumSliders > glassSize) {
+			int decreaseSum = sumSliders - glassSize;
+			int nbrOfSlidersToShare = 0;
+
+			while (iterSlider.hasNext()) {
+				tempSlider = iterSlider.next();
+				if (object != tempSlider) {
+					if (tempSlider.getValue() != 0) {
+						nbrOfSlidersToShare++;
+					}
+				}
 			}
-		}		
+
+			iterSlider = sliders.iterator();
+
+			while (iterSlider.hasNext()) {
+				tempSlider = iterSlider.next();
+				if (object != tempSlider) {
+					if (tempSlider.getValue() < (decreaseSum
+							/ nbrOfSlidersToShare)) {
+						decreaseSum -= tempSlider.getValue();
+						tempSlider.setValue(0);
+					} else {
+						tempSlider.setValue(tempSlider.getValue()
+								- (decreaseSum / nbrOfSlidersToShare));
+					}
+				}
+			}
+
+		}
+
+		iterSlider = sliders.iterator();
+
+		while (iterSlider.hasNext()) {
+			tempLabel = iterLabel.next();
+			sliderValue = iterSlider.next().getValue();
+			percentageDouble = ((double) sliderValue / sumSliders) * glassSize;
+			percentage = (int) percentageDouble;
+			if (percentageDouble - percentage > 0.5)
+				percentage++;
+
+			tempLabel.setText(percentage + " cl");
+		}
 	}
-	
-	private class OrderButtonListener implements ActionListener{
+
+	private class IncOrDecListener implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			JOptionPane.showMessageDialog(orderBtn, "Children are not allowed to order");
-			
-		}		
+			if (e.getSource() == arrowUp) {
+				glassSize++;
+				
+			} else if (e.getSource() == arrowDown) {
+				if (glassSize > 0) {
+					glassSize--;
+				}
+			}
+			glassSizeLbl.setText(glassSize + " cl");
+			updateValues(null);
+		}
 	}
-	
+
+	private class OrderButtonListener implements ActionListener {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			JOptionPane.showMessageDialog(overallPanel,
+					"Children are not allowed to order");
+
+		}
+	}
+
 	private class SliderListener implements ChangeListener {
 
 		@Override
 		public void stateChanged(ChangeEvent e) {
-			int sumSliders = 0;
-			Iterator<JLabel> iterLabel;
-			Iterator<JSlider> iterSlider = sliders.iterator();
-			JSlider tempSlider;
-			JLabel tempLabel;
-			
-			while(iterSlider.hasNext()){
-				tempSlider = iterSlider.next();
-				sumSliders += tempSlider.getValue();
-			}
-			
-			iterSlider = sliders.iterator();
-			iterLabel = ratioLbls.iterator();
-			int sliderValue;
-			double percentageDouble;
-			int percentage;
-			
-			while(iterSlider.hasNext()){
-				tempLabel = iterLabel.next();
-				sliderValue = iterSlider.next().getValue();
-				percentageDouble = ((double)sliderValue / sumSliders) * 100;
-				percentage = (int) percentageDouble;
-				
-				tempLabel.setText(percentage + "%");
-			}
+			updateValues(e.getSource());
 		}
-		
+
 	}
-	
+
 }
