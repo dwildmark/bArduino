@@ -35,11 +35,9 @@ public class ArduinoHandler extends Thread {
 			try {
 				if(parser.getState()== ServerProtocolParser.VACANT && mOut != null && in != null){
 					mOut.println("Q");
-					if(!in.readLine().equals("ACK")){
-						System.out.println(in.readLine());
-					} else {
-						
-					}
+					String answer = in.readLine();					
+					System.out.println(answer);
+					
 				} else if (parser.getState() != ServerProtocolParser.BUSY) {
 					parser.setState(ServerProtocolParser.MISSING_ARDUINO);
 				}
@@ -84,17 +82,21 @@ public class ArduinoHandler extends Thread {
 					
 					while (mOut != null && in != null) {
 						if (parser.isGrogAvailable()) {
+							timer.cancel();
+							timer.purge();
 							message = parser.dequeueGrog();
+							
 							if (message != null) {
 								mOut.println(message);
 								System.out.println("Server to Arduino: "
 										+ message);
+								do{
 								answer = in.readLine();
 								System.out.println("Arduino said: " + answer);
-								if (!(answer.equals("ACK"))) {
-									// TODO
-								}
+								}while(!(answer.equals("ACK")));								
 							}
+							timer = new Timer();
+							timer.scheduleAtFixedRate(new ToDoTask(), 0, 1000);
 						}
 					}
 				}

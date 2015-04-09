@@ -125,7 +125,6 @@ public class ServerProtocolParser {
 				fluid++;
 			}
 			response = "GROGOK";
-//			state = BUSY;
 			grogAvailable = true;
 			System.out.println("Server: GROG available, now BUSY");
 			state = BUSY;

@@ -56,7 +56,7 @@ public class ArduinoEmulator extends JFrame{
 				if(message.charAt(0)>='A' && message.charAt(0)<='D'){
 					btnAck.setEnabled(true);
 				}else if(message.equals("Q")) {
-					connection.sendMessage("ACK");
+					connection.sendMessage("OK");
 				}
 				
 			}
