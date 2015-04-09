@@ -18,7 +18,7 @@ public class ArduinoHandler extends Thread {
 	private ServerSocket arduinoServerSocket;
 	private PrintWriter mOut;
 	private BufferedReader in;
-	public static final int SERVERPORT = 666;
+	public static final int SERVERPORT = 8008;
 	private Socket arduino;
 	private Timer timer;
 	
@@ -40,7 +40,7 @@ public class ArduinoHandler extends Thread {
 					} else {
 						
 					}
-				} else {
+				} else if (parser.getState() != ServerProtocolParser.BUSY) {
 					parser.setState(ServerProtocolParser.MISSING_ARDUINO);
 				}
 					

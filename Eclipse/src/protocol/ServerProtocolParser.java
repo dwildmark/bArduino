@@ -159,6 +159,7 @@ public synchronized String dequeueGrog() {
 		str = arduinoMessages.remove();
 		if(arduinoMessages.isEmpty()){
 			grogAvailable = false;
+			state = VACANT;
 		}		
 	}
 	return str;
