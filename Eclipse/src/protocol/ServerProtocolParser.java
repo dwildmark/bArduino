@@ -1,21 +1,23 @@
 package protocol;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.Properties;
 import java.util.Queue;
-
-import server.ArduinoHandler;
 
 /**
  * Tool for processing bArduino protocol messages.
  * 
- * States has to be set accordingly for the parser to return 
- * appropriate messages.
- *  
+ * States has to be set accordingly for the parser to return appropriate
+ * messages.
+ * 
  * @author Jonathan Bocker
  * @version 0.1
  * 
- * 2015-04-02
+ *          2015-04-02
  *
  */
 public class ServerProtocolParser {
@@ -25,18 +27,32 @@ public class ServerProtocolParser {
 
 	private int numberOfAvailableFluids = 4;
 	private Queue<String> arduinoMessages = new LinkedList<String>();
+	private Properties prop;
 	private boolean grogAvailable = false;
 	private int state;
 
 	private static ServerProtocolParser parser = new ServerProtocolParser();
 
-	private ServerProtocolParser(){}
+	private ServerProtocolParser() {
+		try {
+			prop = new Properties();
+			InputStream inputStream = getClass().getClassLoader().getResourceAsStream("config.properties");
+			if (inputStream != null) {
+				prop.load(inputStream);
+				inputStream.close();
+			} else {
+				throw new FileNotFoundException("Property file 'config.properties' not found in the classpath");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
-	/** 
+	/**
 	 * @return An instance of {@link ServerProtocolParser}
 	 */
-	public static ServerProtocolParser getInstance(){		
-		return parser;		
+	public static ServerProtocolParser getInstance() {
+		return parser;
 	}
 
 	/**
@@ -49,10 +65,9 @@ public class ServerProtocolParser {
 	 *             if no such state is defined
 	 */
 	public synchronized void setState(int nextState) {
-		if (nextState >= VACANT && nextState <= MISSING_ARDUINO){
-			state = nextState;			
-		}
-		else
+		if (nextState >= VACANT && nextState <= MISSING_ARDUINO) {
+			state = nextState;
+		} else
 			throw new IllegalArgumentException("No Such State: " + nextState);
 	}
 
@@ -62,8 +77,44 @@ public class ServerProtocolParser {
 	 * 
 	 * @return State of server at the moment
 	 */
-	public synchronized int getState(){
+	public synchronized int getState() {
 		return state;
+	}
+
+	public synchronized String getIngredients() {
+		String ingredients = "";
+		ingredients += prop.getProperty("fluid1");
+		ingredients += "," + prop.getProperty("fluid2");
+		ingredients += "," + prop.getProperty("fluid3");
+		ingredients += "," + prop.getProperty("fluid4");
+		
+		return ingredients;
+	}
+
+	public synchronized String setIngredients(String ingredients) {
+		String response;
+		String[] str = ingredients.split(",");
+		prop = new Properties();
+		String propFileName = "./resources/config.properties";
+		FileOutputStream out;
+		
+		try {
+			out = new FileOutputStream(propFileName);
+			prop.setProperty("fluid1", str[0]);
+			prop.setProperty("fluid2", str[1]);
+			prop.setProperty("fluid3", str[2]);
+			prop.setProperty("fluid4", str[3]);
+			prop.store(out, null);
+			out.close();
+			response = "INGREDIENTSOK";
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			response = "ERROR WRONGFORMAT";
+		}
+		return response;
+		
+		
 	}
 
 	/**
@@ -78,7 +129,13 @@ public class ServerProtocolParser {
 	public synchronized String processClientMessage(String message) {
 		String response = null;
 
-		if (state == VACANT) {
+		if (message.equals("INGREDIENTS")) {
+			response = getIngredients();
+			
+		} else if(message.split(" ")[0].equals("SETINGREDIENTS")){
+			response = setIngredients(message.split(" ")[1]);
+		} else if (state == VACANT) {
+		
 			if (message.equals("AVAREQ"))
 				response = "AVAILABLE";
 			else
@@ -112,61 +169,62 @@ public class ServerProtocolParser {
 		char fluid = 'A';
 
 		if (!(request[0].equals("GROG"))
-				|| (request.length - 1) > numberOfAvailableFluids)  {
+				|| (request.length - 1) > numberOfAvailableFluids) {
 			response = "ERROR WRONGFORMAT";
-		}else if(grogAvailable){
+		} else if (grogAvailable) {
 			response = "ERROR BUSY";
-		}else {
+		} else {
 
-		try {
-			for (int i = 1; i < request.length; i++) {
-				Integer.parseInt(request[i]);
-				arduinoMessages.add(fluid + request[i]);
-				fluid++;
+			try {
+				for (int i = 1; i < request.length; i++) {
+					Integer.parseInt(request[i]);
+					arduinoMessages.add(fluid + request[i]);
+					fluid++;
+				}
+				response = "GROGOK";
+				grogAvailable = true;
+				System.out.println("Server: GROG available, now BUSY");
+				state = BUSY;
+
+			} catch (NumberFormatException e) {
+				response = "ERROR WRONGFORMAT";
 			}
-			response = "GROGOK";
-			grogAvailable = true;
-			System.out.println("Server: GROG available, now BUSY");
-			state = BUSY;
-
-		} catch (NumberFormatException e) {
-			response = "ERROR WRONGFORMAT";
 		}
+
+		return response;
 	}
 
-	return response;
-}
-
-/**
- * This method is used for making sure there is a grog to be sent to the
- * Arduino, so that the method getGrog() can be called safely and return a
- * grog
- * 
- * @return True if a grog is available, False if not.
- */
-public synchronized boolean isGrogAvailable() {
-	return grogAvailable;
-}
-/**
- * 
- * @return An {@link ArrayList} with Integer values representing the amount
- *         of fluid of each fluid
- */
-public synchronized String dequeueGrog() {	
-	String str = null;
-	if (grogAvailable) {
-		str = arduinoMessages.remove();
-		if(arduinoMessages.isEmpty()){
-			grogAvailable = false;
-			state = VACANT;
-		}		
+	/**
+	 * This method is used for making sure there is a grog to be sent to the
+	 * Arduino, so that the method getGrog() can be called safely and return a
+	 * grog
+	 * 
+	 * @return True if a grog is available, False if not.
+	 */
+	public synchronized boolean isGrogAvailable() {
+		return grogAvailable;
 	}
-	return str;
-}
 
-public synchronized void clearGrog(){
-	arduinoMessages.clear();
-	grogAvailable = false;
-	state = VACANT;
-}
+	/**
+	 * 
+	 * @return An {@link ArrayList} with Integer values representing the amount
+	 *         of fluid of each fluid
+	 */
+	public synchronized String dequeueGrog() {
+		String str = null;
+		if (grogAvailable) {
+			str = arduinoMessages.remove();
+			if (arduinoMessages.isEmpty()) {
+				grogAvailable = false;
+				state = VACANT;
+			}
+		}
+		return str;
+	}
+
+	public synchronized void clearGrog() {
+		arduinoMessages.clear();
+		grogAvailable = false;
+		state = VACANT;
+	}
 }
