@@ -38,13 +38,14 @@ import org.imgscalr.Scalr;
 public class GUI extends JPanel {
 	private static final long serialVersionUID = 306520565940671737L;
 	private JLabel lblLogo, glassSizeLbl, lblNoConnection;
-	private JPanel drinkPanel, sliderPanel, optionsPanel, overallPanel;
+	private JPanel drinkPanel, sliderPanel, optionsPanel, overallPanel,
+			bottomPanel;
 	private JScrollPane scrollSuggestionPanel;
 	private JList<String> drinkList;
 	private ArrayList<JSlider> sliders = new ArrayList<JSlider>();
 	private ArrayList<JLabel> ingredientLbls = new ArrayList<JLabel>();
 	private ArrayList<JLabel> ratioLbls = new ArrayList<JLabel>();
-	private JButton orderBtn, arrowUp, arrowDown;
+	private JButton orderBtn, arrowUp, arrowDown, settingsBtn;
 	private int glassSize = 25;
 	private TCPClient tcpClient;
 	private JTextArea hiddenLog;
@@ -67,6 +68,7 @@ public class GUI extends JPanel {
 		arrowDown.setAlignmentX(Component.CENTER_ALIGNMENT);
 		orderBtn = new JButton("Place Order");
 		orderBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
+		settingsBtn = new JButton();
 		// OptionsPanel
 		optionsPanel = new JPanel();
 		optionsPanel.setLayout(new BoxLayout(optionsPanel, BoxLayout.Y_AXIS));
@@ -100,6 +102,12 @@ public class GUI extends JPanel {
 		overallPanel.add(scrollSuggestionPanel, BorderLayout.EAST);
 		overallPanel.add(drinkPanel, BorderLayout.CENTER);
 
+		// bottomPanel
+		bottomPanel = new JPanel(new BorderLayout());
+		add(orderBtn, BorderLayout.CENTER);
+		add(settingsBtn);
+		orderBtn.setEnabled(false);
+
 		// main panel
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
@@ -107,7 +115,7 @@ public class GUI extends JPanel {
 		add(lblNoConnection);
 		add(overallPanel);
 		add(Box.createRigidArea(new Dimension(0, 5)));
-		add(orderBtn);
+		add(bottomPanel);
 
 		hiddenLog = new JTextArea();
 		addActionListeners();
@@ -119,9 +127,9 @@ public class GUI extends JPanel {
 			// will run every time when it will be called from
 			// TCPServer class (at while)
 			public void messageReceived(String message) {
-				if(message.split(" ")[0].equals("ERROR")) {
+				if (message.split(" ")[0].equals("ERROR")) {
 					orderBtn.setEnabled(false);
-					if(message.split(" ")[1].equals("NOCONNECTION")) {
+					if (message.split(" ")[1].equals("NOCONNECTION")) {
 						orderBtn.setText("Barduino not connected!");
 					} else {
 						orderBtn.setText("Barduino busy!");
@@ -175,10 +183,12 @@ public class GUI extends JPanel {
 
 	private void addActionListeners() {
 		IncOrDecListener incOrDecListener = new IncOrDecListener();
+		ButtonListener obListener = new ButtonListener();
 		arrowUp.addActionListener(incOrDecListener);
 		arrowDown.addActionListener(incOrDecListener);
 
-		orderBtn.addActionListener(new OrderButtonListener());
+		orderBtn.addActionListener(obListener);
+		settingsBtn.addActionListener(obListener);
 	}
 
 	private void updateValues(Object object) {
@@ -218,8 +228,7 @@ public class GUI extends JPanel {
 			while (iterSlider.hasNext()) {
 				tempSlider = iterSlider.next();
 				if (object != tempSlider) {
-					if (tempSlider.getValue() < (decreaseSum
-							/ nbrOfSlidersToShare)) {
+					if (tempSlider.getValue() < (decreaseSum / nbrOfSlidersToShare)) {
 						decreaseSum -= tempSlider.getValue();
 						tempSlider.setValue(0);
 					} else {
@@ -250,7 +259,7 @@ public class GUI extends JPanel {
 		public void actionPerformed(ActionEvent e) {
 			if (e.getSource() == arrowUp) {
 				glassSize++;
-				
+
 			} else if (e.getSource() == arrowDown) {
 				if (glassSize > 0) {
 					glassSize--;
@@ -261,39 +270,43 @@ public class GUI extends JPanel {
 		}
 	}
 
-	private class OrderButtonListener implements ActionListener {
-		
+	private class ButtonListener implements ActionListener {
+
 		public void actionPerformed(ActionEvent e) {
-			if(tcpClient != null) {
-				String message = "GROG";
-				for(JLabel amount : ratioLbls) {
-					message += " " + amount.getText().split(" ")[0];
+			if (e.getSource() == orderBtn) {
+				if (tcpClient != null) {
+					String message = "GROG";
+					for (JLabel amount : ratioLbls) {
+						message += " " + amount.getText().split(" ")[0];
+					}
+					tcpClient.sendMessage(message);
+					hiddenLog.append("\n" + message);
 				}
-				tcpClient.sendMessage(message);
-				hiddenLog.append("\n" + message);
+			} else if(e.getSource() == settingsBtn) {
+				//öppna settings-panelen
 			}
 		}
 	}
 
 	private class SliderListener implements ChangeListener {
-		
+
 		public void stateChanged(ChangeEvent e) {
 			updateValues(e.getSource());
 		}
 
 	}
-	
+
 	private class ToDoTask extends TimerTask {
 
 		public void run() {
 			try {
 				tcpClient.sendMessage("AVAREQ");
 				lblNoConnection.setVisible(false);
-			} catch( Exception e) {
+			} catch (Exception e) {
 				lblNoConnection.setVisible(true);
 			}
 		}
-		
+
 	}
 
 }
