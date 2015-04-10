@@ -78,7 +78,11 @@ public class ArduinoHandler extends Thread {
 							+ arduino.getInetAddress());
 					timer = new Timer();
 					timer.scheduleAtFixedRate(new ToDoTask(), 0, 1000);
-					parser.setState(ServerProtocolParser.VACANT);						
+					if (parser.isGrogAvailable()){
+						parser.setState(ServerProtocolParser.BUSY);
+					}else{
+						parser.setState(ServerProtocolParser.VACANT);
+					}
 					
 					while (mOut != null && in != null) {
 						if (parser.isGrogAvailable()) {
