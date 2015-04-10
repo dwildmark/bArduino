@@ -8,6 +8,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.logging.Logger;
 
 import protocol.ServerProtocolParser;
 
@@ -16,8 +17,10 @@ public class ClientHandler extends Thread {
 	private PrintWriter mOut;
 	private BufferedReader in;
 	private ServerProtocolParser parser;
+	private Logger logger;
 
-	public ClientHandler(Socket client) {
+	public ClientHandler(Socket client, Logger logger) {
+		this.logger = logger;
 		this.client = client;
 		this.parser = ServerProtocolParser.getInstance();
 	}
@@ -37,7 +40,7 @@ public class ClientHandler extends Thread {
 				message = in.readLine();
 				if(message == null)
 					break;
-				System.out.println("Client: " + client.getInetAddress() + " said: " + message);
+				logger.info("Client: " + client.getInetAddress() + " said: " + message);
 				
 				if (message != null) {
 					if(message.equals("STOP")){
@@ -45,8 +48,8 @@ public class ClientHandler extends Thread {
 						break;
 					}						
 						
-					answer = parser.processClientMessage(message);					
-					System.out.println("Server answers: " + answer);
+					answer = parser.processClientMessage(message);	
+					logger.info("Server answers: " + answer);
 					mOut.println(answer);
 				}
 			}
@@ -56,7 +59,7 @@ public class ClientHandler extends Thread {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		System.out.println("Client: Disconnected " + client.getInetAddress());
+		logger.info("Client: Disconnected " + client.getInetAddress());
 		
 		try {
 			mOut.close();

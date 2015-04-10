@@ -2,6 +2,7 @@ package server;
 
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.logging.Logger;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -21,13 +22,14 @@ public class ArduinoHandler extends Thread {
 	public static final int SERVERPORT = 8008;
 	private Socket arduino;
 	private Timer timer;
+	private Logger logger;
 	
 
-	public ArduinoHandler() {
+	public ArduinoHandler(Logger logger) {
 		this.parser = ServerProtocolParser.getInstance();
-		
-		
+		this.logger = logger;	
 	}
+	 
 	class ToDoTask extends TimerTask {
 
 		@Override
@@ -35,15 +37,13 @@ public class ArduinoHandler extends Thread {
 			try {
 				if(parser.getState()== ServerProtocolParser.VACANT && mOut != null && in != null){
 					mOut.println("Q");
-					String answer = in.readLine();					
-					System.out.println(answer);
-					
+					in.readLine();					
 				} else if (parser.getState() != ServerProtocolParser.BUSY) {
 					parser.setState(ServerProtocolParser.MISSING_ARDUINO);
 				}
 					
 			} catch (Exception e){
-				System.out.println("Lost connection to Arduino");
+				logger.warning("Lost connection to Arduino");
 				this.cancel();
 				mOut = null;
 				in = null;
@@ -73,16 +73,11 @@ public class ArduinoHandler extends Thread {
 							true);
 					in = new BufferedReader(new InputStreamReader(
 							arduino.getInputStream()));
-
-					System.out.println("Server: Arduino connected at "
+					logger.info("Server: Arduino connected at "
 							+ arduino.getInetAddress());
 					timer = new Timer();
 					timer.scheduleAtFixedRate(new ToDoTask(), 0, 1000);
-					if (parser.isGrogAvailable()){
-						parser.setState(ServerProtocolParser.BUSY);
-					}else{
-						parser.setState(ServerProtocolParser.VACANT);
-					}
+					parser.setState(ServerProtocolParser.VACANT);						
 					
 					while (mOut != null && in != null) {
 						if (parser.isGrogAvailable()) {
@@ -92,11 +87,11 @@ public class ArduinoHandler extends Thread {
 							
 							if (message != null) {
 								mOut.println(message);
-								System.out.println("Server to Arduino: "
+								logger.info("Server to Arduino: "
 										+ message);
 								do{
 								answer = in.readLine();
-								System.out.println("Arduino said: " + answer);
+								logger.info("Arduino said: " + answer);
 								}while(!(answer.equals("ACK")));								
 							}
 							timer = new Timer();
