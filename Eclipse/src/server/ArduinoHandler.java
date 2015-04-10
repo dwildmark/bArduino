@@ -1,11 +1,13 @@
 package server;
 
+import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Logger;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -19,37 +21,36 @@ public class ArduinoHandler extends Thread {
 	private ServerSocket arduinoServerSocket;
 	private PrintWriter mOut;
 	private BufferedReader in;
-	public static final int SERVERPORT = 8008;
 	private Socket arduino;
 	private Timer timer;
 	private Logger logger;
-	
 
 	public ArduinoHandler(Logger logger) {
 		this.parser = ServerProtocolParser.getInstance();
-		this.logger = logger;	
+		this.logger = logger;
 	}
-	 
+
 	class ToDoTask extends TimerTask {
 
 		@Override
 		public void run() {
 			try {
-				if(parser.getState()== ServerProtocolParser.VACANT && mOut != null && in != null){
+				if (parser.getState() == ServerProtocolParser.VACANT
+						&& mOut != null && in != null) {
 					mOut.println("Q");
-					in.readLine();					
+					in.readLine();
 				} else if (parser.getState() != ServerProtocolParser.BUSY) {
 					parser.setState(ServerProtocolParser.MISSING_ARDUINO);
 				}
-					
-			} catch (Exception e){
+
+			} catch (Exception e) {
 				logger.warning("Lost connection to Arduino");
 				this.cancel();
 				mOut = null;
 				in = null;
-				parser.setState(ServerProtocolParser.MISSING_ARDUINO);				
-			}			
-		}	
+				parser.setState(ServerProtocolParser.MISSING_ARDUINO);
+			}
+		}
 	}
 
 	@Override
@@ -58,16 +59,24 @@ public class ArduinoHandler extends Thread {
 		String answer;
 
 		try {
-			arduinoServerSocket = new ServerSocket(SERVERPORT);
+			Properties prop = new Properties();
+			InputStream inputStream = getClass().getClassLoader()
+					.getResourceAsStream("config.properties");
+			if (inputStream != null) {
+				prop.load(inputStream);
+				inputStream.close();
+			}
+			arduinoServerSocket = new ServerSocket(
+					Integer.parseInt((String) prop.get("arduinoport")));
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
 		while (true) {
-			try {				
+			try {
 				while (true) {
 
 					arduino = arduinoServerSocket.accept();
-					
+
 					mOut = new PrintWriter(new BufferedWriter(
 							new OutputStreamWriter(arduino.getOutputStream())),
 							true);
@@ -77,22 +86,21 @@ public class ArduinoHandler extends Thread {
 							+ arduino.getInetAddress());
 					timer = new Timer();
 					timer.scheduleAtFixedRate(new ToDoTask(), 0, 1000);
-					parser.setState(ServerProtocolParser.VACANT);						
-					
+					parser.setState(ServerProtocolParser.VACANT);
+
 					while (mOut != null && in != null) {
 						if (parser.isGrogAvailable()) {
 							timer.cancel();
 							timer.purge();
 							message = parser.dequeueGrog();
-							
+
 							if (message != null) {
 								mOut.println(message);
-								logger.info("Server to Arduino: "
-										+ message);
-								do{
-								answer = in.readLine();
-								logger.info("Arduino said: " + answer);
-								}while(!(answer.equals("ACK")));								
+								logger.info("Server to Arduino: " + message);
+								do {
+									answer = in.readLine();
+									logger.info("Arduino said: " + answer);
+								} while (!(answer.equals("ACK")));
 							}
 							timer = new Timer();
 							timer.scheduleAtFixedRate(new ToDoTask(), 0, 1000);
@@ -109,6 +117,3 @@ public class ArduinoHandler extends Thread {
 		}
 	}
 }
-
-
-
