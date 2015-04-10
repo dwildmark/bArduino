@@ -19,6 +19,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -48,7 +49,7 @@ public class GUI extends JPanel {
 	private JButton orderBtn, arrowUp, arrowDown, settingsBtn;
 	private int glassSize = 25;
 	private TCPClient tcpClient;
-	private JTextArea hiddenLog;
+	public JTextArea hiddenLog;
 	private Timer timer;
 
 	public GUI(String relPath) throws IOException {
@@ -104,8 +105,8 @@ public class GUI extends JPanel {
 
 		// bottomPanel
 		bottomPanel = new JPanel(new BorderLayout());
-		add(orderBtn, BorderLayout.CENTER);
-		add(settingsBtn);
+		bottomPanel.add(orderBtn, BorderLayout.CENTER);
+		bottomPanel.add(settingsBtn, BorderLayout.EAST);
 		orderBtn.setEnabled(false);
 
 		// main panel
@@ -118,6 +119,10 @@ public class GUI extends JPanel {
 		add(bottomPanel);
 
 		hiddenLog = new JTextArea();
+		hiddenLog.setColumns(30);
+		hiddenLog.setRows(10);
+		hiddenLog.setEditable(false);
+		hiddenLog.setPreferredSize(new Dimension(300, 300));
 		addActionListeners();
 		tcpClient = new TCPClient(new TCPClient.OnMessageReceived() {
 			@Override
@@ -138,14 +143,19 @@ public class GUI extends JPanel {
 					orderBtn.setText("Place Order");
 					orderBtn.setEnabled(true);
 				}
-				hiddenLog.append("/n" + message);
+				hiddenLog.append("\n" + message);
 			}
-		}, 4444, "192.168.1.53");
+		}, 4444, "83.249.53.25");
 		tcpClient.start();
 		timer = new Timer();
 		timer.scheduleAtFixedRate(new ToDoTask(), 0, 1000);
 	}
 
+	public void setTCPClient(TCPClient client) {
+		tcpClient.stopClient();
+		tcpClient = client;
+		tcpClient.start();
+	}
 	public void setIngredients(String[] ingredients) {
 		JLabel tempNameLabel, tempRatioLbl;
 		JSlider tempSlider;
@@ -283,7 +293,11 @@ public class GUI extends JPanel {
 					hiddenLog.append("\n" + message);
 				}
 			} else if(e.getSource() == settingsBtn) {
-				//öppna settings-panelen
+				JFrame frame = new JFrame();
+				SettingsPane sp = new SettingsPane(GUI.this, tcpClient, frame);
+				frame.add(sp);
+				frame.pack();
+				frame.setVisible(true);
 			}
 		}
 	}

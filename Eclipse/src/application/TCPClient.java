@@ -21,6 +21,18 @@ public class TCPClient extends Thread {
 		this.SERVERPORT = SERVERPORT;
 		this.ipAdress = ipAdress;		
 	}
+	
+	public OnMessageReceived getOMR() {
+		return messageListener;
+	}
+	
+	public int getServerPort() {
+		return SERVERPORT;
+	}
+	
+	public String getIP() {
+		return ipAdress;
+	}
 
 	public void sendMessage(String message) {
 		if (mOut != null && !mOut.checkError()) {
