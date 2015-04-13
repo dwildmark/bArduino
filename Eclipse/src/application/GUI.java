@@ -145,7 +145,7 @@ public class GUI extends JPanel {
 				}
 				hiddenLog.append("\n" + message);
 			}
-		}, 4444, "83.249.53.25");
+		}, 4444, "localhost");
 		tcpClient.start();
 		timer = new Timer();
 		timer.scheduleAtFixedRate(new ToDoTask(), 0, 1000);
@@ -155,6 +155,10 @@ public class GUI extends JPanel {
 		tcpClient.stopClient();
 		tcpClient = client;
 		tcpClient.start();
+	}
+	
+	public ArrayList<JLabel> getIngredients() {
+		return ingredientLbls;
 	}
 	public void setIngredients(String[] ingredients) {
 		JLabel tempNameLabel, tempRatioLbl;

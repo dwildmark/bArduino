@@ -2,9 +2,12 @@ package application;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -17,10 +20,12 @@ import application.TCPClient.OnMessageReceived;
 
 public class SettingsPane extends JPanel {
 	private static final long serialVersionUID = 1L;
-	private JPanel ipPanel, portPanel;
+	private JPanel ipPanel, portPanel, ingredientsPanel;
 	private JLabel header, serverIp, port;
 	private JButton apply;
 	private JTextField serverInput, portInput;
+	private ArrayList<JLabel> ingredientsLbls;
+	private ArrayList<JTextField> ingredientsFields;
 	private GUI gui;
 	private TCPClient tcpClient;
 	private OnMessageReceived messageListener;
@@ -58,6 +63,21 @@ public class SettingsPane extends JPanel {
 		portPanel.add(port, BorderLayout.CENTER);
 		add(portPanel);
 		
+		//ingredientsPanel
+		ingredientsLbls = new ArrayList<JLabel>();
+		ingredientsFields = new ArrayList<JTextField>();
+		for(int i = 0; i < gui.getIngredients().size(); i++) {
+			String text = gui.getIngredients().get(i).getText();
+			ingredientsLbls.add(new JLabel("Ingrediens " + i));
+			ingredientsFields.add(new JTextField(text));
+		}
+		ingredientsPanel = new JPanel(new GridLayout(2, ingredientsLbls.size()));
+		for(int i = 0; i < ingredientsLbls.size(); i++) {
+			ingredientsPanel.add(ingredientsLbls.get(i));
+			ingredientsPanel.add(ingredientsFields.get(i));
+		}
+		add(ingredientsPanel);
+		
 		//log
 		add(gui.hiddenLog);
 		
@@ -68,12 +88,16 @@ public class SettingsPane extends JPanel {
 		
 	}
 	
+	private void reconnect() {
+		String ipAddr = serverInput.getText();
+		int portNr = Integer.parseInt(portInput.getText());
+		gui.setTCPClient(new TCPClient(messageListener, portNr, ipAddr));
+	}
+	
 	private class ButtonListener implements ActionListener {
 
 		public void actionPerformed(ActionEvent e) {
-			String ipAddr = serverInput.getText();
-			int portNr = Integer.parseInt(portInput.getText());
-			gui.setTCPClient(new TCPClient(messageListener, portNr, ipAddr));
+
 			frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
 		}
 		
