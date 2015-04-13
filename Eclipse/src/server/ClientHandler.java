@@ -40,7 +40,10 @@ public class ClientHandler extends Thread {
 				message = in.readLine();
 				if(message == null)
 					break;
-				logger.info("Client: " + client.getInetAddress() + " said: " + message);
+				if (!message.equals("AVAREQ")) {
+					logger.info("Client: " + client.getInetAddress() + " said: " + message);
+				}
+																	
 				
 				if (message != null) {
 					if(message.equals("STOP")){
@@ -49,23 +52,24 @@ public class ClientHandler extends Thread {
 					}						
 						
 					answer = parser.processClientMessage(message);	
-					logger.info("Server answers: " + answer);
+					if (!message.equals("AVAREQ")) {
+						logger.info("Server answers: " + answer);
+					}
+					
 					mOut.println(answer);
 				}
 			}
 			
-		} catch (SocketException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		} 
 		logger.info("Client: Disconnected " + client.getInetAddress());
 		
 		try {
 			mOut.close();
 			in.close();
 			client.close();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
