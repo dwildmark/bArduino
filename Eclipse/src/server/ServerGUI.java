@@ -2,6 +2,9 @@ package server;
 
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.Properties;
 import java.util.concurrent.FutureTask;
@@ -13,6 +16,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
@@ -20,18 +24,21 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 
+import protocol.ServerProtocolParser;
+import testers.ServerProtocolTester;
+
 public class ServerGUI extends JFrame {
 
 	private static final long serialVersionUID = 2486865764551934155L;
 	private JTextField tfFluid1, tfFluid2, tfFluid3, tfFluid4, tfPortClient,
-			tfPortArduino;
+	tfPortArduino;
 	private JTextArea taLog;
 	private JLabel lblFluid1, lblFluid2, lblFluid3, lblFluid4, lblPortClient,
-			lblPortArduino;
+	lblPortArduino;
 	private JButton btnRestart, btnSave, btnQuit;
 	private JPanel pnlNetwork, pnlNetworkLbls, pnlNetworkTfs, pnlFluids,
-			pnlButtons, pnlStatus, pnlMain, pnlFluid1, pnlFluid2, pnlFluid3,
-			pnlFluid4;
+	pnlButtons, pnlStatus, pnlMain, pnlFluid1, pnlFluid2, pnlFluid3,
+	pnlFluid4;
 	private JTabbedPane tabbedPane;
 	private JScrollPane logScrollPane;
 	private Logger logger;
@@ -40,14 +47,17 @@ public class ServerGUI extends JFrame {
 
 	public ServerGUI(Logger logger) {
 		this.logger = logger;
-		
+		TextAreaHandler tah = new TextAreaHandler();
+		this.logger.addHandler(tah);
+		taLog = tah.getTextArea();
+
 		try {
 			UIManager.setLookAndFeel(
-			        UIManager.getSystemLookAndFeelClassName());
+					UIManager.getSystemLookAndFeelClassName());
 		} catch (Exception e) {			
 			e.printStackTrace();
 		} 
-		
+
 		Properties prop = null;
 		try {
 			prop = new Properties();
@@ -130,7 +140,6 @@ public class ServerGUI extends JFrame {
 		pnlNetwork.add(pnlNetworkTfs, BorderLayout.CENTER);
 
 		// Status Panel
-		taLog = new JTextArea();
 		logScrollPane = new JScrollPane(taLog);
 		pnlStatus = new JPanel(new BorderLayout());
 		pnlStatus.add(logScrollPane, BorderLayout.CENTER);
@@ -138,9 +147,10 @@ public class ServerGUI extends JFrame {
 		// Tabbed Pane
 		tabbedPane = new JTabbedPane();
 		tabbedPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+		tabbedPane.add("Status", logScrollPane);
 		tabbedPane.add("Fluids", pnlFluids);
 		tabbedPane.add("Network", pnlNetwork);
-		tabbedPane.add("Status", logScrollPane);
+		
 
 		// Main Panel
 		pnlMain = new JPanel(new BorderLayout());
@@ -151,15 +161,58 @@ public class ServerGUI extends JFrame {
 		setTitle("Barduino Server");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		pack();
-		setVisible(true);
-		
+		setVisible(true);	
+
+		//actionlistners
+		Listener btnlistner = new Listener();
+		btnQuit.addActionListener(btnlistner);
+		btnRestart.addActionListener(btnlistner);
+		btnSave.addActionListener(btnlistner);
+
 		startServer();
 	}
-	
+
 	private void startServer(){
 		server = new Server(this.logger);
 		futureTask = new FutureTask<Void>(server, null);
 		futureTask.run();
 	}
 
+	public class Listener implements ActionListener{
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			if(e.getSource()==btnRestart){
+				futureTask.cancel(true);
+				startServer();
+				logger.info("Server is restarted");
+			}else if (e.getSource()==btnQuit){
+				System.exit(0);			
+			}else if(e.getSource()==btnSave){
+				JOptionPane.showConfirmDialog(btnSave, "Are you sure that you want to save?"
+						+ " Old settings will be lost!");
+				
+				Properties prop = new Properties();
+				prop = new Properties();
+				String propFileName = "./resources/config.properties";
+				FileOutputStream out;
+				
+				try {
+					out = new FileOutputStream(propFileName);
+					prop.setProperty("fluid1", tfFluid1.getText());
+					prop.setProperty("fluid2", tfFluid2.getText());
+					prop.setProperty("fluid3", tfFluid3.getText());
+					prop.setProperty("fluid4", tfFluid4.getText());
+					prop.setProperty("clientport", tfPortClient.getText());
+					prop.setProperty("arduinoport", tfPortArduino.getText());
+					prop.store(out, null);
+					out.close();
+				} catch (Exception a) {
+					a.printStackTrace();
+				}
+				
+
+			}		
+		}
+	}
 }
