@@ -73,4 +73,11 @@ public class ClientHandler extends Thread {
 			e.printStackTrace();
 		}
 	}
+	public void close() {
+		try {
+			client.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 }

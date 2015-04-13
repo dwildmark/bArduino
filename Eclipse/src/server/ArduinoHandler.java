@@ -116,4 +116,11 @@ public class ArduinoHandler extends Thread {
 			}
 		}
 	}
+	public void close() {
+		try {
+			arduino.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 }

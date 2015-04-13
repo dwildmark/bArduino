@@ -1,11 +1,12 @@
 package server;
 
-
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.LinkedList;
 import java.util.Properties;
+import java.util.Queue;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
 
@@ -16,9 +17,8 @@ public class Server implements Runnable {
 	private boolean running = false;
 	private ServerSocket serverSocket;
 	private ServerProtocolParser parser;
-	
-
-	
+	private LinkedList<ClientHandler> clientQueue = new LinkedList<ClientHandler>();
+	private LinkedList<ArduinoHandler> arduinoQueue = new LinkedList<ArduinoHandler>();
 
 	public Server(Logger logger) {
 		Server.logger = logger;
@@ -44,14 +44,18 @@ public class Server implements Runnable {
 					.get("clientport")));
 			logger.info("Server: Running " + InetAddress.getLocalHost() + "/"
 					+ serverSocket.getLocalPort());
-			new ArduinoHandler(logger).start();
+			ArduinoHandler tempArduino = new ArduinoHandler(logger);
+			arduinoQueue.add(tempArduino);
+			tempArduino.start();
 			while (running) {
 				// create client socket... the method accept() listens for a
 				// connection to be made to this socket and accepts it.
 				client = serverSocket.accept();
 				logger.info("Server: Client connected"
 						+ client.getInetAddress() + "/" + client.getPort());
-				new ClientHandler(client, logger).start();
+				ClientHandler tempClient = new ClientHandler(client, logger);
+				clientQueue.add(tempClient);
+				tempClient.start();
 			}
 			serverSocket.close();
 		} catch (Exception e) {
@@ -63,5 +67,22 @@ public class Server implements Runnable {
 				handler.close();
 			}
 		}
+	}
+
+	public void close() {
+		for (int i = 0; i < clientQueue.size(); i++) {
+			ClientHandler tempClient = clientQueue.get(i);
+			if (tempClient != null) {
+				clientQueue.get(i).close();
+			}
+		}
+		clientQueue.clear();
+		for (int i = 0; i < arduinoQueue.size(); i++) {
+			ArduinoHandler tempArduino = arduinoQueue.get(i);
+			if (tempArduino != null) {
+				arduinoQueue.get(i).close();
+			}
+		}
+
 	}
 }
