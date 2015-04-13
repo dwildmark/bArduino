@@ -1,12 +1,13 @@
 package server;
 
 import java.io.InputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.LinkedList;
 import java.util.Properties;
-import java.util.Queue;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
 
@@ -59,7 +60,10 @@ public class Server implements Runnable {
 			}
 			serverSocket.close();
 		} catch (Exception e) {
-			logger.severe("Server: Error");
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			e.printStackTrace(pw);
+			logger.severe(sw.toString());
 
 		} finally {
 			Handler[] handlers = logger.getHandlers();
@@ -84,6 +88,8 @@ public class Server implements Runnable {
 			}
 		}
 		arduinoQueue.clear();
-
+		try {
+			serverSocket.close();
+		} catch (Exception e) {}
 	}
 }

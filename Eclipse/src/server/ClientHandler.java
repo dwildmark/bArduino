@@ -7,7 +7,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.net.SocketException;
 import java.util.logging.Logger;
 
 import protocol.ServerProtocolParser;
@@ -76,7 +75,7 @@ public class ClientHandler extends Thread {
 	public void close() {
 		try {
 			client.close();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}

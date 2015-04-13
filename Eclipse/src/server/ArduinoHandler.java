@@ -73,7 +73,7 @@ public class ArduinoHandler extends Thread {
 		}
 		while (true) {
 			try {
-				while (true) {
+				while (!arduinoServerSocket.isClosed()) {
 
 					arduino = arduinoServerSocket.accept();
 
@@ -118,8 +118,10 @@ public class ArduinoHandler extends Thread {
 	}
 	public void close() {
 		try {
-			arduino.close();
-		} catch (IOException e) {
+			arduinoServerSocket.close();
+			if(arduino != null)
+				arduino.close();
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}

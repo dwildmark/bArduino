@@ -24,8 +24,6 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 
-import protocol.ServerProtocolParser;
-import testers.ServerProtocolTester;
 
 public class ServerGUI extends JFrame {
 
@@ -176,6 +174,7 @@ public class ServerGUI extends JFrame {
 		server = new Server(this.logger);
 		futureTask = new FutureTask<Void>(server, null);
 		futureTask.run();
+		
 	}
 
 	public class Listener implements ActionListener{
@@ -183,6 +182,7 @@ public class ServerGUI extends JFrame {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if(e.getSource()==btnRestart){
+				server.close();
 				futureTask.cancel(true);
 				startServer();
 				logger.info("Server is restarted");
