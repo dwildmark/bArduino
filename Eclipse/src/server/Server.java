@@ -83,6 +83,7 @@ public class Server implements Runnable {
 				arduinoQueue.get(i).close();
 			}
 		}
+		arduinoQueue.clear();
 
 	}
 }
