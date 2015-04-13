@@ -97,10 +97,12 @@ public class ArduinoHandler extends Thread {
 							if (message != null) {
 								mOut.println(message);
 								logger.info("Server to Arduino: " + message);
-								do {
-									answer = in.readLine();
-									logger.info("Arduino said: " + answer);
-								} while (!(answer.equals("ACK")));
+								answer = in.readLine();
+								logger.info("Arduino said: " + answer);
+								if(!parser.isGrogAvailable()){
+									parser.setState(ServerProtocolParser.VACANT);
+								}
+
 							}
 							timer = new Timer();
 							timer.scheduleAtFixedRate(new ToDoTask(), 0, 1000);
@@ -116,10 +118,11 @@ public class ArduinoHandler extends Thread {
 			}
 		}
 	}
+
 	public void close() {
 		try {
 			arduinoServerSocket.close();
-			if(arduino != null)
+			if (arduino != null)
 				arduino.close();
 		} catch (Exception e) {
 			e.printStackTrace();

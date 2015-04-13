@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 
 import protocol.ServerProtocolParser;
 
-public class Server implements Runnable {
+public class Server extends Thread {
 	public static Logger logger;
 	private boolean running = false;
 	private ServerSocket serverSocket;
@@ -88,6 +88,7 @@ public class Server implements Runnable {
 			}
 		}
 		arduinoQueue.clear();
+		running = false;
 		try {
 			serverSocket.close();
 		} catch (Exception e) {}

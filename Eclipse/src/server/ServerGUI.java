@@ -172,8 +172,7 @@ public class ServerGUI extends JFrame {
 
 	private void startServer(){
 		server = new Server(this.logger);
-		futureTask = new FutureTask<Void>(server, null);
-		futureTask.run();
+		server.start();
 		
 	}
 
@@ -183,7 +182,6 @@ public class ServerGUI extends JFrame {
 		public void actionPerformed(ActionEvent e) {
 			if(e.getSource()==btnRestart){
 				server.close();
-				futureTask.cancel(true);
 				startServer();
 				logger.info("Server is restarted");
 			}else if (e.getSource()==btnQuit){

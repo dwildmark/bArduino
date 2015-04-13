@@ -94,7 +94,6 @@ public class ServerProtocolParser {
 	public synchronized String setIngredients(String ingredients) {
 		String response;
 		String[] str = ingredients.split(",");
-		prop = new Properties();
 		String propFileName = "./resources/config.properties";
 		FileOutputStream out;
 		
@@ -216,7 +215,6 @@ public class ServerProtocolParser {
 			str = arduinoMessages.remove();
 			if (arduinoMessages.isEmpty()) {
 				grogAvailable = false;
-				state = VACANT;
 			}
 		}
 		return str;
