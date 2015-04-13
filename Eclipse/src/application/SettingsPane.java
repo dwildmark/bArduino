@@ -7,7 +7,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -68,7 +67,7 @@ public class SettingsPane extends JPanel {
 		ingredientsFields = new ArrayList<JTextField>();
 		for(int i = 0; i < gui.getIngredients().size(); i++) {
 			String text = gui.getIngredients().get(i).getText();
-			ingredientsLbls.add(new JLabel("Ingrediens " + i));
+			ingredientsLbls.add(new JLabel("Ingrediens " + (i + 1)));
 			ingredientsFields.add(new JTextField(text));
 		}
 		ingredientsPanel = new JPanel(new GridLayout(2, ingredientsLbls.size()));
@@ -88,6 +87,17 @@ public class SettingsPane extends JPanel {
 		
 	}
 	
+	private void setServerIngredients() {
+		String ingredients = "SETINGREDIENTS ";
+		for(int i = 0; i < ingredientsFields.size(); i++) {
+			ingredients += ingredientsFields.get(i).getText();
+			if(i < ingredientsFields.size() - 1) {
+				ingredients += ",";
+			}
+		}
+		tcpClient.sendMessage(ingredients);
+	}
+	
 	private void reconnect() {
 		String ipAddr = serverInput.getText();
 		int portNr = Integer.parseInt(portInput.getText());
@@ -97,7 +107,9 @@ public class SettingsPane extends JPanel {
 	private class ButtonListener implements ActionListener {
 
 		public void actionPerformed(ActionEvent e) {
-
+			//reconnect();
+			setServerIngredients();
+			gui.updateIngredients();
 			frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
 		}
 		

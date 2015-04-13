@@ -82,7 +82,7 @@ public class ServerProtocolParser {
 	}
 
 	public synchronized String getIngredients() {
-		String ingredients = "";
+		String ingredients = "INGREDIENTS:";
 		ingredients += prop.getProperty("fluid1");
 		ingredients += "," + prop.getProperty("fluid2");
 		ingredients += "," + prop.getProperty("fluid3");

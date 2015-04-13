@@ -139,6 +139,10 @@ public class GUI extends JPanel {
 					} else {
 						orderBtn.setText("Barduino busy!");
 					}
+				} else if(message.split(":")[0].equals("INGREDIENTS")) {
+					String[] ingredients = message.split(":")[1].split(",");
+					setIngredients(ingredients);
+					
 				} else {
 					orderBtn.setText("Place Order");
 					orderBtn.setEnabled(true);
@@ -155,6 +159,10 @@ public class GUI extends JPanel {
 		tcpClient.stopClient();
 		tcpClient = client;
 		tcpClient.start();
+	}
+	
+	public void updateIngredients() {
+		tcpClient.sendMessage("INGREDIENTS");
 	}
 	
 	public ArrayList<JLabel> getIngredients() {
@@ -267,6 +275,8 @@ public class GUI extends JPanel {
 			tempLabel.setText(percentage + " cl");
 		}
 	}
+	
+	
 
 	private class IncOrDecListener implements ActionListener {
 		@Override
