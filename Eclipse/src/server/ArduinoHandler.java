@@ -6,6 +6,8 @@ import java.util.TimerTask;
 import java.util.logging.Logger;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -60,14 +62,15 @@ public class ArduinoHandler extends Thread {
 
 		try {
 			Properties prop = new Properties();
-			InputStream inputStream = getClass().getClassLoader()
-					.getResourceAsStream("config.properties");
-			if (inputStream != null) {
-				prop.load(inputStream);
-				inputStream.close();
-			}
+			File initialFile = new File(ServerApp.propFileName);
+			InputStream inputStream = new FileInputStream(initialFile);
+			
+			prop.load(inputStream);
+			inputStream.close();
+			
 			arduinoServerSocket = new ServerSocket(
 					Integer.parseInt((String) prop.get("arduinoport")));
+			
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}

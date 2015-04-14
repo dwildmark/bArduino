@@ -35,12 +35,11 @@ public class Server extends Thread {
 
 		try {
 			Properties prop = new Properties();
-			InputStream inputStream = getClass().getClassLoader()
-					.getResourceAsStream("config.properties");
-			if (inputStream != null) {
-				prop.load(inputStream);
-				inputStream.close();
-			}
+			File initialFile = new File(ServerApp.propFileName);
+			InputStream inputStream = new FileInputStream(initialFile);
+			prop.load(inputStream);
+			inputStream.close();
+			
 			// create a server socket. A server socket waits for requests to
 			// come in over the network.
 			serverSocket = new ServerSocket(Integer.parseInt((String) prop

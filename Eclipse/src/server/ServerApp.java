@@ -11,6 +11,8 @@ import java.util.logging.SimpleFormatter;
 public class ServerApp {
 	public static Logger logger = Logger.getLogger(Server.class.getName());
 	private static Date date = new Date();
+	public final static String propFileName = "./resources/config.properties";
+	public final static String usersFileName = "./resources/users.properties";
 
 	public static void main(String[] args) {
 		

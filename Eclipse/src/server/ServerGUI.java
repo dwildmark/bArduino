@@ -1,29 +1,20 @@
 package server;
 
 import java.awt.Dimension;
-import java.awt.GraphicsEnvironment;
-import java.awt.Point;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Logger;
 
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.UIManager;
+import javax.swing.*;
 
 import net.miginfocom.swing.*;
 
@@ -31,17 +22,20 @@ public class ServerGUI extends JFrame {
 
 	private static final long serialVersionUID = 2486865764551934155L;
 	private JTextField tfFluid1, tfFluid2, tfFluid3, tfFluid4, tfPortClient,
-	tfPortArduino;
+			tfPortArduino;
 	private JTextArea taLog;
 	private JLabel lblFluid1, lblFluid2, lblFluid3, lblFluid4, lblPortClient,
-	lblPortArduino;
-	private JButton btnRestart, btnSave, btnQuit;
-	private JPanel pnlNetwork, pnlFluids,
-	pnlButtons, pnlStatus, pnlMain;
+			lblPortArduino;
+	private JButton btnRestart, btnSave, btnQuit, btnEditUser, btnNewUser;
+	private JPanel pnlNetwork, pnlFluids, pnlButtons, pnlStatus, pnlMain,
+			pnlUsers;
 	private JTabbedPane tabbedPane;
-	private JScrollPane logScrollPane;
+	private JScrollPane logScrollPane, userScrollPane;
+	private JList<String> userList;
 	private Logger logger;
 	private Server server;
+	private Properties prop = null;
+	private Properties users = null;
 
 	public ServerGUI(Logger logger) {
 		this.logger = logger;
@@ -49,23 +43,14 @@ public class ServerGUI extends JFrame {
 		this.logger.addHandler(tah);
 		taLog = tah.getTextArea();
 
+		prop = new Properties();
+		users = new Properties();
+
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+			loadServerConfig();
 		} catch (Exception e) {
 			e.printStackTrace();
-		}
-
-		Properties prop = null;
-		try {
-			prop = new Properties();
-			InputStream inputStream = getClass().getClassLoader()
-					.getResourceAsStream("config.properties");
-			if (inputStream != null) {
-				prop.load(inputStream);
-				inputStream.close();
-			}
-		} catch (Exception e) {
-
 		}
 
 		MigLayout buttonLayout = new MigLayout();
@@ -116,9 +101,19 @@ public class ServerGUI extends JFrame {
 
 		// Status Panel
 		logScrollPane = new JScrollPane(taLog);
-		logScrollPane.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+		logScrollPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		pnlStatus = new JPanel();
 		pnlStatus.add(logScrollPane);
+
+		// Users Panel
+		userList = new JList<String>();
+		userScrollPane = new JScrollPane(userList);
+		btnEditUser = new JButton("Change User Password");
+		btnNewUser = new JButton("New User");
+		pnlUsers = new JPanel(new MigLayout());
+		pnlUsers.add(userScrollPane, "wrap, span 2, grow, push");
+		pnlUsers.add(btnEditUser);
+		pnlUsers.add(btnNewUser);
 
 		// Tabbed Pane
 		tabbedPane = new JTabbedPane();
@@ -126,20 +121,22 @@ public class ServerGUI extends JFrame {
 		tabbedPane.add("Status", logScrollPane);
 		tabbedPane.add("Fluids", pnlFluids);
 		tabbedPane.add("Network", pnlNetwork);
+		tabbedPane.add("Users", pnlUsers);
 
 		// Main Panel
 		pnlMain = new JPanel(new MigLayout());
-		pnlMain.add(pnlButtons, "wrap");
+		pnlMain.add(pnlButtons, "wrap, center");
 		pnlMain.add(tabbedPane, "grow, span, push");
-		pnlMain.setPreferredSize(new Dimension(500, 300));;
+		pnlMain.setPreferredSize(new Dimension(500, 300));
+		;
 
 		setLayout(new MigLayout());
 		add(pnlMain, "grow, span, push");
 		setTitle("Barduino Server");
-		centerUI();
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		pack();		
+		pack();
 		setVisible(true);
+		setLocationRelativeTo(null);
 
 		// actionlistners
 		Listener btnlistner = new Listener();
@@ -147,31 +144,76 @@ public class ServerGUI extends JFrame {
 		btnRestart.addActionListener(btnlistner);
 		btnSave.addActionListener(btnlistner);
 		// Scroller hänger med när händelse sker.
-		logScrollPane.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {			
+		logScrollPane.getVerticalScrollBar().addAdjustmentListener(
+				new AdjustmentListener() {
 
-			@Override
-			public void adjustmentValueChanged(AdjustmentEvent e) {
-				e.getAdjustable();
-			}
-		});
+					@Override
+					public void adjustmentValueChanged(AdjustmentEvent e) {
+						e.getAdjustable();
+					}
+				});
 
+		loadUsers();
+		printUsers();
 		startServer();
 	}
-	// server Ui:t dyker upp i mitten på skärmen.
-	public void centerUI (){
+
+	private void printUsers() {
+		Set<Object> keys = users.keySet();
+		DefaultListModel<String> listModel = new DefaultListModel<String>();
 		
-		Dimension windowSice = getSize();
-		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-		Point centerPoint = ge.getCenterPoint();
-		int x = (centerPoint.x - windowSice.width/2)-250;
-		int y = (centerPoint.y - windowSice.height/2)-150;
-		setLocation(x, y);
+		for (Object k : keys) {
+			String key = (String) k;
+			listModel.addElement(key);
+		}
+		userList.setModel(listModel);
 	}
 
 	private void startServer() {
 		server = new Server(this.logger);
 		server.start();
 
+	}
+
+	private void loadServerConfig() throws IOException {
+		File initialFile = new File(ServerApp.propFileName);
+		InputStream inputStream;
+		try {
+			inputStream = new FileInputStream(initialFile);
+			prop.load(inputStream);
+			inputStream.close();
+		} catch (IOException e) {
+			File dir = new File("./resources");
+			dir.mkdir();
+			FileOutputStream out = new FileOutputStream(ServerApp.propFileName);
+			prop.setProperty("fluid1", "Fluid 1");
+			prop.setProperty("fluid2", "Fluid 2");
+			prop.setProperty("fluid3", "Fluid 3");
+			prop.setProperty("fluid4", "Fluid 4");
+			prop.setProperty("clientport", "4444");
+			prop.setProperty("arduinoport", "8008");
+			prop.store(out, "Default values");
+			out.close();
+		}
+	}
+
+	private void loadUsers() {
+		File initialFile = new File(ServerApp.usersFileName);
+		InputStream inputStream;
+		try {
+			inputStream = new FileInputStream(initialFile);
+			users.load(inputStream);
+			inputStream.close();
+		} catch (IOException e) {
+			FileOutputStream out;
+			try {
+				out = new FileOutputStream(ServerApp.usersFileName);
+				out.close();
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+
+		}
 	}
 
 	public class Listener implements ActionListener {
@@ -190,14 +232,10 @@ public class ServerGUI extends JFrame {
 						"Are you sure that you want to save?"
 								+ " Old settings will be lost!");
 
-				Properties prop = new Properties();
-				String propFileName = "./resources/config.properties";
-
 				FileOutputStream out;
 
 				try {
-
-					out = new FileOutputStream(propFileName);
+					out = new FileOutputStream(ServerApp.propFileName);
 					prop.setProperty("fluid1", tfFluid1.getText());
 					prop.setProperty("fluid2", tfFluid2.getText());
 					prop.setProperty("fluid3", tfFluid3.getText());
