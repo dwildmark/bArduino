@@ -1,5 +1,9 @@
 package server;
 
+import java.awt.Dimension;
+import java.awt.GraphicsEnvironment;
+import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
@@ -127,12 +131,14 @@ public class ServerGUI extends JFrame {
 		pnlMain = new JPanel(new MigLayout());
 		pnlMain.add(pnlButtons, "wrap");
 		pnlMain.add(tabbedPane, "grow, span, push");
+		pnlMain.setPreferredSize(new Dimension(500, 300));;
 
 		setLayout(new MigLayout());
 		add(pnlMain, "grow, span, push");
 		setTitle("Barduino Server");
+		centerUI();
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		pack();
+		pack();		
 		setVisible(true);
 
 		// actionlistners
@@ -140,15 +146,26 @@ public class ServerGUI extends JFrame {
 		btnQuit.addActionListener(btnlistner);
 		btnRestart.addActionListener(btnlistner);
 		btnSave.addActionListener(btnlistner);
+		// Scroller hänger med när händelse sker.
 		logScrollPane.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {			
 
 			@Override
 			public void adjustmentValueChanged(AdjustmentEvent e) {
-				e.getAdjustable().setValue(e.getAdjustable().getMaximum());
+				e.getAdjustable();
 			}
 		});
 
 		startServer();
+	}
+	// server Ui:t dyker upp i mitten på skärmen.
+	public void centerUI (){
+		
+		Dimension windowSice = getSize();
+		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		Point centerPoint = ge.getCenterPoint();
+		int x = (centerPoint.x - windowSice.width/2)-250;
+		int y = (centerPoint.y - windowSice.height/2)-150;
+		setLocation(x, y);
 	}
 
 	private void startServer() {
