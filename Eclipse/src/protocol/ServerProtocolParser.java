@@ -54,6 +54,21 @@ public class ServerProtocolParser {
 	public static ServerProtocolParser getInstance() {
 		return parser;
 	}
+	public void updateProps() {
+		try {
+			prop = new Properties();
+			InputStream inputStream = getClass().getClassLoader().getResourceAsStream("config.properties");
+			if (inputStream != null) {
+				prop.load(inputStream);
+				inputStream.close();
+			} else {
+				throw new FileNotFoundException("Property file 'config.properties' not found in the classpath");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	
+	}
 
 	/**
 	 * Sets state of server service. Available states are defined as constants
@@ -82,6 +97,7 @@ public class ServerProtocolParser {
 	}
 
 	public synchronized String getIngredients() {
+		updateProps();
 		String ingredients = "INGREDIENTS:";
 		ingredients += prop.getProperty("fluid1");
 		ingredients += "," + prop.getProperty("fluid2");
@@ -129,10 +145,11 @@ public class ServerProtocolParser {
 		String response = null;
 
 		if (message.equals("INGREDIENTS")) {
+			updateProps();
 			response = getIngredients();
 			
 		} else if(message.split(" ")[0].equals("SETINGREDIENTS")){
-			response = setIngredients(message.split(" ")[1]);
+			response = setIngredients(message.split(":")[1]);
 		} else if (state == VACANT) {
 		
 			if (message.equals("AVAREQ"))

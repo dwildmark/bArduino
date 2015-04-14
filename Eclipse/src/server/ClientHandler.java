@@ -28,6 +28,7 @@ public class ClientHandler extends Thread {
 		try {
 			mOut = new PrintWriter(new BufferedWriter(new OutputStreamWriter(client.getOutputStream())), true);
 			in = new BufferedReader(new InputStreamReader(client.getInputStream()));
+			mOut.println(parser.getIngredients());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

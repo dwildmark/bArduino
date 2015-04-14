@@ -1,5 +1,7 @@
 package server;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -63,7 +65,7 @@ public class Server extends Thread {
 			StringWriter sw = new StringWriter();
 			PrintWriter pw = new PrintWriter(sw);
 			e.printStackTrace(pw);
-			logger.severe(sw.toString());
+			logger.warning(sw.toString());
 
 		} finally {
 			Handler[] handlers = logger.getHandlers();

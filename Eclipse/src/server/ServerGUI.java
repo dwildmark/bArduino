@@ -2,6 +2,9 @@ package server;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.Properties;
@@ -19,6 +22,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 
+import protocol.ServerProtocolParser;
 import net.miginfocom.swing.*;
 
 public class ServerGUI extends JFrame {
@@ -159,16 +163,18 @@ public class ServerGUI extends JFrame {
 			} else if (e.getSource() == btnQuit) {
 				System.exit(0);
 			} else if (e.getSource() == btnSave) {
+				
 				JOptionPane.showConfirmDialog(btnSave,
 						"Are you sure that you want to save?"
 								+ " Old settings will be lost!");
 
 				Properties prop = new Properties();
-				prop = new Properties();
 				String propFileName = "./resources/config.properties";
+
 				FileOutputStream out;
 
 				try {
+
 					out = new FileOutputStream(propFileName);
 					prop.setProperty("fluid1", tfFluid1.getText());
 					prop.setProperty("fluid2", tfFluid2.getText());
@@ -178,6 +184,7 @@ public class ServerGUI extends JFrame {
 					prop.setProperty("arduinoport", tfPortArduino.getText());
 					prop.store(out, null);
 					out.close();
+					
 				} catch (Exception a) {
 					a.printStackTrace();
 				}
