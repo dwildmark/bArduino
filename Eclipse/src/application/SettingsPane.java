@@ -29,12 +29,16 @@ public class SettingsPane extends JPanel {
 	private TCPClient tcpClient;
 	private OnMessageReceived messageListener;
 	private JFrame frame;
+	private int SERVERPORT;
+	private String IPADDRESS;
 	
 	public SettingsPane( GUI gui, TCPClient tcpClient, JFrame frame) {
 		this.gui = gui;
 		this.tcpClient = tcpClient;
 		this.frame = frame;
 		messageListener = tcpClient.getOMR();
+		IPADDRESS = tcpClient.getIP();
+		SERVERPORT = tcpClient.getServerPort();
 		init();
 	}
 	
@@ -88,7 +92,7 @@ public class SettingsPane extends JPanel {
 	}
 	
 	private void setServerIngredients() {
-		String ingredients = "SETINGREDIENTS ";
+		String ingredients = "SETINGREDIENTS:";
 		for(int i = 0; i < ingredientsFields.size(); i++) {
 			ingredients += ingredientsFields.get(i).getText();
 			if(i < ingredientsFields.size() - 1) {
@@ -101,17 +105,18 @@ public class SettingsPane extends JPanel {
 	private void reconnect() {
 		String ipAddr = serverInput.getText();
 		int portNr = Integer.parseInt(portInput.getText());
-		gui.setTCPClient(new TCPClient(messageListener, portNr, ipAddr));
+		if(!(ipAddr.equals(IPADDRESS)) || !(portNr == SERVERPORT)) {
+			gui.setTCPClient(new TCPClient(messageListener, portNr, ipAddr));
+		}
 	}
 	
 	private class ButtonListener implements ActionListener {
 
 		public void actionPerformed(ActionEvent e) {
-			//reconnect();
+			reconnect();
 			setServerIngredients();
 			gui.updateIngredients();
 			frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
 		}
-		
 	}
 }

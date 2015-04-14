@@ -30,5 +30,6 @@ public class BarduinoApp {
 		frame.pack();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setVisible(true);
+
 	}
 }

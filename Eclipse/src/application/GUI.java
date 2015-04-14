@@ -138,27 +138,28 @@ public class GUI extends JPanel {
 						orderBtn.setText("Barduino not connected!");
 					} else {
 						orderBtn.setText("Barduino busy!");
+						hiddenLog.append("\n" + message);
 					}
 				} else if(message.split(":")[0].equals("INGREDIENTS")) {
 					String[] ingredients = message.split(":")[1].split(",");
 					setIngredients(ingredients);
-					
+					hiddenLog.append("\n" + message);
 				} else {
 					orderBtn.setText("Place Order");
 					orderBtn.setEnabled(true);
 				}
-				hiddenLog.append("\n" + message);
 			}
 		}, 4444, "localhost");
 		tcpClient.start();
 		timer = new Timer();
 		timer.scheduleAtFixedRate(new ToDoTask(), 0, 1000);
+		updateIngredients();
 	}
 
 	public void setTCPClient(TCPClient client) {
-		tcpClient.stopClient();
 		tcpClient = client;
 		tcpClient.start();
+		updateIngredients();
 	}
 	
 	public void updateIngredients() {
@@ -201,6 +202,7 @@ public class GUI extends JPanel {
 			sliderPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 
 		}
+		this.update(getGraphics());
 	}
 
 	private void addActionListeners() {
@@ -208,7 +210,6 @@ public class GUI extends JPanel {
 		ButtonListener obListener = new ButtonListener();
 		arrowUp.addActionListener(incOrDecListener);
 		arrowDown.addActionListener(incOrDecListener);
-
 		orderBtn.addActionListener(obListener);
 		settingsBtn.addActionListener(obListener);
 	}
