@@ -10,5 +10,14 @@
 			<attribute name="javadoc_location" value="jar:platform:/resource/Eclipse/imgscalr-lib-4.2-javadoc.jar!/"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="miglayout-swing-5.1-20150404.220019-96.jar" sourcepath="miglayout-swing-5.1-20150404.220019-96-sources.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/bArduino/miglayout-swing-5.1-20150404.220019-96-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="miglayout-swing-5.1-20150404.220019-96-javadoc.jar"/>
+	<classpathentry kind="lib" path="miglayout-swing-5.1-20150404.220019-96-sources.jar"/>
+	<classpathentry kind="lib" path="lib-miglayout-NB80-5.1-20150404.220106-96.jar"/>
+	<classpathentry kind="lib" path="miglayout-core-5.1-20150404.220010-96.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
