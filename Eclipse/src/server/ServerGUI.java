@@ -2,6 +2,8 @@ package server;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.Properties;
@@ -25,13 +27,13 @@ public class ServerGUI extends JFrame {
 
 	private static final long serialVersionUID = 2486865764551934155L;
 	private JTextField tfFluid1, tfFluid2, tfFluid3, tfFluid4, tfPortClient,
-			tfPortArduino;
+	tfPortArduino;
 	private JTextArea taLog;
 	private JLabel lblFluid1, lblFluid2, lblFluid3, lblFluid4, lblPortClient,
-			lblPortArduino;
+	lblPortArduino;
 	private JButton btnRestart, btnSave, btnQuit;
 	private JPanel pnlNetwork, pnlFluids,
-			pnlButtons, pnlStatus, pnlMain;
+	pnlButtons, pnlStatus, pnlMain;
 	private JTabbedPane tabbedPane;
 	private JScrollPane logScrollPane;
 	private Logger logger;
@@ -138,6 +140,13 @@ public class ServerGUI extends JFrame {
 		btnQuit.addActionListener(btnlistner);
 		btnRestart.addActionListener(btnlistner);
 		btnSave.addActionListener(btnlistner);
+		logScrollPane.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {			
+
+			@Override
+			public void adjustmentValueChanged(AdjustmentEvent e) {
+				e.getAdjustable().setValue(e.getAdjustable().getMaximum());
+			}
+		});
 
 		startServer();
 	}
@@ -159,7 +168,7 @@ public class ServerGUI extends JFrame {
 			} else if (e.getSource() == btnQuit) {
 				System.exit(0);
 			} else if (e.getSource() == btnSave) {
-				
+
 				JOptionPane.showConfirmDialog(btnSave,
 						"Are you sure that you want to save?"
 								+ " Old settings will be lost!");
@@ -180,7 +189,7 @@ public class ServerGUI extends JFrame {
 					prop.setProperty("arduinoport", tfPortArduino.getText());
 					prop.store(out, null);
 					out.close();
-					
+
 				} catch (Exception a) {
 					a.printStackTrace();
 				}
