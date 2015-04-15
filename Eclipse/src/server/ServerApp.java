@@ -29,7 +29,11 @@ public class ServerApp {
 		fh.setFormatter(formatter);
 		logger.addHandler(fh);
 		
-		new ServerGUI(logger);
+		try {
+			new ServerGUI(logger);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
 	}
 	

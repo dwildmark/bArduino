@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -14,8 +15,12 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 
+import org.imgscalr.Scalr;
+
+import application.UserTools;
 import net.miginfocom.swing.*;
 
 public class ServerGUI extends JFrame {
@@ -26,7 +31,8 @@ public class ServerGUI extends JFrame {
 	private JTextArea taLog;
 	private JLabel lblFluid1, lblFluid2, lblFluid3, lblFluid4, lblPortClient,
 			lblPortArduino;
-	private JButton btnRestart, btnSave, btnQuit, btnEditUser, btnNewUser, btnRefresh;
+	private JButton btnRestart, btnSave, btnQuit, btnEditUser, btnNewUser,
+			btnDeleteUser, btnRefresh;
 	private JPanel pnlNetwork, pnlFluids, pnlButtons, pnlStatus, pnlMain,
 			pnlUsers;
 	private JTabbedPane tabbedPane;
@@ -37,14 +43,14 @@ public class ServerGUI extends JFrame {
 	private Properties prop = null;
 	private Properties users = null;
 
-	public ServerGUI(Logger logger) {
+	public ServerGUI(Logger logger) throws Exception {
 		this.logger = logger;
 		TextAreaHandler tah = new TextAreaHandler();
 		this.logger.addHandler(tah);
 		taLog = tah.getTextArea();
 
 		prop = new Properties();
-		users = new Properties();
+		// users = new Properties();
 
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -59,7 +65,6 @@ public class ServerGUI extends JFrame {
 		btnRefresh = new JButton("Refresh");
 		btnRestart = new JButton("Restart");
 		btnQuit = new JButton("Quit");
-		
 
 		pnlButtons = new JPanel();
 		pnlButtons.setLayout(buttonLayout);
@@ -89,7 +94,7 @@ public class ServerGUI extends JFrame {
 		pnlFluids.add(tfFluid3, "grow, wrap");
 		pnlFluids.add(lblFluid4);
 		pnlFluids.add(tfFluid4, "grow, wrap");
-		
+
 		// Network Panel
 		lblPortClient = new JLabel("Client Port");
 		lblPortArduino = new JLabel("Arduino Port");
@@ -109,14 +114,16 @@ public class ServerGUI extends JFrame {
 		pnlStatus.add(logScrollPane);
 
 		// Users Panel
-		userList = new JList<String>();
+		userList = new JList<String>(new DefaultListModel<String>());
 		userScrollPane = new JScrollPane(userList);
 		btnEditUser = new JButton("Change User Password");
 		btnNewUser = new JButton("New User");
+		btnDeleteUser = new JButton("Delete User");
 		pnlUsers = new JPanel(new MigLayout());
-		pnlUsers.add(userScrollPane, "wrap, span 2, grow, push");
+		pnlUsers.add(userScrollPane, "wrap, span 3, grow, push");
 		pnlUsers.add(btnEditUser);
 		pnlUsers.add(btnNewUser);
+		pnlUsers.add(btnDeleteUser);
 
 		// Tabbed Pane
 		tabbedPane = new JTabbedPane();
@@ -126,13 +133,23 @@ public class ServerGUI extends JFrame {
 		tabbedPane.add("Network", pnlNetwork);
 		tabbedPane.add("Users", pnlUsers);
 
+		// Logo Label
+		File absolutePath = new File("src/application/Barduino.png");
+		BufferedImage image = ImageIO.read(absolutePath);
+		BufferedImage scaledImage = Scalr.resize(image, 320);
+		JLabel lblLogo = new JLabel(new ImageIcon(scaledImage));
+
 		// Main Panel
 		pnlMain = new JPanel(new MigLayout());
+		pnlMain.add(lblLogo, "wrap, center");
 		pnlMain.add(pnlButtons, "wrap, center");
 		pnlMain.add(tabbedPane, "grow, span, push");
 		pnlMain.setPreferredSize(new Dimension(500, 300));
 		;
 
+		String absoluteIconPath = new File("src/application/bArduino_icon.png")
+				.getAbsolutePath();
+		setIconImage(new ImageIcon(absoluteIconPath).getImage());
 		setLayout(new MigLayout());
 		add(pnlMain, "grow, span, push");
 		setTitle("Barduino Server");
@@ -143,10 +160,16 @@ public class ServerGUI extends JFrame {
 
 		// actionlistners
 		Listener btnlistner = new Listener();
+		UsersListener usersListener = new UsersListener();
+
 		btnQuit.addActionListener(btnlistner);
 		btnRestart.addActionListener(btnlistner);
 		btnSave.addActionListener(btnlistner);
 		btnRefresh.addActionListener(btnlistner);
+
+		btnNewUser.addActionListener(usersListener);
+		btnDeleteUser.addActionListener(usersListener);
+		btnEditUser.addActionListener(usersListener);
 		// Scroller hänger med när händelse sker.
 		logScrollPane.getVerticalScrollBar().addAdjustmentListener(
 				new AdjustmentListener() {
@@ -162,15 +185,36 @@ public class ServerGUI extends JFrame {
 		startServer();
 	}
 
-	private void printUsers() {
+	public void printUsers() {
 		Set<Object> keys = users.keySet();
-		DefaultListModel<String> listModel = new DefaultListModel<String>();
-		
+		DefaultListModel<String> listModel = (DefaultListModel<String>) userList
+				.getModel();
+		listModel.clear();
+
 		for (Object k : keys) {
 			String key = (String) k;
 			listModel.addElement(key);
 		}
-		userList.setModel(listModel);
+	}
+
+	public void loadUsers() {
+		File initialFile = new File(ServerApp.usersFileName);
+		InputStream inputStream;
+		users = new Properties();
+		try {
+			inputStream = new FileInputStream(initialFile);
+			users.load(inputStream);
+			inputStream.close();
+		} catch (IOException e) {
+			FileOutputStream out;
+			try {
+				out = new FileOutputStream(ServerApp.usersFileName);
+				out.close();
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+
+		}
 	}
 
 	private void startServer() {
@@ -201,25 +245,6 @@ public class ServerGUI extends JFrame {
 		}
 	}
 
-	private void loadUsers() {
-		File initialFile = new File(ServerApp.usersFileName);
-		InputStream inputStream;
-		try {
-			inputStream = new FileInputStream(initialFile);
-			users.load(inputStream);
-			inputStream.close();
-		} catch (IOException e) {
-			FileOutputStream out;
-			try {
-				out = new FileOutputStream(ServerApp.usersFileName);
-				out.close();
-			} catch (Exception e1) {
-				e1.printStackTrace();
-			}
-
-		}
-	}
-
 	public class Listener implements ActionListener {
 
 		@Override
@@ -228,7 +253,7 @@ public class ServerGUI extends JFrame {
 				server.close();
 				startServer();
 				logger.info("Server is restarted");
-			}else if (e.getSource() == btnRefresh) {
+			} else if (e.getSource() == btnRefresh) {
 				try {
 					loadServerConfig();
 				} catch (Exception e1) {
@@ -263,6 +288,45 @@ public class ServerGUI extends JFrame {
 			}
 		}
 	}
+
+	public class UsersListener implements ActionListener {
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			if (e.getSource() == btnNewUser) {
+				JFrame frame = new JFrame();
+				NewUserPane pane = new NewUserPane(frame, ServerGUI.this);
+				frame.add(pane);
+				frame.pack();
+				frame.setVisible(true);
+				frame.setLocationRelativeTo(ServerGUI.this);
+
+			} else if (e.getSource() == btnDeleteUser) {
+
+				if (userList.getSelectedValue() != null
+						&& JOptionPane.showConfirmDialog(ServerGUI.this,
+								"Are you sure you want to delete user '"
+										+ userList.getSelectedValue() + "'") == JOptionPane.YES_OPTION)
+					UserTools.removeUser(userList.getSelectedValue());
+				loadUsers();
+				printUsers();
+
+			} else if (e.getSource() == btnEditUser) {
+				if (userList.getSelectedValue() != null) {
+					JFrame frame = new JFrame();
+					EditUserPane pane = new EditUserPane(frame,
+							userList.getSelectedValue());
+					frame.add(pane);
+					frame.pack();
+					frame.setVisible(true);
+					frame.setLocationRelativeTo(ServerGUI.this);
+				}
+			}
+
+		}
+
+	}
+
 	public void updateFluids() {
 		tfFluid1.setText(prop.getProperty("fluid1"));
 		tfFluid2.setText(prop.getProperty("fluid2"));
