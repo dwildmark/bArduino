@@ -10,6 +10,7 @@ import java.net.Socket;
 import java.util.logging.Logger;
 
 import protocol.ServerProtocolParser;
+import protocol.UserTools;
 
 public class ClientHandler extends Thread {
 	private Socket client;
@@ -26,8 +27,10 @@ public class ClientHandler extends Thread {
 
 	public void run() {
 		try {
-			mOut = new PrintWriter(new BufferedWriter(new OutputStreamWriter(client.getOutputStream())), true);
-			in = new BufferedReader(new InputStreamReader(client.getInputStream()));
+			mOut = new PrintWriter(new BufferedWriter(new OutputStreamWriter(
+					client.getOutputStream())), true);
+			in = new BufferedReader(new InputStreamReader(
+					client.getInputStream()));
 			mOut.println(parser.getIngredients());
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -38,33 +41,42 @@ public class ClientHandler extends Thread {
 				String message = null;
 				String answer = null;
 				message = in.readLine();
-				if(message == null)
+				if (message == null)
 					break;
 				if (!message.equals("AVAREQ")) {
-					logger.info("Client: " + client.getInetAddress() + " said: " + message);
+					logger.info("Client: " + client.getInetAddress()
+							+ " said: " + message);
 				}
-																	
-				
-				if (message != null) {
-					if(message.equals("STOP")){
-						mOut.println("STOP");
-						break;
-					}						
-						
-					answer = parser.processClientMessage(message);	
-					if (!message.equals("AVAREQ")) {
-						logger.info("Server answers: " + answer);
+
+				if (message.equals("STOP")) {
+					mOut.println("STOP");
+					break;
+				}
+
+				if (message.substring(0, 5).equals("LOGIN")){
+					if (UserTools.confirmUser(
+							message.substring(6).split(":")[0], message
+									.substring(6).split(":")[1].toCharArray())){
+						answer = "LOGIN OK";
+					} else {
+						answer = "LOGIN BAD";
 					}
-					
-					mOut.println(answer);
+				} else {
+						answer = parser.processClientMessage(message);
 				}
+				if (!message.equals("AVAREQ")) {
+					logger.info("Server answers: " + answer);
+				}
+
+				mOut.println(answer);
+
 			}
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
-		} 
+		}
 		logger.info("Client: Disconnected " + client.getInetAddress());
-		
+
 		try {
 			mOut.close();
 			in.close();
@@ -73,6 +85,7 @@ public class ClientHandler extends Thread {
 			e.printStackTrace();
 		}
 	}
+
 	public void close() {
 		try {
 			client.close();

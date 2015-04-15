@@ -12,7 +12,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 
-import application.UserTools;
+import protocol.UserTools;
 import net.miginfocom.swing.MigLayout;
 
 public class EditUserPane extends JPanel {
@@ -38,13 +38,17 @@ public class EditUserPane extends JPanel {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (UserTools.confirmUser(user, tfOldPass.getPassword())
+				if(new String(tfNewPass.getPassword()).equals(":") || new String(tfNewPass.getPassword()).contains(" ")){
+					JOptionPane.showMessageDialog(EditUserPane.this, "Password Can Not Contain Character ':' Or Blank Spaces");
+					
+				} else if (UserTools.confirmUser(user, tfOldPass.getPassword())
 						&& Arrays.equals(tfNewPass.getPassword(),
 								tfPassConfirm.getPassword())) {
 					UserTools.removeUser(user);
 					UserTools.addUser(user, tfNewPass.getPassword());
 					JOptionPane.showMessageDialog(EditUserPane.this, "Password Changed!");
 					frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+					
 				} else {
 					JOptionPane.showMessageDialog(EditUserPane.this, "One Or More Passwords Are Not Correct");
 				}

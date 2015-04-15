@@ -20,7 +20,7 @@ import javax.swing.*;
 
 import org.imgscalr.Scalr;
 
-import application.UserTools;
+import protocol.UserTools;
 import net.miginfocom.swing.*;
 
 public class ServerGUI extends JFrame {

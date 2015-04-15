@@ -13,7 +13,7 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
-import application.UserTools;
+import protocol.UserTools;
 import net.miginfocom.swing.MigLayout;
 
 public class NewUserPane extends JPanel {
@@ -44,12 +44,15 @@ public class NewUserPane extends JPanel {
 				if (tfUserName.getText().length() != 0
 						&& tfPass.getPassword().length != 0
 						&& tfPassConfirm.getPassword().length != 0) {
-					
-					if(Arrays.equals(tfPass.getPassword(),tfPassConfirm.getPassword())){
+					if(new String(tfPass.getPassword()).equals(":") || new String(tfPass.getPassword()).contains(" ")){
+						JOptionPane.showMessageDialog(NewUserPane.this, "Password Can Not Contain Character ':' Or Blank Spaces");
+						
+					} else if(Arrays.equals(tfPass.getPassword(),tfPassConfirm.getPassword())){
 						UserTools.addUser(tfUserName.getText(), tfPass.getPassword());
 						serverGUI.loadUsers();
 						serverGUI.printUsers();
 						frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+						
 					} else {
 						JOptionPane.showMessageDialog(NewUserPane.this, "The Passwords Are Not Equal!");
 					}

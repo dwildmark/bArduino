@@ -1,4 +1,4 @@
-package application;
+package protocol;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -9,7 +9,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Properties;
 
-import protocol.PasswordHash;
 import server.ServerApp;
 
 public class UserTools {
