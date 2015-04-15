@@ -26,7 +26,7 @@ public class ServerGUI extends JFrame {
 	private JTextArea taLog;
 	private JLabel lblFluid1, lblFluid2, lblFluid3, lblFluid4, lblPortClient,
 			lblPortArduino;
-	private JButton btnRestart, btnSave, btnQuit, btnEditUser, btnNewUser;
+	private JButton btnRestart, btnSave, btnQuit, btnEditUser, btnNewUser, btnRefresh;
 	private JPanel pnlNetwork, pnlFluids, pnlButtons, pnlStatus, pnlMain,
 			pnlUsers;
 	private JTabbedPane tabbedPane;
@@ -56,13 +56,16 @@ public class ServerGUI extends JFrame {
 		MigLayout buttonLayout = new MigLayout();
 		// Button Panel
 		btnSave = new JButton("Save");
+		btnRefresh = new JButton("Refresh");
 		btnRestart = new JButton("Restart");
 		btnQuit = new JButton("Quit");
+		
 
 		pnlButtons = new JPanel();
 		pnlButtons.setLayout(buttonLayout);
 		pnlButtons.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		pnlButtons.add(btnSave);
+		pnlButtons.add(btnRefresh);
 		pnlButtons.add(btnRestart);
 		pnlButtons.add(btnQuit);
 
@@ -86,7 +89,7 @@ public class ServerGUI extends JFrame {
 		pnlFluids.add(tfFluid3, "grow, wrap");
 		pnlFluids.add(lblFluid4);
 		pnlFluids.add(tfFluid4, "grow, wrap");
-
+		
 		// Network Panel
 		lblPortClient = new JLabel("Client Port");
 		lblPortArduino = new JLabel("Arduino Port");
@@ -143,6 +146,7 @@ public class ServerGUI extends JFrame {
 		btnQuit.addActionListener(btnlistner);
 		btnRestart.addActionListener(btnlistner);
 		btnSave.addActionListener(btnlistner);
+		btnRefresh.addActionListener(btnlistner);
 		// Scroller hänger med när händelse sker.
 		logScrollPane.getVerticalScrollBar().addAdjustmentListener(
 				new AdjustmentListener() {
@@ -224,6 +228,13 @@ public class ServerGUI extends JFrame {
 				server.close();
 				startServer();
 				logger.info("Server is restarted");
+			}else if (e.getSource() == btnRefresh) {
+				try {
+					loadServerConfig();
+				} catch (Exception e1) {
+					e1.printStackTrace();
+				}
+				updateFluids();
 			} else if (e.getSource() == btnQuit) {
 				System.exit(0);
 			} else if (e.getSource() == btnSave) {
@@ -251,5 +262,11 @@ public class ServerGUI extends JFrame {
 
 			}
 		}
+	}
+	public void updateFluids() {
+		tfFluid1.setText(prop.getProperty("fluid1"));
+		tfFluid2.setText(prop.getProperty("fluid2"));
+		tfFluid3.setText(prop.getProperty("fluid3"));
+		tfFluid4.setText(prop.getProperty("fluid4"));
 	}
 }
