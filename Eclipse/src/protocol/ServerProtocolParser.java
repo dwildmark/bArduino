@@ -1,5 +1,7 @@
 package protocol;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -7,6 +9,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Properties;
 import java.util.Queue;
+
+import server.ServerApp;
 
 /**
  * Tool for processing bArduino protocol messages.
@@ -34,18 +38,7 @@ public class ServerProtocolParser {
 	private static ServerProtocolParser parser = new ServerProtocolParser();
 
 	private ServerProtocolParser() {
-		try {
-			prop = new Properties();
-			InputStream inputStream = getClass().getClassLoader().getResourceAsStream("config.properties");
-			if (inputStream != null) {
-				prop.load(inputStream);
-				inputStream.close();
-			} else {
-				throw new FileNotFoundException("Property file 'config.properties' not found in the classpath");
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		updateProps();
 	}
 
 	/**
@@ -54,20 +47,20 @@ public class ServerProtocolParser {
 	public static ServerProtocolParser getInstance() {
 		return parser;
 	}
+
 	public void updateProps() {
 		try {
 			prop = new Properties();
-			InputStream inputStream = getClass().getClassLoader().getResourceAsStream("config.properties");
-			if (inputStream != null) {
-				prop.load(inputStream);
-				inputStream.close();
-			} else {
-				throw new FileNotFoundException("Property file 'config.properties' not found in the classpath");
-			}
+			File initialFile = new File(ServerApp.propFileName);
+			InputStream inputStream = new FileInputStream(initialFile);
+
+			prop.load(inputStream);
+			inputStream.close();
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-	
+
 	}
 
 	/**
@@ -103,18 +96,17 @@ public class ServerProtocolParser {
 		ingredients += "," + prop.getProperty("fluid2");
 		ingredients += "," + prop.getProperty("fluid3");
 		ingredients += "," + prop.getProperty("fluid4");
-		
+
 		return ingredients;
 	}
 
 	public synchronized String setIngredients(String ingredients) {
 		String response;
 		String[] str = ingredients.split(",");
-		String propFileName = "./resources/config.properties";
 		FileOutputStream out;
-		
+
 		try {
-			out = new FileOutputStream(propFileName);
+			out = new FileOutputStream(ServerApp.propFileName);
 			prop.setProperty("fluid1", str[0]);
 			prop.setProperty("fluid2", str[1]);
 			prop.setProperty("fluid3", str[2]);
@@ -122,14 +114,13 @@ public class ServerProtocolParser {
 			prop.store(out, null);
 			out.close();
 			response = "INGREDIENTSOK";
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 			response = "ERROR WRONGFORMAT";
 		}
 		return response;
-		
-		
+
 	}
 
 	/**
@@ -145,13 +136,12 @@ public class ServerProtocolParser {
 		String response = null;
 
 		if (message.equals("INGREDIENTS")) {
-			updateProps();
 			response = getIngredients();
-			
-		} else if(message.split(" ")[0].equals("SETINGREDIENTS")){
+
+		} else if (message.split(":")[0].equals("SETINGREDIENTS")) {
 			response = setIngredients(message.split(":")[1]);
 		} else if (state == VACANT) {
-		
+
 			if (message.equals("AVAREQ"))
 				response = "AVAILABLE";
 			else
