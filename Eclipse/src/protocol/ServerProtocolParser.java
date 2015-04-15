@@ -148,7 +148,7 @@ public class ServerProtocolParser {
 			updateProps();
 			response = getIngredients();
 			
-		} else if(message.split(" ")[0].equals("SETINGREDIENTS")){
+		} else if(message.split(":")[0].equals("SETINGREDIENTS")){
 			response = setIngredients(message.split(":")[1]);
 		} else if (state == VACANT) {
 		
