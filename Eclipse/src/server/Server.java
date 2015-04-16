@@ -99,14 +99,14 @@ public class Server extends Thread {
 		for (int i = 0; i < clientQueue.size(); i++) {
 			ClientHandler tempClient = clientQueue.get(i);
 			if (tempClient != null) {
-				clientQueue.get(i).close();
+				tempClient.close();
 			}
 		}
 		clientQueue.clear();
 		for (int i = 0; i < arduinoQueue.size(); i++) {
 			ArduinoHandler tempArduino = arduinoQueue.get(i);
 			if (tempArduino != null) {
-				arduinoQueue.get(i).close();
+				tempArduino.close();
 			}
 		}
 		arduinoQueue.clear();
