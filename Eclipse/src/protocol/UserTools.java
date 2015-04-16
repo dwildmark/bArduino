@@ -5,8 +5,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
 import java.util.Properties;
 
 import server.ServerApp;
@@ -63,9 +61,12 @@ public class UserTools {
 			}
 
 		}
+		if(users.getProperty(user) == null){
+			return false;
+		}
 		try {
 			return PasswordHash.validatePassword(password, users.getProperty(user));
-		} catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
 		}
