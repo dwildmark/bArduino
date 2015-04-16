@@ -182,8 +182,9 @@ public class ServerProtocolParser {
 
 			try {
 				for (int i = 1; i < request.length; i++) {
-					Integer.parseInt(request[i]);
-					arduinoMessages.add(fluid + request[i]);
+					if(Integer.parseInt(request[i]) > 0){
+						arduinoMessages.add(fluid + request[i]);
+					}
 					fluid++;
 				}
 				response = "GROGOK";
