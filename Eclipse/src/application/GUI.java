@@ -22,6 +22,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
@@ -51,8 +52,12 @@ public class GUI extends JPanel {
 	private TCPClient tcpClient;
 	public JTextArea hiddenLog;
 	private Timer timer;
+	private boolean loggedIn;
+	private JFrame frame;
 
-	public GUI(String relPath) throws IOException {
+	public GUI(String relPath, JFrame frame) throws IOException {
+		loggedIn = false;
+		this.frame = frame;
 		File absolutePath = new File(relPath);
 		BufferedImage image = ImageIO.read(absolutePath);
 		BufferedImage scaledImage = Scalr.resize(image, 320);
@@ -132,21 +137,52 @@ public class GUI extends JPanel {
 			// will run every time when it will be called from
 			// TCPServer class (at while)
 			public void messageReceived(String message) {
+				
 				if (message.split(" ")[0].equals("ERROR")) {
 					orderBtn.setEnabled(false);
-					if (message.split(" ")[1].equals("NOCONNECTION")) {
+					String errorType = message.split(" ")[1];
+					
+					if (errorType.equals("NOCONNECTION")) {
+						
 						orderBtn.setText("Barduino not connected!");
-					} else {
+						
+					} else if(errorType.equals("BUSY")){
+						
 						orderBtn.setText("Barduino busy!");
 						hiddenLog.append("\n" + message);
+						
+					} else if(errorType.equals("NOLOGIN")) {
+						timer.cancel();
+						orderBtn.setText("Not logged in!");
+						LoginPane lp = new LoginPane(GUI.this);
+						JOptionPane.showMessageDialog(null, lp);
+						
 					}
 				} else if(message.split(":")[0].equals("INGREDIENTS")) {
+					
 					String[] ingredients = message.split(":")[1].split(",");
 					setIngredients(ingredients);
 					hiddenLog.append("\n" + message);
-				} else {
+					
+				} else if(message.equals("AVAILABLE")){
+					
 					orderBtn.setText("Place Order");
 					orderBtn.setEnabled(true);
+					
+				} else if(message.split(" ")[0].equals("LOGIN")) {
+					
+					if(message.split(" ")[1].equals("OK")) {
+						timer = new Timer();
+						timer.scheduleAtFixedRate(new ToDoTask(), 0, 1000);
+						orderBtn.setText("Place Order");
+						orderBtn.setEnabled(true);
+						//inloggad
+						
+					} else {
+						
+						//Fel användarnamn eller lösenord.
+						
+					}
 				}
 			}
 		}, 4444, "localhost");
@@ -160,6 +196,10 @@ public class GUI extends JPanel {
 		tcpClient = client;
 		tcpClient.start();
 		updateIngredients();
+	}
+	
+	public void login(String userName, String password) {
+		tcpClient.sendMessage("LOGIN " + userName + ":" + password);
 	}
 	
 	public void updateIngredients() {
@@ -202,7 +242,8 @@ public class GUI extends JPanel {
 			sliderPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 
 		}
-		this.update(getGraphics());
+		repaint();
+		frame.pack();
 	}
 
 	private void addActionListeners() {

@@ -21,15 +21,14 @@ public class BarduinoApp {
 		} catch (Exception e) {			
 			e.printStackTrace();
 		} 
-		GUI gui = new GUI("src/application/Barduino.png");
-		gui.setIngredients(new String[]{"Vodka", "Contreau","Apelsinjuice", "Äppeljuice"});
 		JFrame frame = new JFrame();
-		String absolutePath = new File("src/application/bArduino_icon.png").getAbsolutePath();
+		GUI gui = new GUI("resources/Barduino.png", frame);
+		gui.setIngredients(new String[]{"Vodka", "Contreau","Apelsinjuice", "Äppeljuice"});
+		String absolutePath = new File("resources/bArduino_icon.png").getAbsolutePath();
 		frame.setIconImage(new ImageIcon(absolutePath).getImage());
 		frame.add(gui);
 		frame.pack();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setVisible(true);
-
 	}
 }
