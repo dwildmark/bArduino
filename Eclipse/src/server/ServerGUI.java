@@ -29,12 +29,11 @@ public class ServerGUI extends JFrame {
 	private JTextField tfFluid1, tfFluid2, tfFluid3, tfFluid4, tfPortClient,
 			tfPortArduino;
 	private JTextArea taLog;
-	private JLabel lblFluid1, lblFluid2, lblFluid3, lblFluid4, lblPortClient,
-			lblPortArduino;
+	private JLabel lblFluids, lblFluid1, lblFluid2, lblFluid3, lblFluid4,
+			lblNetwork, lblPortClient, lblPortArduino;
 	private JButton btnRestart, btnSave, btnQuit, btnEditUser, btnNewUser,
 			btnDeleteUser, btnRefresh;
-	private JPanel pnlNetwork, pnlFluids, pnlButtons, pnlStatus, pnlMain,
-			pnlUsers;
+	private JPanel pnlSettings, pnlButtons, pnlStatus, pnlMain;
 	private JTabbedPane tabbedPane;
 	private JScrollPane logScrollPane, userScrollPane;
 	private JList<String> userList;
@@ -61,10 +60,12 @@ public class ServerGUI extends JFrame {
 
 		MigLayout buttonLayout = new MigLayout();
 		// Button Panel
-		btnSave = new JButton("Save");
-		btnRefresh = new JButton("Refresh");
-		btnRestart = new JButton("Restart");
-		btnQuit = new JButton("Quit");
+		btnSave = new JButton("Save", new ImageIcon("./../icons/save.png"));
+		btnRefresh = new JButton("Refresh", new ImageIcon(
+				"./../icons/refresh.png"));
+		btnRestart = new JButton("Restart", new ImageIcon(
+				"./../icons/cancel.png"));
+		btnQuit = new JButton("Quit", new ImageIcon("./../icons/close.png"));
 
 		pnlButtons = new JPanel();
 		pnlButtons.setLayout(buttonLayout);
@@ -74,38 +75,54 @@ public class ServerGUI extends JFrame {
 		pnlButtons.add(btnRestart);
 		pnlButtons.add(btnQuit);
 
-		// Fluids Panel
-		tfFluid1 = new JTextField(prop.getProperty("fluid1"));
-		tfFluid2 = new JTextField(prop.getProperty("fluid2"));
-		tfFluid3 = new JTextField(prop.getProperty("fluid3"));
-		tfFluid4 = new JTextField(prop.getProperty("fluid4"));
-
-		lblFluid1 = new JLabel("Fluid 1");
-		lblFluid2 = new JLabel("Fluid 2");
-		lblFluid3 = new JLabel("Fluid 3");
-		lblFluid4 = new JLabel("Fluid 4");
-
-		pnlFluids = new JPanel(new MigLayout());
-		pnlFluids.add(lblFluid1);
-		pnlFluids.add(tfFluid1, "grow, wrap, width 50:150:200");
-		pnlFluids.add(lblFluid2);
-		pnlFluids.add(tfFluid2, "grow, wrap");
-		pnlFluids.add(lblFluid3);
-		pnlFluids.add(tfFluid3, "grow, wrap");
-		pnlFluids.add(lblFluid4);
-		pnlFluids.add(tfFluid4, "grow, wrap");
-
-		// Network Panel
+		// Network 
+		lblNetwork = new JLabel("Network");
 		lblPortClient = new JLabel("Client Port");
 		lblPortArduino = new JLabel("Arduino Port");
 		tfPortClient = new JTextField(prop.getProperty("clientport"));
 		tfPortArduino = new JTextField(prop.getProperty("arduinoport"));
 
-		pnlNetwork = new JPanel(new MigLayout());
-		pnlNetwork.add(lblPortClient);
-		pnlNetwork.add(tfPortClient, "wrap, w 100!");
-		pnlNetwork.add(lblPortArduino);
-		pnlNetwork.add(tfPortArduino, "wrap, w 100!");
+		// Settings
+		tfFluid1 = new JTextField(prop.getProperty("fluid1"));
+		tfFluid2 = new JTextField(prop.getProperty("fluid2"));
+		tfFluid3 = new JTextField(prop.getProperty("fluid3"));
+		tfFluid4 = new JTextField(prop.getProperty("fluid4"));
+
+		lblFluids = new JLabel("Fluids");
+		lblFluid1 = new JLabel("Fluid 1");
+		lblFluid2 = new JLabel("Fluid 2");
+		lblFluid3 = new JLabel("Fluid 3");
+		lblFluid4 = new JLabel("Fluid 4");
+
+		// Users Panel
+		userList = new JList<String>(new DefaultListModel<String>());
+		userScrollPane = new JScrollPane(userList);
+		btnEditUser = new JButton("Change User Password", new ImageIcon(
+				"./../icons/edit.png"));
+		btnNewUser = new JButton("New User",
+				new ImageIcon("./../icons/add.png"));
+		btnDeleteUser = new JButton("Delete User", new ImageIcon(
+				"./../icons/delete.png"));
+
+		pnlSettings = new JPanel(new MigLayout());
+		pnlSettings.add(lblFluids, "center, span 2");
+		pnlSettings.add(lblNetwork, "center, wrap, span 2");
+		pnlSettings.add(lblFluid1);
+		pnlSettings.add(tfFluid1, "grow, width 50:150:200");
+		pnlSettings.add(lblPortClient);
+		pnlSettings.add(tfPortClient, "wrap, w 100!");
+		pnlSettings.add(lblFluid2);
+		pnlSettings.add(tfFluid2, "grow");
+		pnlSettings.add(lblPortArduino);
+		pnlSettings.add(tfPortArduino, "wrap, w 100!");
+		pnlSettings.add(lblFluid3);
+		pnlSettings.add(tfFluid3, "grow, wrap");
+		pnlSettings.add(lblFluid4);
+		pnlSettings.add(tfFluid4, "grow, wrap");
+		pnlSettings.add(userScrollPane, "wrap, span 4, grow");
+		pnlSettings.add(btnEditUser, "span 2");
+		pnlSettings.add(btnNewUser);
+		pnlSettings.add(btnDeleteUser);
 
 		// Status Panel
 		logScrollPane = new JScrollPane(taLog);
@@ -113,25 +130,11 @@ public class ServerGUI extends JFrame {
 		pnlStatus = new JPanel();
 		pnlStatus.add(logScrollPane);
 
-		// Users Panel
-		userList = new JList<String>(new DefaultListModel<String>());
-		userScrollPane = new JScrollPane(userList);
-		btnEditUser = new JButton("Change User Password");
-		btnNewUser = new JButton("New User");
-		btnDeleteUser = new JButton("Delete User");
-		pnlUsers = new JPanel(new MigLayout());
-		pnlUsers.add(userScrollPane, "wrap, span 3, grow, push");
-		pnlUsers.add(btnEditUser);
-		pnlUsers.add(btnNewUser);
-		pnlUsers.add(btnDeleteUser);
-
 		// Tabbed Pane
 		tabbedPane = new JTabbedPane();
 		tabbedPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		tabbedPane.add("Status", logScrollPane);
-		tabbedPane.add("Fluids", pnlFluids);
-		tabbedPane.add("Network", pnlNetwork);
-		tabbedPane.add("Users", pnlUsers);
+		tabbedPane.add("Settings", pnlSettings);
 
 		// Logo Label
 		File absolutePath = new File("src/application/Barduino.png");
@@ -144,7 +147,7 @@ public class ServerGUI extends JFrame {
 		pnlMain.add(lblLogo, "wrap, center");
 		pnlMain.add(pnlButtons, "wrap, center");
 		pnlMain.add(tabbedPane, "grow, span, push");
-		pnlMain.setPreferredSize(new Dimension(500, 300));
+		pnlMain.setPreferredSize(new Dimension(485, 555));
 		;
 
 		String absoluteIconPath = new File("src/application/bArduino_icon.png")
