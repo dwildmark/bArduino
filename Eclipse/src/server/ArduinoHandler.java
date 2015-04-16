@@ -26,6 +26,7 @@ public class ArduinoHandler extends Thread {
 	private Socket arduino;
 	private Timer timer;
 	private Logger logger;
+	private boolean running = true;
 
 	public ArduinoHandler(Logger logger) {
 		this.parser = ServerProtocolParser.getInstance();
@@ -74,7 +75,7 @@ public class ArduinoHandler extends Thread {
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
-		while (true) {
+		while (running) {
 			try {
 				while (!arduinoServerSocket.isClosed()) {
 
@@ -123,12 +124,25 @@ public class ArduinoHandler extends Thread {
 	}
 
 	public void close() {
+		running = false;
+		timer.cancel();
+		timer.purge();
+		mOut = null;
 		try {
-			arduinoServerSocket.close();
-			if (arduino != null)
-				arduino.close();
+			in.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		try {
+			arduinoServerSocket.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		try {
+			arduino.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 	}
 }
