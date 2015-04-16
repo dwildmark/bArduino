@@ -14,6 +14,13 @@ import java.util.logging.Handler;
 import java.util.logging.Logger;
 
 import protocol.ServerProtocolParser;
+/**
+ * @author Andreas, Jonathan, Olle.
+ * The server-class task is to provide a client to connect to the server and a arduion to do the same.
+ * While doing this it also logs all the data that is sent between those two. 
+ * A thread will be created for each conncted client.
+ *	
+ */
 
 public class Server extends Thread {
 	public static Logger logger;
@@ -26,6 +33,14 @@ public class Server extends Thread {
 	public Server(Logger logger) {
 		Server.logger = logger;
 	}
+	/**
+	 * The methode run is were the socket will be created. We will need the protocol for the conection
+	 * between the arduion and a client, therefore .getInstance(). Then we create a new prop-file and a inputstream
+	 * to read the property-file. After this the serversocket for the client is created and a serversocket for the 
+	 * Arduion aswell.
+	 * The while-loop makes the server run at all time and checks if cinents want to connect, and lets them.
+	 * If anything goes wrong whit the acceptproses the exeption will print it in the log for the server.
+	 */
 
 	public void run() {
 		parser = ServerProtocolParser.getInstance();
@@ -74,6 +89,12 @@ public class Server extends Thread {
 		}
 	}
 
+	/**
+	 * If somone turns the server off, all clients in the clientQueue will be closed, and the 
+	 * queues information will be delited, it's the same for all the arduions that is connected.
+	 * then at last the serversocket will be closed.
+	 * 
+	 */
 	public void close() {
 		for (int i = 0; i < clientQueue.size(); i++) {
 			ClientHandler tempClient = clientQueue.get(i);
