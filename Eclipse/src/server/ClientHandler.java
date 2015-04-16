@@ -18,6 +18,7 @@ public class ClientHandler extends Thread {
 	private BufferedReader in;
 	private ServerProtocolParser parser;
 	private Logger logger;
+	private boolean loggedIn = false;
 
 	public ClientHandler(Socket client, Logger logger) {
 		this.logger = logger;
@@ -58,11 +59,16 @@ public class ClientHandler extends Thread {
 							message.substring(6).split(":")[0], message
 									.substring(6).split(":")[1].toCharArray())){
 						answer = "LOGIN OK";
+						loggedIn = true;
 					} else {
 						answer = "LOGIN BAD";
 					}
 				} else {
+					if(loggedIn){
 						answer = parser.processClientMessage(message);
+					} else {
+						answer = "ERROR NOLOGIN";
+					}
 				}
 				if (!message.equals("AVAREQ")) {
 					logger.info("Server answers: " + answer);
