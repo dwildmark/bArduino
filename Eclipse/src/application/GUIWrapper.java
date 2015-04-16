@@ -19,7 +19,7 @@ public class GUIWrapper extends JPanel{
 		setLayout(cl);
 		add(gui, "gui");
 		add(loginPane, "loginPane");		
-		cl.show(this, "loginPane");
+		cl.show(this, "gui");
 	}
 	
 	public void showLoginPane(boolean b) {
