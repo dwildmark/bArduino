@@ -5,7 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
-import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
@@ -24,22 +24,15 @@ public class LoginPane extends JPanel{
 		passwordTF.setPreferredSize(new Dimension(100, 20));
 		loginBtn = new JButton("Logga in");
 		loginBtn.addActionListener(new ButtonListener());
-		
+		setPreferredSize(gui.getPreferredSize());
 		setLayout(new MigLayout());
-		add(userTF, "wrap, width 50:150:200");
-		add(passwordTF, "wrap, width 50:150:200");
-		add(loginBtn, "wrap");
+		add(new JLabel("User Name:"), "wrap, width 50:150:200, center");
+		add(userTF, "wrap, width 50:150:200, center");
+		add(new JLabel("Password:"), "wrap, width 50:150:200, center");
+		add(passwordTF, "wrap, width 50:150:200, center");
+		add(loginBtn, "wrap, center");
 	}
-	
-//	public static void main(String[] args) {
-//		LoginPane lp = new LoginPane();
-//		JFrame frame = new JFrame();
-//		frame.add(lp);
-//		frame.setVisible(true);
-//		frame.pack();
-//		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//	}
-	
+
 	private class ButtonListener implements ActionListener {
 
 		public void actionPerformed(ActionEvent e) {

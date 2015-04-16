@@ -22,7 +22,6 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
@@ -54,10 +53,12 @@ public class GUI extends JPanel {
 	private Timer timer;
 	private boolean loggedIn;
 	private JFrame frame;
+	private GUIWrapper guiWrapper;
 
-	public GUI(String relPath, JFrame frame) throws IOException {
+	public GUI(String relPath, JFrame frame, GUIWrapper guiWrapper) throws IOException {
 		loggedIn = false;
 		this.frame = frame;
+		this.guiWrapper = guiWrapper;
 		File absolutePath = new File(relPath);
 		BufferedImage image = ImageIO.read(absolutePath);
 		BufferedImage scaledImage = Scalr.resize(image, 320);
@@ -153,9 +154,10 @@ public class GUI extends JPanel {
 						
 					} else if(errorType.equals("NOLOGIN")) {
 						timer.cancel();
-						orderBtn.setText("Not logged in!");
-						LoginPane lp = new LoginPane(GUI.this);
-						JOptionPane.showMessageDialog(null, lp);
+						//orderBtn.setText("Not logged in!");
+						//LoginPane lp = new LoginPane(GUI.this);
+						//JOptionPane.showMessageDialog(null, lp);
+						guiWrapper.showLoginPane(true);
 						
 					}
 				} else if(message.split(":")[0].equals("INGREDIENTS")) {
@@ -176,6 +178,7 @@ public class GUI extends JPanel {
 						timer.scheduleAtFixedRate(new ToDoTask(), 0, 1000);
 						orderBtn.setText("Place Order");
 						orderBtn.setEnabled(true);
+						guiWrapper.showLoginPane(false);
 						//inloggad
 						
 					} else {
