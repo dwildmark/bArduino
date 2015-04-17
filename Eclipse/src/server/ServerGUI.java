@@ -60,12 +60,14 @@ public class ServerGUI extends JFrame {
 
 		MigLayout buttonLayout = new MigLayout();
 		// Button Panel
-		btnSave = new JButton("Save", new ImageIcon("./../icons/save.png"));
-		btnRefresh = new JButton("Refresh", new ImageIcon(
-				"./../icons/refresh.png"));
-		btnRestart = new JButton("Restart", new ImageIcon(
-				"./../icons/cancel.png"));
-		btnQuit = new JButton("Quit", new ImageIcon("./../icons/close.png"));
+		btnSave = new JButton("Save", new ImageIcon(getClass().getResource(
+				"/save.png")));
+		btnRefresh = new JButton("Refresh", new ImageIcon(getClass()
+				.getResource("/refresh.png")));
+		btnRestart = new JButton("Restart", new ImageIcon(getClass()
+				.getResource("/cancel.png")));
+		btnQuit = new JButton("Quit", new ImageIcon(getClass().getResource(
+				"/close.png")));
 
 		pnlButtons = new JPanel();
 		pnlButtons.setLayout(buttonLayout);
@@ -75,7 +77,7 @@ public class ServerGUI extends JFrame {
 		pnlButtons.add(btnRestart);
 		pnlButtons.add(btnQuit);
 
-		// Network 
+		// Network
 		lblNetwork = new JLabel("Network");
 		lblPortClient = new JLabel("Client Port");
 		lblPortArduino = new JLabel("Arduino Port");
@@ -98,11 +100,11 @@ public class ServerGUI extends JFrame {
 		userList = new JList<String>(new DefaultListModel<String>());
 		userScrollPane = new JScrollPane(userList);
 		btnEditUser = new JButton("Change User Password", new ImageIcon(
-				"./../icons/edit.png"));
-		btnNewUser = new JButton("New User",
-				new ImageIcon("./../icons/add.png"));
-		btnDeleteUser = new JButton("Delete User", new ImageIcon(
-				"./../icons/delete.png"));
+				getClass().getResource("/edit.png")));
+		btnNewUser = new JButton("New User", new ImageIcon(getClass()
+				.getResource("/add.png")));
+		btnDeleteUser = new JButton("Delete User", new ImageIcon(getClass()
+				.getResource("/delete.png")));
 
 		pnlSettings = new JPanel(new MigLayout());
 		pnlSettings.add(lblFluids, "center, span 2");
@@ -137,8 +139,9 @@ public class ServerGUI extends JFrame {
 		tabbedPane.add("Settings", pnlSettings);
 
 		// Logo Label
-		File absolutePath = new File("resources/Barduino.png");
-		BufferedImage image = ImageIO.read(absolutePath);
+		// File absolutePath = new File("images/Barduino.png");
+		BufferedImage image = ImageIO.read(getClass().getResource(
+				"/Barduino.png"));
 		BufferedImage scaledImage = Scalr.resize(image, 320);
 		JLabel lblLogo = new JLabel(new ImageIcon(scaledImage));
 
@@ -150,9 +153,10 @@ public class ServerGUI extends JFrame {
 		pnlMain.setPreferredSize(new Dimension(485, 555));
 		;
 
-		String absoluteIconPath = new File("src/application/bArduino_icon.png")
-				.getAbsolutePath();
-		setIconImage(new ImageIcon(absoluteIconPath).getImage());
+		// String absoluteIconPath = new File("images/bArduino_icon.png")
+		// .getAbsolutePath();
+		setIconImage(new ImageIcon(getClass().getResource("/bArduino_icon.png"))
+				.getImage());
 		setLayout(new MigLayout());
 		add(pnlMain, "grow, span, push");
 		setTitle("Barduino Server");
