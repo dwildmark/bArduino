@@ -12,6 +12,15 @@ import java.util.logging.Logger;
 import protocol.ServerProtocolParser;
 import protocol.UserTools;
 
+/**
+ * This class handles the connection to a client. It uses a the serversocket to send data between the client and
+ * the server. The serverProtocolParser is acts as the interpreter between the the messages sent from and to the 
+ * client. We also need a bufferedReader to write and read from and to the propertyfile,
+ * that contains information the client uses.
+ * @author Andreas, Jonathan, Olle.
+ *
+ */
+
 public class ClientHandler extends Thread {
 	private Socket client;
 	private PrintWriter mOut;
@@ -19,12 +28,24 @@ public class ClientHandler extends Thread {
 	private ServerProtocolParser parser;
 	private Logger logger;
 	private boolean loggedIn = false;
+	/**
+	 * Constructor for the class.
+	 * @param client, the specific client that is connected.
+	 * @param logger, logs all data.
+	 */
 
 	public ClientHandler(Socket client, Logger logger) {
 		this.logger = logger;
 		this.client = client;
 		this.parser = ServerProtocolParser.getInstance();
 	}
+	/**
+	 * mOut writes to the file and in reads from the file. We catch exceptions if
+	 * something goes wrong during reading or writing. 
+	 * We use a try and then a while to constantly check for messages that are sent and received.
+	 * if something that is tried and fails, we catch the exception and prints
+	 * the stactrace in the console.
+	 */
 
 	public void run() {
 		try {
@@ -91,7 +112,9 @@ public class ClientHandler extends Thread {
 			e.printStackTrace();
 		}
 	}
-
+/**
+ * closes the connection. and catches any exception.
+ */
 	public void close() {
 		try {
 			client.close();
