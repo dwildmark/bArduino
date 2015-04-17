@@ -137,7 +137,7 @@ public class ServerGUI extends JFrame {
 		tabbedPane.add("Settings", pnlSettings);
 
 		// Logo Label
-		File absolutePath = new File("src/application/Barduino.png");
+		File absolutePath = new File("resources/Barduino.png");
 		BufferedImage image = ImageIO.read(absolutePath);
 		BufferedImage scaledImage = Scalr.resize(image, 320);
 		JLabel lblLogo = new JLabel(new ImageIcon(scaledImage));
