@@ -16,9 +16,9 @@ import java.util.logging.Logger;
 import protocol.ServerProtocolParser;
 /**
  * @author Andreas, Jonathan, Olle.
- * The server-class task is to provide a client to connect to the server and a arduion to do the same.
+ * The server-class task is to provide a client to connect to the server and a arduino to do the same.
  * While doing this it also logs all the data that is sent between those two. 
- * A thread will be created for each conncted client.
+ * A thread will be created for each connected client.
  *	
  */
 
@@ -34,12 +34,12 @@ public class Server extends Thread {
 		Server.logger = logger;
 	}
 	/**
-	 * The methode run is were the socket will be created. We will need the protocol for the conection
-	 * between the arduion and a client, therefore .getInstance(). Then we create a new prop-file and a inputstream
+	 * The method run is were the socket will be created. We will need the protocol for the connection
+	 * between the arduino and a client, therefore .getInstance(). Then we create a new prop-file and a inputstream
 	 * to read the property-file. After this the serversocket for the client is created and a serversocket for the 
-	 * Arduion aswell.
-	 * The while-loop makes the server run at all time and checks if cinents want to connect, and lets them.
-	 * If anything goes wrong whit the acceptproses the exeption will print it in the log for the server.
+	 * arduino as well.
+	 * The while-loop makes the server run at all time and checks if a client  wants to connect.
+	 * If anything goes wrong with the accept process the exception will print it in the log for the server.
 	 */
 
 	public void run() {
@@ -55,8 +55,6 @@ public class Server extends Thread {
 			prop.load(inputStream);
 			inputStream.close();
 			
-			// create a server socket. A server socket waits for requests to
-			// come in over the network.
 			serverSocket = new ServerSocket(Integer.parseInt((String) prop
 					.get("clientport")));
 			logger.info("Server: Running " + InetAddress.getLocalHost() + "/"
@@ -65,8 +63,6 @@ public class Server extends Thread {
 			arduinoQueue.add(tempArduino);
 			tempArduino.start();
 			while (running) {
-				// create client socket... the method accept() listens for a
-				// connection to be made to this socket and accepts it.
 				client = serverSocket.accept();
 				logger.info("Server: Client connected"
 						+ client.getInetAddress() + "/" + client.getPort());
@@ -90,8 +86,8 @@ public class Server extends Thread {
 	}
 
 	/**
-	 * If somone turns the server off, all clients in the clientQueue will be closed, and the 
-	 * queues information will be delited, it's the same for all the arduions that is connected.
+	 * If someone turns the server off, all clients in the clientQueue will be closed, and the 
+	 * queues information will be deleted, it's the same for all the arduinos that is connected.
 	 * then at last the serversocket will be closed.
 	 * 
 	 */
