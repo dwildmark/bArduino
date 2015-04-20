@@ -181,14 +181,9 @@ public class ServerProtocolParser {
 		} else {
 
 			try {
-				int volume = 0;
 				for (int i = 1; i < request.length; i++) {
-					volume = Integer.parseInt(request[i]);
-					
-						if(volume < 10)
-							arduinoMessages.add(fluid + "0" + request[i]);
-						else
-							arduinoMessages.add(fluid + request[i]);
+					if (Integer.parseInt(request[i]) > 0) {
+						arduinoMessages.add(fluid + request[i]);
 					}
 					fluid++;
 				}
