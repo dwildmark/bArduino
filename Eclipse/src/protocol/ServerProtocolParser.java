@@ -182,17 +182,20 @@ public class ServerProtocolParser {
 
 			try {
 				for (int i = 1; i < request.length; i++) {
-					if(Integer.parseInt(request[i]) > 0){
+					if (Integer.parseInt(request[i]) > 0) {
 						arduinoMessages.add(fluid + request[i]);
 					}
 					fluid++;
 				}
 				response = "GROGOK";
-				grogAvailable = true;
+				if (arduinoMessages.size() > 0) {
+					grogAvailable = true;
+					state = BUSY;
+				}
 				System.out.println("Server: GROG available, now BUSY");
-				state = BUSY;
 
 			} catch (NumberFormatException e) {
+				arduinoMessages.clear();
 				response = "ERROR WRONGFORMAT";
 			}
 		}
