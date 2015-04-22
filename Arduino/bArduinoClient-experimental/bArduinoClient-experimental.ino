@@ -59,20 +59,17 @@ void loop()
         count++;
       }
       chooseLiquid(c[0]);
-      int amount;
-      if(((int)c[1] - 48) > -1 && ((int)c[1] - 48) < 10) {
-        amount = 10 * ((int)c[1] - 48) + ((int)c[2] - 48);
-      } else {
-        amount = ((int)c[2] - 48);
-      }
+
       if ((char)c[0] == 'Q') {
         client.print("OK\n");
-      } else if (chosen_liquid > 0 && amount > 0 && amount < 100) {
+      } else if (chosen_liquid > 0) {
         //Serial.println("Drink and amount is selected");
+        int amount = 10 * ((int)c[1] - 48) + ((int)c[2] - 48);
         pourDrink(chosen_liquid, amount);
-        client.println("ACK\n");
+        delay(100);
+        client.print("ACK\n");
       } else {
-        client.println("BADFORMAT\n");
+        client.print("BADFORMAT\n");
       }
     }
     if (!client.connected()) {
@@ -80,8 +77,10 @@ void loop()
       //Serial.println("disconnecting.");
       client.stop();
       // do nothing:
-      while (!client.connected());
-        if(client.connect(server, 8008));
+      while (!client.connected()) {
+        client.stop();
+        client.connect(server, 8008);
+      }
     }
   }
 }
@@ -91,6 +90,7 @@ void addPulse() {
 }
 
 void pourDrink(int pin, int amount) {
+  int realAmount = (amount * 44) / 10;
   attachInterrupt(0, addPulse, RISING);
   pulses = 0;
   while ( pulses < amount) {

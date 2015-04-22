@@ -179,6 +179,7 @@ public class GUI extends JPanel {
 						orderBtn.setText("Place Order");
 						orderBtn.setEnabled(true);
 						guiWrapper.showLoginPane(false);
+						updateIngredients();
 						//inloggad
 						
 					} else {
@@ -192,7 +193,6 @@ public class GUI extends JPanel {
 		tcpClient.start();
 		timer = new Timer();
 		timer.scheduleAtFixedRate(new ToDoTask(), 0, 1000);
-		updateIngredients();
 	}
 
 	public void setTCPClient(TCPClient client) {
@@ -346,7 +346,11 @@ public class GUI extends JPanel {
 				if (tcpClient != null) {
 					String message = "GROG";
 					for (JLabel amount : ratioLbls) {
-						message += " " + amount.getText().split(" ")[0];
+						String drinkAmount = amount.getText().split(" ")[0];
+						if(Integer.parseInt(drinkAmount) < 10) {
+							drinkAmount = "0" + drinkAmount;
+						}
+						message += " " + drinkAmount;
 					}
 					tcpClient.sendMessage(message);
 					hiddenLog.append("\n" + message);
@@ -374,9 +378,7 @@ public class GUI extends JPanel {
 		public void run() {
 			try {
 				tcpClient.sendMessage("AVAREQ");
-				lblNoConnection.setVisible(false);
 			} catch (Exception e) {
-				lblNoConnection.setVisible(true);
 			}
 		}
 
