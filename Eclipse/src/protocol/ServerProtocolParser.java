@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Properties;
 import java.util.Queue;
@@ -88,6 +87,14 @@ public class ServerProtocolParser {
 		return state;
 	}
 
+	/**
+	 * Returns a string formatted as
+	 * "INGREDIENTS:'fluid1','fluid2','fluid3','fluid4'" with the fluid names in
+	 * chronological order The names is read from {@code ServerApp.propFileName}
+	 * local file
+	 * 
+	 * @return A string with 4 fluids names
+	 */
 	public synchronized String getIngredients() {
 		updateProps();
 		String ingredients = "INGREDIENTS:";
@@ -99,6 +106,15 @@ public class ServerProtocolParser {
 		return ingredients;
 	}
 
+	/**
+	 * Sets the fluids names
+	 * 
+	 * @param ingredients
+	 *            4 fluid names in chronological order separated with ","
+	 * @return "INGREDIENTSOK" if fluids is set successfully,
+	 *         "ERROR WRONGFORMAT" if its less than 4 ingredients or the file
+	 *         {@code ServerApp.propFileName} is missing
+	 */
 	public synchronized String setIngredients(String ingredients) {
 		String response;
 		String[] str = ingredients.split(",");
@@ -219,8 +235,8 @@ public class ServerProtocolParser {
 
 	/**
 	 * 
-	 * @return An {@link ArrayList} with Integer values representing the amount
-	 *         of fluid of each fluid
+	 * @return An {@link String} for sending to the Arduino, containing which
+	 *         fluid and how much.
 	 */
 	public synchronized String dequeueGrog() {
 		String str = null;
@@ -233,9 +249,11 @@ public class ServerProtocolParser {
 		return str;
 	}
 
+	/**
+	 * Removes all queued Arduino messages
+	 */
 	public synchronized void clearGrog() {
 		arduinoMessages.clear();
 		grogAvailable = false;
-		state = VACANT;
 	}
 }

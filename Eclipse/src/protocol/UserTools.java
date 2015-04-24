@@ -1,5 +1,7 @@
 package protocol;
 
+import helpers.MyServer;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -11,11 +13,19 @@ import server.ServerApp;
 
 public class UserTools {
 
-	public synchronized static void addUser(String user, char[] password){
+	/**
+	 * Adds a user to the database
+	 * 
+	 * @param user
+	 *            Username
+	 * @param password
+	 *            password
+	 */
+	public synchronized static void addUser(String user, char[] password) {
 		Properties users = new Properties();
 		File initialFile = new File(ServerApp.usersFileName);
 		InputStream inputStream;
-		
+
 		try {
 			inputStream = new FileInputStream(initialFile);
 			users.load(inputStream);
@@ -30,7 +40,7 @@ public class UserTools {
 			}
 
 		}
-		
+
 		try {
 			FileOutputStream out = new FileOutputStream(ServerApp.usersFileName);
 			users.setProperty(user, PasswordHash.createHash(password));
@@ -39,14 +49,23 @@ public class UserTools {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 	}
-	
-	public synchronized static boolean confirmUser(String user, char[] password){
+
+	/**
+	 * Checks database to see if user credentials provided exists and is correct
+	 * 
+	 * @param user
+	 *            Username
+	 * @param password
+	 *            Password
+	 * @return True if user exists and password is correct, false otherwise
+	 */
+	public synchronized static boolean confirmUser(String user, char[] password) {
 		Properties users = new Properties();
 		File initialFile = new File(ServerApp.usersFileName);
 		InputStream inputStream;
-		
+
 		try {
 			inputStream = new FileInputStream(initialFile);
 			users.load(inputStream);
@@ -61,23 +80,30 @@ public class UserTools {
 			}
 
 		}
-		if(users.getProperty(user) == null){
+		if (users.getProperty(user) == null) {
 			return false;
 		}
 		try {
-			return PasswordHash.validatePassword(password, users.getProperty(user));
+			return PasswordHash.validatePassword(password,
+					users.getProperty(user));
 		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
 		}
-		
+
 	}
-	
-	public synchronized static void removeUser(String user){
+
+	/**
+	 * Removes user from database
+	 * 
+	 * @param user Username
+	 */
+	public synchronized static void removeUser(String user) {
 		Properties users = new Properties();
 		File initialFile = new File(ServerApp.usersFileName);
 		InputStream inputStream;
 		
+
 		try {
 			inputStream = new FileInputStream(initialFile);
 			users.load(inputStream);
@@ -92,7 +118,7 @@ public class UserTools {
 			}
 
 		}
-		
+
 		try {
 			FileOutputStream out = new FileOutputStream(ServerApp.usersFileName);
 			users.remove(user);
