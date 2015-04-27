@@ -49,7 +49,6 @@ public class NewUserPane extends JPanel {
 						
 					} else if(Arrays.equals(tfPass.getPassword(),tfPassConfirm.getPassword())){
 						UserTools.addUser(tfUserName.getText(), tfPass.getPassword());
-						serverGUI.loadUsers();
 						serverGUI.printUsers();
 						frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
 						

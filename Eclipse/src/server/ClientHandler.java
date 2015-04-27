@@ -28,6 +28,7 @@ public class ClientHandler extends Thread {
 	private ServerProtocolParser parser;
 	private Logger logger;
 	private boolean loggedIn = false;
+	private String username = null;
 	/**
 	 * Constructor for the class.
 	 * @param client, the specific client that is connected.
@@ -64,7 +65,11 @@ public class ClientHandler extends Thread {
 				message = in.readLine();
 				if (message == null)
 					break;
-				if (!message.equals("AVAREQ")) {
+				
+				if (message.substring(0, 5).equals("LOGIN")) {
+					logger.info("Client: " + client.getInetAddress()
+							+ " said: LOGIN");
+				}else if (!message.equals("AVAREQ")){
 					logger.info("Client: " + client.getInetAddress()
 							+ " said: " + message);
 				}
@@ -78,6 +83,8 @@ public class ClientHandler extends Thread {
 					if (UserTools.confirmUser(
 							message.substring(6).split(":")[0], message
 									.substring(6).split(":")[1].toCharArray())){
+						
+						username = message.substring(6).split(":")[0];
 						answer = "LOGIN OK";
 						loggedIn = true;
 					} else {

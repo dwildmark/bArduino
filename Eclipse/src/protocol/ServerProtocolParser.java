@@ -26,7 +26,8 @@ public class ServerProtocolParser {
 	public static final int VACANT = 0;
 	public static final int BUSY = 1;
 	public static final int MISSING_ARDUINO = 2;
-
+	
+	private String sqlPassword, sqlUserName, sqlDatabaseName, sqlServerName;
 	private int numberOfAvailableFluids = 4;
 	private Queue<String> arduinoMessages = new LinkedList<String>();
 	private Properties prop;
@@ -45,6 +46,30 @@ public class ServerProtocolParser {
 	public static ServerProtocolParser getInstance() {
 		return parser;
 	}
+	
+	public synchronized void setSQLCredentials(String user, String password, String serverName, String databaseName){
+		this.sqlPassword = password;
+		this.sqlUserName = user;
+		this.sqlServerName = serverName;
+		this.sqlDatabaseName = databaseName;
+		
+	}
+
+	public synchronized String getSqlPassword() {
+		return sqlPassword;
+	}
+	
+	public synchronized String getSqlUserName() {
+		return sqlUserName;
+	}
+	
+	public synchronized String getSqlDatabaseName(){
+		return sqlDatabaseName;
+	}
+	
+	public synchronized String getSqlServerName(){
+		return sqlServerName;
+	}
 
 	public void updateProps() {
 		try {
@@ -60,6 +85,7 @@ public class ServerProtocolParser {
 		}
 
 	}
+
 
 	/**
 	 * Sets state of server service. Available states are defined as constants

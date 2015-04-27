@@ -1,15 +1,13 @@
 package protocol;
 
-import helpers.MyServer;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
+import javax.swing.JOptionPane;
 
-import server.ServerApp;
+import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 
 public class UserTools {
 
@@ -22,32 +20,18 @@ public class UserTools {
 	 *            password
 	 */
 	public synchronized static void addUser(String user, char[] password) {
-		Properties users = new Properties();
-		File initialFile = new File(ServerApp.usersFileName);
-		InputStream inputStream;
-
+		String query = " insert into user_data (username, password_hash)"
+				+ " values (?, ?)";
+		
 		try {
-			inputStream = new FileInputStream(initialFile);
-			users.load(inputStream);
-			inputStream.close();
-		} catch (IOException e) {
-			FileOutputStream out;
-			try {
-				out = new FileOutputStream(ServerApp.usersFileName);
-				out.close();
-			} catch (Exception e1) {
-				e1.printStackTrace();
-			}
-
-		}
-
-		try {
-			FileOutputStream out = new FileOutputStream(ServerApp.usersFileName);
-			users.setProperty(user, PasswordHash.createHash(password));
-			users.store(out, null);
-			out.close();
+			Connection conn = getConnection();
+			PreparedStatement preparedStmt = conn.prepareStatement(query);
+			preparedStmt.setString(1, user);
+			preparedStmt.setString(2, PasswordHash.createHash(password));
+			preparedStmt.execute();
+			conn.close();
 		} catch (Exception e) {
-			e.printStackTrace();
+			JOptionPane.showMessageDialog(null, e.getMessage());
 		}
 
 	}
@@ -62,30 +46,23 @@ public class UserTools {
 	 * @return True if user exists and password is correct, false otherwise
 	 */
 	public synchronized static boolean confirmUser(String user, char[] password) {
-		Properties users = new Properties();
-		File initialFile = new File(ServerApp.usersFileName);
-		InputStream inputStream;
-
+		String query = "SELECT password_hash FROM user_data WHERE username = '"
+				+ user + "';";
+		boolean validated = false;
+		
 		try {
-			inputStream = new FileInputStream(initialFile);
-			users.load(inputStream);
-			inputStream.close();
-		} catch (IOException e) {
-			FileOutputStream out;
-			try {
-				out = new FileOutputStream(ServerApp.usersFileName);
-				out.close();
-			} catch (Exception e1) {
-				e1.printStackTrace();
+			Connection conn = getConnection();
+			PreparedStatement preparedStmt = conn.prepareStatement(query);
+			ResultSet rs = preparedStmt.executeQuery();
+			rs.next();
+
+			if (PasswordHash.validatePassword(password, rs.getString(1))) {
+				validated = true;
 			}
 
-		}
-		if (users.getProperty(user) == null) {
-			return false;
-		}
-		try {
-			return PasswordHash.validatePassword(password,
-					users.getProperty(user));
+			conn.close();
+			return validated;
+
 		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
@@ -96,36 +73,60 @@ public class UserTools {
 	/**
 	 * Removes user from database
 	 * 
-	 * @param user Username
+	 * @param user
+	 *            Username
 	 */
 	public synchronized static void removeUser(String user) {
-		Properties users = new Properties();
-		File initialFile = new File(ServerApp.usersFileName);
-		InputStream inputStream;
+		String query = "DELETE FROM user_data WHERE username = '" + user + "';";
 		
-
 		try {
-			inputStream = new FileInputStream(initialFile);
-			users.load(inputStream);
-			inputStream.close();
-		} catch (IOException e) {
-			FileOutputStream out;
-			try {
-				out = new FileOutputStream(ServerApp.usersFileName);
-				out.close();
-			} catch (Exception e1) {
-				e1.printStackTrace();
-			}
-
-		}
-
-		try {
-			FileOutputStream out = new FileOutputStream(ServerApp.usersFileName);
-			users.remove(user);
-			users.store(out, null);
-			out.close();
+			Connection conn = getConnection();
+			PreparedStatement preparedStmt = conn.prepareStatement(query);
+			preparedStmt.execute();
+			conn.close();
 		} catch (Exception e) {
-			e.printStackTrace();
+			JOptionPane.showMessageDialog(null, e.getMessage());
 		}
 	}
+	
+	
+	public synchronized static ResultSet getAllUsers(){
+		String query = "SELECT username FROM user_data";
+		try {
+			Connection conn = getConnection();
+			PreparedStatement preparedStmt = conn.prepareStatement(query);
+			ResultSet rs = preparedStmt.executeQuery();
+			return rs;
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(null, e.getMessage());
+			return null;
+		}
+	}
+	
+	public synchronized static boolean testConnection(){
+		String query = "SELECT version()";
+		try {
+			Connection conn = getConnection();
+			PreparedStatement preparedStmt = conn.prepareStatement(query);
+			preparedStmt.executeQuery();
+			return true;
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(null, e.getMessage());
+			return false;
+		}
+	}
+
+	
+	public synchronized static Connection getConnection() throws SQLException {
+		ServerProtocolParser parser = ServerProtocolParser.getInstance();
+		MysqlDataSource dataSource = new MysqlDataSource();
+		dataSource.setUser(parser.getSqlUserName());
+		dataSource.setPassword(parser.getSqlPassword());
+		dataSource.setServerName(parser.getSqlServerName());
+		dataSource.setDatabaseName(parser.getSqlDatabaseName());
+		Connection conn = dataSource.getConnection();
+		return conn;
+	}
+	
+	
 }

@@ -11,8 +11,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Properties;
-import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
@@ -40,7 +41,6 @@ public class ServerGUI extends JFrame {
 	private Logger logger;
 	private Server server;
 	private Properties prop = null;
-	private Properties users = null;
 
 	public ServerGUI(Logger logger) throws Exception {
 		this.logger = logger;
@@ -49,7 +49,6 @@ public class ServerGUI extends JFrame {
 		taLog = tah.getTextArea();
 
 		prop = new Properties();
-		// users = new Properties();
 
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -187,42 +186,27 @@ public class ServerGUI extends JFrame {
 					}
 				});
 
-		loadUsers();
 		printUsers();
 		startServer();
 	}
 
 	public void printUsers() {
-		Set<Object> keys = users.keySet();
+		ResultSet users = UserTools.getAllUsers();
 		DefaultListModel<String> listModel = (DefaultListModel<String>) userList
 				.getModel();
 		listModel.clear();
-
-		for (Object k : keys) {
-			String key = (String) k;
-			listModel.addElement(key);
-		}
-	}
-
-	public void loadUsers() {
-		File initialFile = new File(ServerApp.usersFileName);
-		InputStream inputStream;
-		users = new Properties();
 		try {
-			inputStream = new FileInputStream(initialFile);
-			users.load(inputStream);
-			inputStream.close();
-		} catch (IOException e) {
-			FileOutputStream out;
-			try {
-				out = new FileOutputStream(ServerApp.usersFileName);
-				out.close();
-			} catch (Exception e1) {
-				e1.printStackTrace();
+			while(users.next()){
+			
+				listModel.addElement(users.getString(1));
+			
 			}
-
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
 	}
+
+	
 
 	private void startServer() {
 		server = new Server(this.logger);
@@ -315,7 +299,6 @@ public class ServerGUI extends JFrame {
 								"Are you sure you want to delete user '"
 										+ userList.getSelectedValue() + "'") == JOptionPane.YES_OPTION)
 					UserTools.removeUser(userList.getSelectedValue());
-				loadUsers();
 				printUsers();
 
 			} else if (e.getSource() == btnEditUser) {

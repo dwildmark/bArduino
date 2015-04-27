@@ -15,7 +15,15 @@ public class ServerApp {
 	public final static String usersFileName = "./resources/users.properties";
 
 	public static void main(String[] args) {
-		
+		loginWindow(new ServerApp());
+	}
+	
+	public static Timestamp time() {
+		Timestamp currentTimestamp = new Timestamp(date.getTime());
+		return currentTimestamp;
+	}
+	
+	public void startServer(){
 		FileHandler fh = null;
 		SimpleFormatter formatter = new SimpleFormatter();
 		try {
@@ -34,12 +42,9 @@ public class ServerApp {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
 	}
 	
-	public static Timestamp time() {
-		Timestamp currentTimestamp = new Timestamp(date.getTime());
-		return currentTimestamp;
+	public static void loginWindow(ServerApp serverApp){
+		new LoginFrame(serverApp);
 	}
-
 }
