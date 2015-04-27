@@ -1,15 +1,22 @@
 #include <SPI.h>
 #include <Ethernet.h>
+#include <EthernetUdp.h>
 
 //Enter the MAC-address for the bArduino below.
 byte mac[] = {
   0xDE, 0xAD, 0xBE, 0xEF, 0xDD, 0xAC
 };
 
+unsigned int tcpPort = 8008;
+
+unsigned int udpPort = 28785;
+
 //Enter the server IP address below.
-IPAddress server(192, 168, 1, 62);
+volatile IPAddress server(192, 168, 1, 62);
 
 EthernetClient client;
+
+EthernetUDP udp;
 
 //Define the pins for the fluids
 int liquid1 = 9;
@@ -25,10 +32,13 @@ void setup()
 {
   Ethernet.begin(mac);
   
+  udp.begin(udpPort);
+  
   //give the Ethernet shield a second to initialize:
   delay(1000);
+  discoverServer();
   
-  if (client.connect(server, 8008)) {
+  if (client.connect(server, tcpPort)) {
     //Serial.println("connected");
   }
   else {
@@ -36,7 +46,7 @@ void setup()
     // keep trying to connect
     while (!client.connected()) {
       client.stop();
-      client.connect(server, 8008);
+      client.connect(server, tcpPort);
     }
   }
 
@@ -82,7 +92,7 @@ void loop()
       client.stop();
       while (!client.connected()) {
         client.stop();
-        client.connect(server, 8008);
+        client.connect(server, tcpPort);
       }
     }
   }
@@ -131,6 +141,14 @@ int determineAmount(int centiliters) {
       return 4;
       break;
   }
+}
+
+void discoverServer() {
+  IPAddress broadcastIP(255, 255, 255, 255);
+  udp.beginPacket(broadcastIP, udpPort);
+  udp.write("hello?");
+  udp.endPacket();
+  server = udp.remoteIP();
 }
 
 
