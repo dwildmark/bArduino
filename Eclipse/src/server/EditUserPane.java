@@ -44,8 +44,7 @@ public class EditUserPane extends JPanel {
 				} else if (UserTools.confirmUser(user, tfOldPass.getPassword())
 						&& Arrays.equals(tfNewPass.getPassword(),
 								tfPassConfirm.getPassword())) {
-					UserTools.removeUser(user);
-					UserTools.addUser(user, tfNewPass.getPassword());
+					UserTools.changePassword(user, tfNewPass.getPassword());
 					JOptionPane.showMessageDialog(EditUserPane.this, "Password Changed!");
 					frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
 					

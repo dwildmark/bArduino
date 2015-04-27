@@ -89,9 +89,29 @@ public class UserTools {
 		}
 	}
 	
+	/**
+	 * Changes password in the database
+	 * @param user
+	 *            Username
+	 * @param password
+	 *            Password 					
+	 */
+	public synchronized static void changePassword(String user, char[] password) {
+		try {
+			String query = "UPDATE user_data SET password_hash='" + PasswordHash.createHash(password) +
+					"' WHERE username='" + user + "'";
+			Connection conn = getConnection();
+			PreparedStatement preparedStmt = conn.prepareStatement(query);
+			preparedStmt.execute();
+			conn.close();
+		}catch (Exception e) {
+			JOptionPane.showMessageDialog(null,e.getMessage());
+		}
+	}
+	
 	
 	public synchronized static ResultSet getAllUsers(){
-		String query = "SELECT username FROM user_data";
+		String query = "SELECT username,credits,approved FROM user_data";
 		try {
 			Connection conn = getConnection();
 			PreparedStatement preparedStmt = conn.prepareStatement(query);
@@ -127,6 +147,7 @@ public class UserTools {
 		Connection conn = dataSource.getConnection();
 		return conn;
 	}
+	
 	
 	
 }
