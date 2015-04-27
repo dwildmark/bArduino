@@ -31,11 +31,13 @@ public class ArduinoHandler extends Thread {
 	private Socket arduino;
 	private Timer timer;
 	private Logger logger;
+	private Controller controller;
 	private boolean running = true;
 
-	public ArduinoHandler(Logger logger) {
+	public ArduinoHandler(Logger logger, Controller controller) {
 		this.parser = ServerProtocolParser.getInstance();
 		this.logger = logger;
+		this.controller = controller;
 	}
 
 	class ToDoTask extends TimerTask {
@@ -49,6 +51,7 @@ public class ArduinoHandler extends Thread {
 					in.readLine();
 				} else if (parser.getState() != ServerProtocolParser.BUSY) {
 					parser.setState(ServerProtocolParser.MISSING_ARDUINO);
+					controller.setArduinoConnected(false);
 				}
 
 			} catch (Exception e) {
@@ -57,6 +60,7 @@ public class ArduinoHandler extends Thread {
 				mOut = null;
 				in = null;
 				parser.setState(ServerProtocolParser.MISSING_ARDUINO);
+				controller.setArduinoConnected(false);
 			}
 		}
 	}
@@ -96,6 +100,7 @@ public class ArduinoHandler extends Thread {
 					timer = new Timer();
 					timer.scheduleAtFixedRate(new ToDoTask(), 0, 1000);
 					parser.setState(ServerProtocolParser.VACANT);
+					controller.setArduinoConnected(true);
 
 					while (mOut != null && in != null) {
 						if (parser.isGrogAvailable()) {
@@ -121,6 +126,7 @@ public class ArduinoHandler extends Thread {
 
 			} catch (Exception e) {
 				parser.setState(ServerProtocolParser.MISSING_ARDUINO);
+				controller.setArduinoConnected(false);
 				mOut = null;
 				in = null;
 				e.printStackTrace();
@@ -133,6 +139,7 @@ public class ArduinoHandler extends Thread {
 		timer.cancel();
 		timer.purge();
 		mOut = null;
+		controller.setArduinoConnected(false);
 		try {
 			in.close();
 		} catch (Exception e) {

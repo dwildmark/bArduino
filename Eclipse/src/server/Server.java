@@ -1,8 +1,5 @@
 package server;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.InetAddress;
@@ -29,9 +26,11 @@ public class Server extends Thread {
 	private ServerProtocolParser parser;
 	private LinkedList<ClientHandler> clientQueue = new LinkedList<ClientHandler>();
 	private LinkedList<ArduinoHandler> arduinoQueue = new LinkedList<ArduinoHandler>();
+	private Controller controller;
 
-	public Server(Logger logger) {
+	public Server(Logger logger, Controller controller) {
 		Server.logger = logger;
+		this.controller = controller;
 	}
 	/**
 	 * The method run is were the socket will be created. We will need the protocol for the connection
@@ -49,24 +48,21 @@ public class Server extends Thread {
 		running = true;
 
 		try {
-			Properties prop = new Properties();
-			File initialFile = new File(ServerApp.propFileName);
-			InputStream inputStream = new FileInputStream(initialFile);
-			prop.load(inputStream);
-			inputStream.close();
+			Properties prop = controller.loadServerConfig();
 			
 			serverSocket = new ServerSocket(Integer.parseInt((String) prop
 					.get("clientport")));
 			logger.info("Server: Running " + InetAddress.getLocalHost() + "/"
 					+ serverSocket.getLocalPort());
-			ArduinoHandler tempArduino = new ArduinoHandler(logger);
+			ArduinoHandler tempArduino = new ArduinoHandler(logger, controller);
 			arduinoQueue.add(tempArduino);
 			tempArduino.start();
+			
 			while (running) {
 				client = serverSocket.accept();
 				logger.info("Server: Client connected"
 						+ client.getInetAddress() + "/" + client.getPort());
-				ClientHandler tempClient = new ClientHandler(client, logger);
+				ClientHandler tempClient = new ClientHandler(client, logger, controller);
 				clientQueue.add(tempClient);
 				tempClient.start();
 			}

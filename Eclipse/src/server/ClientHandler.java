@@ -29,16 +29,20 @@ public class ClientHandler extends Thread {
 	private Logger logger;
 	private boolean loggedIn = false;
 	private String username = null;
+	private Controller controller;
+	
 	/**
 	 * Constructor for the class.
+	 * @param controller 
 	 * @param client, the specific client that is connected.
 	 * @param logger, logs all data.
 	 */
 
-	public ClientHandler(Socket client, Logger logger) {
+	public ClientHandler(Socket client, Logger logger, Controller controller) {
 		this.logger = logger;
 		this.client = client;
 		this.parser = ServerProtocolParser.getInstance();
+		this.controller = controller;
 	}
 	/**
 	 * mOut writes to the file and in reads from the file. We catch exceptions if
@@ -75,6 +79,7 @@ public class ClientHandler extends Thread {
 				}
 
 				if (message.equals("STOP")) {
+					controller.userLoggedOut(username);
 					mOut.println("STOP");
 					break;
 				}
@@ -85,6 +90,7 @@ public class ClientHandler extends Thread {
 									.substring(6).split(":")[1].toCharArray())){
 						
 						username = message.substring(6).split(":")[0];
+						controller.userLoggedIn(username);
 						answer = "LOGIN OK";
 						loggedIn = true;
 					} else {
@@ -109,6 +115,7 @@ public class ClientHandler extends Thread {
 			e.printStackTrace();
 		}
 		logger.info("Client: Disconnected " + client.getInetAddress());
+		controller.userLoggedOut(username);
 
 		try {
 			mOut.close();
@@ -118,11 +125,13 @@ public class ClientHandler extends Thread {
 			e.printStackTrace();
 		}
 	}
+	
 /**
  * closes the connection. and catches any exception.
  */
 	public void close() {
 		try {
+			controller.userLoggedOut(username);
 			client.close();
 		} catch (Exception e) {
 			e.printStackTrace();

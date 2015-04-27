@@ -8,7 +8,10 @@ import java.sql.SQLException;
 import javax.swing.JOptionPane;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
+
 /**
+ * A Tool for communicating with a MySQL server. Uses credentials stored in
+ * {@link ServerProtocolParser}.
  * 
  * @author Jonathan Böcker, Olle Casperson
  *
@@ -26,7 +29,7 @@ public class UserTools {
 	public synchronized static void addUser(String user, char[] password) {
 		String query = " insert into user_data (username, password_hash)"
 				+ " values (?, ?)";
-		
+
 		try {
 			Connection conn = getConnection();
 			PreparedStatement preparedStmt = conn.prepareStatement(query);
@@ -53,7 +56,7 @@ public class UserTools {
 		String query = "SELECT password_hash FROM user_data WHERE username = '"
 				+ user + "';";
 		boolean validated = false;
-		
+
 		try {
 			Connection conn = getConnection();
 			PreparedStatement preparedStmt = conn.prepareStatement(query);
@@ -82,7 +85,7 @@ public class UserTools {
 	 */
 	public synchronized static void removeUser(String user) {
 		String query = "DELETE FROM user_data WHERE username = '" + user + "';";
-		
+
 		try {
 			Connection conn = getConnection();
 			PreparedStatement preparedStmt = conn.prepareStatement(query);
@@ -92,29 +95,35 @@ public class UserTools {
 			JOptionPane.showMessageDialog(null, e.getMessage());
 		}
 	}
-	
+
 	/**
 	 * Changes password in the database
+	 * 
 	 * @param user
 	 *            Username
 	 * @param password
-	 *            Password 					
+	 *            Password
 	 */
 	public synchronized static void changePassword(String user, char[] password) {
 		try {
-			String query = "UPDATE user_data SET password_hash='" + PasswordHash.createHash(password) +
-					"' WHERE username='" + user + "'";
+			String query = "UPDATE user_data SET password_hash='"
+					+ PasswordHash.createHash(password) + "' WHERE username='"
+					+ user + "'";
 			Connection conn = getConnection();
 			PreparedStatement preparedStmt = conn.prepareStatement(query);
 			preparedStmt.execute();
 			conn.close();
-		}catch (Exception e) {
-			JOptionPane.showMessageDialog(null,e.getMessage());
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(null, e.getMessage());
 		}
 	}
-	
-	
-	public synchronized static ResultSet getAllUsers(){
+
+	/**
+	 * Returns all users with their credits and approved status in a ResultSet
+	 * 
+	 * @return A ResultSet with user data
+	 */
+	public synchronized static ResultSet getAllUsers() {
 		String query = "SELECT username,credits,approved FROM user_data";
 		try {
 			Connection conn = getConnection();
@@ -126,8 +135,13 @@ public class UserTools {
 			return null;
 		}
 	}
-	
-	public synchronized static boolean testConnection(){
+
+	/**
+	 * A simple method to test the connection with the MySQL server
+	 * 
+	 * @return True if connection is established, false if not
+	 */
+	public synchronized static boolean testConnection() {
 		String query = "SELECT version()";
 		try {
 			Connection conn = getConnection();
@@ -140,7 +154,13 @@ public class UserTools {
 		}
 	}
 
-	
+	/**
+	 * Returns a {@link Connection} using credentials stored in
+	 * {@link ServerProtocolParser}.
+	 * 
+	 * @return A Connection to the MySQL server
+	 * @throws SQLException
+	 */
 	public synchronized static Connection getConnection() throws SQLException {
 		ServerProtocolParser parser = ServerProtocolParser.getInstance();
 		MysqlDataSource dataSource = new MysqlDataSource();
@@ -151,7 +171,5 @@ public class UserTools {
 		Connection conn = dataSource.getConnection();
 		return conn;
 	}
-	
-	
-	
+
 }

@@ -6,11 +6,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
@@ -25,6 +20,7 @@ import protocol.UserTools;
 import net.miginfocom.swing.*;
 
 /**
+ * A graphical user interface for the Barduino App.
  * 
  * @author Jonathan Böcker 20015-04-27
  *
@@ -44,22 +40,30 @@ public class ServerGUI extends JFrame {
 	private JScrollPane logScrollPane, userScrollPane;
 	private JList<String> userList;
 	private Logger logger;
-	private Server server;
 	private Properties prop = null;
+	private Controller controller;
 
-	public ServerGUI(Logger logger) throws Exception {
+	/**
+	 * Creates a graphical user interface for the Barduino App.
+	 * 
+	 * @param logger
+	 *            Where logs will be written
+	 * @param controller
+	 * @throws Exception
+	 */
+	public ServerGUI(Logger logger, Controller controller) throws Exception {
 		this.logger = logger;
+		this.controller = controller;
 		TextAreaHandler tah = new TextAreaHandler();
 		this.logger.addHandler(tah);
 		taLog = tah.getTextArea();
 
-		prop = new Properties();
-
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-			loadServerConfig();
+			prop = controller.loadServerConfig();
 		} catch (Exception e) {
 			e.printStackTrace();
+			JOptionPane.showMessageDialog(null, e.getMessage());
 		}
 
 		MigLayout buttonLayout = new MigLayout();
@@ -139,7 +143,7 @@ public class ServerGUI extends JFrame {
 		// Tabbed Pane
 		tabbedPane = new JTabbedPane();
 		tabbedPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-		tabbedPane.add("Status", logScrollPane);
+		tabbedPane.add("Log", logScrollPane);
 		tabbedPane.add("Settings", pnlSettings);
 
 		// Logo Label
@@ -181,7 +185,8 @@ public class ServerGUI extends JFrame {
 		btnNewUser.addActionListener(usersListener);
 		btnDeleteUser.addActionListener(usersListener);
 		btnEditUser.addActionListener(usersListener);
-		// Scroller hänger med när händelse sker.
+
+		// The log window moves with the log being printed for visibility
 		logScrollPane.getVerticalScrollBar().addAdjustmentListener(
 				new AdjustmentListener() {
 
@@ -192,100 +197,73 @@ public class ServerGUI extends JFrame {
 				});
 
 		printUsers();
-		startServer();
 	}
 
+	/**
+	 * Prints out users gathered from the database in the gui.
+	 */
 	public void printUsers() {
 		ResultSet users = UserTools.getAllUsers();
 		DefaultListModel<String> listModel = (DefaultListModel<String>) userList
 				.getModel();
 		listModel.clear();
 		try {
-			while(users.next()){
-			
+			while (users.next()) {
 				listModel.addElement(users.getString(1));
-			
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
+			JOptionPane.showMessageDialog(null, e.getMessage());
 		}
 	}
 
-	
-
-	private void startServer() {
-		server = new Server(this.logger);
-		server.start();
-
+	/**
+	 * Updates the fluids from the Properties object
+	 */
+	public void updateFluids() {
+		tfFluid1.setText(prop.getProperty("fluid1"));
+		tfFluid2.setText(prop.getProperty("fluid2"));
+		tfFluid3.setText(prop.getProperty("fluid3"));
+		tfFluid4.setText(prop.getProperty("fluid4"));
 	}
 
-	private void loadServerConfig() throws IOException {
-		File initialFile = new File(ServerApp.propFileName);
-		InputStream inputStream;
-		try {
-			inputStream = new FileInputStream(initialFile);
-			prop.load(inputStream);
-			inputStream.close();
-		} catch (IOException e) {
-			File dir = new File("./resources");
-			dir.mkdir();
-			FileOutputStream out = new FileOutputStream(ServerApp.propFileName);
-			prop.setProperty("fluid1", "Fluid 1");
-			prop.setProperty("fluid2", "Fluid 2");
-			prop.setProperty("fluid3", "Fluid 3");
-			prop.setProperty("fluid4", "Fluid 4");
-			prop.setProperty("clientport", "4444");
-			prop.setProperty("arduinoport", "8008");
-			prop.store(out, "Default values");
-			out.close();
-		}
-	}
-
-	public class Listener implements ActionListener {
+	private class Listener implements ActionListener {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if (e.getSource() == btnRestart) {
-				server.close();
-				startServer();
+				controller.restartServer();
 				logger.info("Server is restarted");
+
 			} else if (e.getSource() == btnRefresh) {
 				try {
-					loadServerConfig();
+					prop = controller.loadServerConfig();
 				} catch (Exception e1) {
+					JOptionPane.showMessageDialog(null, e1.getMessage());
 					e1.printStackTrace();
 				}
 				updateFluids();
+
 			} else if (e.getSource() == btnQuit) {
 				System.exit(0);
-			} else if (e.getSource() == btnSave) {
 
+			} else if (e.getSource() == btnSave) {
 				JOptionPane.showConfirmDialog(btnSave,
 						"Are you sure that you want to save?"
 								+ " Old settings will be lost!");
 
-				FileOutputStream out;
-
-				try {
-					out = new FileOutputStream(ServerApp.propFileName);
-					prop.setProperty("fluid1", tfFluid1.getText());
-					prop.setProperty("fluid2", tfFluid2.getText());
-					prop.setProperty("fluid3", tfFluid3.getText());
-					prop.setProperty("fluid4", tfFluid4.getText());
-					prop.setProperty("clientport", tfPortClient.getText());
-					prop.setProperty("arduinoport", tfPortArduino.getText());
-					prop.store(out, null);
-					out.close();
-
-				} catch (Exception a) {
-					a.printStackTrace();
-				}
-
+				prop.setProperty("fluid1", tfFluid1.getText());
+				prop.setProperty("fluid2", tfFluid2.getText());
+				prop.setProperty("fluid3", tfFluid3.getText());
+				prop.setProperty("fluid4", tfFluid4.getText());
+				prop.setProperty("clientport", tfPortClient.getText());
+				prop.setProperty("arduinoport", tfPortArduino.getText());
+				controller.saveServerConfig(prop);
 			}
 		}
 	}
 
-	public class UsersListener implements ActionListener {
+	private class UsersListener implements ActionListener {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
@@ -320,12 +298,5 @@ public class ServerGUI extends JFrame {
 
 		}
 
-	}
-
-	public void updateFluids() {
-		tfFluid1.setText(prop.getProperty("fluid1"));
-		tfFluid2.setText(prop.getProperty("fluid2"));
-		tfFluid3.setText(prop.getProperty("fluid3"));
-		tfFluid4.setText(prop.getProperty("fluid4"));
 	}
 }
