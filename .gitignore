@@ -6,3 +6,5 @@
 *.properties
 
 Eclipse/resources/config.properties
+
+*.properties
