@@ -24,6 +24,11 @@ import org.imgscalr.Scalr;
 import protocol.UserTools;
 import net.miginfocom.swing.*;
 
+/**
+ * 
+ * @author Jonathan Böcker 20015-04-27
+ *
+ */
 public class ServerGUI extends JFrame {
 
 	private static final long serialVersionUID = 2486865764551934155L;

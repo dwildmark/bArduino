@@ -16,6 +16,11 @@ import javax.swing.JTextField;
 import protocol.UserTools;
 import net.miginfocom.swing.MigLayout;
 
+/**
+ * 
+ * @author Jonathan Böcker 20015-04-27
+ *
+ */
 public class NewUserPane extends JPanel {
 
 	/**

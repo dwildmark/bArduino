@@ -4,6 +4,11 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 
+/**
+ * 
+ * @author Jonathan Böcker 20015-04-27
+ *
+ */
 public class DiscoveryListener extends Thread {
 
 	@SuppressWarnings("resource")

@@ -18,6 +18,11 @@ import java.net.Socket;
 
 import protocol.ServerProtocolParser;
 
+/**
+ * 
+ * @author Jonathan Böcker 20015-04-27
+ *
+ */
 public class ArduinoHandler extends Thread {
 	private ServerProtocolParser parser;
 	private ServerSocket arduinoServerSocket;

@@ -8,6 +8,11 @@ import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
+/**
+ * 
+ * @author Jonathan Böcker 20015-04-27
+ *
+ */
 public class ServerApp {
 	public static Logger logger = Logger.getLogger(Server.class.getName());
 	private static Date date = new Date();

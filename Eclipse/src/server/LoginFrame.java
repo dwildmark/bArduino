@@ -20,6 +20,11 @@ import protocol.ServerProtocolParser;
 import protocol.UserTools;
 import net.miginfocom.swing.MigLayout;
 
+/**
+ * 
+ * @author Jonathan Böcker 20015-04-27
+ *
+ */
 public class LoginFrame extends JFrame {
 
 	private static final long serialVersionUID = 8907081465715268386L;
@@ -60,6 +65,7 @@ public class LoginFrame extends JFrame {
 		logIn.addActionListener(new Listener());
 		add(logIn, "span 2, center");
 
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		pack();
 		setVisible(true);
 		setLocationRelativeTo(null);
