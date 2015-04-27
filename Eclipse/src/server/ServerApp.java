@@ -38,6 +38,7 @@ public class ServerApp {
 		logger.addHandler(fh);
 		
 		try {
+			new DiscoveryListener().start();
 			new ServerGUI(logger);
 		} catch (Exception e) {
 			e.printStackTrace();
