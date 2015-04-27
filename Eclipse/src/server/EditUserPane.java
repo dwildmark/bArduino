@@ -15,6 +15,12 @@ import javax.swing.JPasswordField;
 import protocol.UserTools;
 import net.miginfocom.swing.MigLayout;
 
+/**
+ * 
+ * @author Jonathan Böcker
+ *
+ */
+
 public class EditUserPane extends JPanel {
 
 	private static final long serialVersionUID = -8698004788538931737L;

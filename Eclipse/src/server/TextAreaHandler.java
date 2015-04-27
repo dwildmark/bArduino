@@ -6,7 +6,11 @@ import java.util.logging.SimpleFormatter;
 
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
-
+/**
+ * 
+ * @author Olle Casperson
+ *
+ */
 public class TextAreaHandler extends Handler {
 	private JTextArea textArea = new JTextArea();
 	private SimpleFormatter sf = new SimpleFormatter();

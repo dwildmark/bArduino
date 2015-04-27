@@ -8,7 +8,11 @@ import java.sql.SQLException;
 import javax.swing.JOptionPane;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
-
+/**
+ * 
+ * @author Jonathan Böcker, Olle Casperson
+ *
+ */
 public class UserTools {
 
 	/**
