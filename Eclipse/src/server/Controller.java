@@ -18,6 +18,7 @@ public class Controller {
 	public static Logger logger = Logger.getLogger(Server.class.getName());
 	private static Date date = new Date();
 	private Server server;
+	private ServerGUI serverGUI;
 
 	public void startServerGUI(){
 		FileHandler fh = null;
@@ -35,7 +36,7 @@ public class Controller {
 		
 		try {
 			new DiscoveryListener().start();
-			new ServerGUI(logger, this);
+			serverGUI = new ServerGUI(logger, this);
 			server = new Server(Controller.logger, this);
 			server.start();
 		} catch (Exception e) {
@@ -94,18 +95,15 @@ public class Controller {
 	}
 	
 	public void setArduinoConnected(boolean b) {
-		// TODO Auto-generated method stub
-		
+		serverGUI.setArduinoConnected(b);
 	}
 	
 	public void userLoggedIn(String username) {
-		// TODO Auto-generated method stub
-		
+		serverGUI.userLoggedIn(username);
 	}
 	
 	public void userLoggedOut(String username) {
-		// TODO Auto-generated method stub
-		
+		serverGUI.userLoggedOut(username);
 	}
 	
 	/*
