@@ -33,10 +33,12 @@ public class ServerGUI extends JFrame {
 	private JTextArea taLog;
 	private JLabel lblArduinoConnected, lblGrogInTheMaking;
 	private JButton btnRestart, btnSave, btnQuit, btnEditUser, btnNewUser,
-			btnDeleteUser, btnRefresh, btnCancelGrog, btnSuspendUser, btnDequeueGrog;
+			btnDeleteUser, btnRefresh, btnCancelGrog, btnSuspendUser,
+			btnDequeueGrog;
 	private JPanel pnlSettings, pnlButtons, pnlStatus, pnlMain;
 	private JTabbedPane tabbedPane;
-	private JScrollPane logScrollPane, userScrollPane, connectedUserScroll, grogQueueScroll;
+	private JScrollPane logScrollPane, userScrollPane, connectedUserScroll,
+			grogQueueScroll;
 	private JList<String> userList, connectedUserList, grogQueueList;
 	private ImageIcon iconConnected, iconDisconnected;
 	private Logger logger;
@@ -128,21 +130,34 @@ public class ServerGUI extends JFrame {
 		// Log Panel
 		logScrollPane = new JScrollPane(taLog);
 		logScrollPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-		
+
 		// Status panel
 		iconConnected = new ImageIcon(getClass().getResource("/check.png"));
-		iconDisconnected = new ImageIcon(getClass().getResource("/information.png"));
+		iconDisconnected = new ImageIcon(getClass().getResource(
+				"/information.png"));
 		lblArduinoConnected = new JLabel(iconDisconnected);
 		lblGrogInTheMaking = new JLabel("Nothing much");
-		btnCancelGrog = new JButton("Cancel Grog", new ImageIcon(getClass().getResource("/close.png")));
-		
+		grogQueueList = new JList<String>(new DefaultListModel<String>());
+		connectedUserList = new JList<String>(new DefaultListModel<String>());
+		grogQueueScroll = new JScrollPane(grogQueueList);
+		connectedUserScroll = new JScrollPane(connectedUserList);
+		btnDequeueGrog = new JButton("Dequeue Grog");
+		btnCancelGrog = new JButton("Cancel Grog", new ImageIcon(getClass()
+				.getResource("/close.png")));
+		btnSuspendUser = new JButton("Suspend User");
+
 		pnlStatus = new JPanel(new MigLayout());
 		pnlStatus.add(new JLabel("Barduino Connection"));
 		pnlStatus.add(new JLabel("Barduino Status"), "wrap");
 		pnlStatus.add(lblArduinoConnected);
 		pnlStatus.add(lblGrogInTheMaking, "wrap");
-		pnlStatus.add(btnCancelGrog, "wrap, span, gapleft push");
-		
+		pnlStatus.add(btnCancelGrog, "wrap, span, gapleft, push, al right");
+		pnlStatus.add(new JLabel("Grog Queue"), "wrap");
+		pnlStatus.add(grogQueueScroll, "span, wrap, grow");
+		pnlStatus.add(btnDequeueGrog, "wrap");
+		pnlStatus.add(new JLabel("Connected Clients"), "wrap");
+		pnlStatus.add(connectedUserScroll, "span, wrap, grow");
+		pnlStatus.add(btnSuspendUser);
 
 		// Tabbed Pane
 		tabbedPane = new JTabbedPane();
@@ -222,6 +237,25 @@ public class ServerGUI extends JFrame {
 		}
 	}
 
+	public void setArduinoConnected(boolean b) {
+		if (b)
+			lblArduinoConnected.setIcon(iconConnected);
+		else
+			lblArduinoConnected.setIcon(iconDisconnected);
+	}
+
+	public void userLoggedIn(String username) {
+		DefaultListModel<String> listModel = (DefaultListModel<String>) connectedUserList
+				.getModel();
+		listModel.addElement(username);
+	}
+
+	public void userLoggedOut(String username) {
+		DefaultListModel<String> listModel = (DefaultListModel<String>) connectedUserList
+				.getModel();
+		listModel.removeElement(username);
+	}
+	
 	/**
 	 * Updates the fluids from the Properties object
 	 */
@@ -300,8 +334,6 @@ public class ServerGUI extends JFrame {
 					frame.setLocationRelativeTo(ServerGUI.this);
 				}
 			}
-
 		}
-
 	}
 }
