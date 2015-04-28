@@ -28,16 +28,17 @@ import net.miginfocom.swing.MigLayout;
 public class LoginFrame extends JFrame {
 
 	private static final long serialVersionUID = 8907081465715268386L;
-	JTextField tfServerAdress, tfDatabaseName, tfUserName;
-	JPasswordField pfPassword;
-	JButton logIn;
-	JCheckBox saveUser;
-	Properties prop = new Properties();
-	ServerProtocolParser parser = ServerProtocolParser.getInstance();
-	ServerApp serverApp;
+	private JTextField tfServerAdress, tfDatabaseName, tfUserName;
+	private JPasswordField pfPassword;
+	private JButton logIn;
+	private JCheckBox saveUser;
+	private Properties prop = new Properties();
+	private ServerProtocolParser parser = ServerProtocolParser.getInstance();
+	private Controller controller;
+	
 
-	public LoginFrame(ServerApp serverApp) {
-		this.serverApp = serverApp;
+	public LoginFrame(Controller controller) {
+		this.controller = controller;
 		loadConfigs();
 
 		setLayout(new MigLayout());
@@ -127,7 +128,7 @@ public class LoginFrame extends JFrame {
 			if(UserTools.testConnection()){
 				saveConfigs();
 				setVisible(false);
-				serverApp.startServer();
+				controller.startServerGUI();
 			}
 		}
 

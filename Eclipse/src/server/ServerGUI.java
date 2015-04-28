@@ -31,14 +31,14 @@ public class ServerGUI extends JFrame {
 	private JTextField tfFluid1, tfFluid2, tfFluid3, tfFluid4, tfPortClient,
 			tfPortArduino;
 	private JTextArea taLog;
-	private JLabel lblFluids, lblFluid1, lblFluid2, lblFluid3, lblFluid4,
-			lblNetwork, lblPortClient, lblPortArduino;
+	private JLabel lblArduinoConnected, lblGrogInTheMaking;
 	private JButton btnRestart, btnSave, btnQuit, btnEditUser, btnNewUser,
-			btnDeleteUser, btnRefresh;
+			btnDeleteUser, btnRefresh, btnCancelGrog, btnSuspendUser, btnDequeueGrog;
 	private JPanel pnlSettings, pnlButtons, pnlStatus, pnlMain;
 	private JTabbedPane tabbedPane;
-	private JScrollPane logScrollPane, userScrollPane;
-	private JList<String> userList;
+	private JScrollPane logScrollPane, userScrollPane, connectedUserScroll, grogQueueScroll;
+	private JList<String> userList, connectedUserList, grogQueueList;
+	private ImageIcon iconConnected, iconDisconnected;
 	private Logger logger;
 	private Properties prop = null;
 	private Controller controller;
@@ -86,9 +86,6 @@ public class ServerGUI extends JFrame {
 		pnlButtons.add(btnQuit);
 
 		// Network
-		lblNetwork = new JLabel("Network");
-		lblPortClient = new JLabel("Client Port");
-		lblPortArduino = new JLabel("Arduino Port");
 		tfPortClient = new JTextField(prop.getProperty("clientport"));
 		tfPortArduino = new JTextField(prop.getProperty("arduinoport"));
 
@@ -97,12 +94,6 @@ public class ServerGUI extends JFrame {
 		tfFluid2 = new JTextField(prop.getProperty("fluid2"));
 		tfFluid3 = new JTextField(prop.getProperty("fluid3"));
 		tfFluid4 = new JTextField(prop.getProperty("fluid4"));
-
-		lblFluids = new JLabel("Fluids");
-		lblFluid1 = new JLabel("Fluid 1");
-		lblFluid2 = new JLabel("Fluid 2");
-		lblFluid3 = new JLabel("Fluid 3");
-		lblFluid4 = new JLabel("Fluid 4");
 
 		// Users Panel
 		userList = new JList<String>(new DefaultListModel<String>());
@@ -115,34 +106,48 @@ public class ServerGUI extends JFrame {
 				.getResource("/delete.png")));
 
 		pnlSettings = new JPanel(new MigLayout());
-		pnlSettings.add(lblFluids, "center, span 2");
-		pnlSettings.add(lblNetwork, "center, wrap, span 2");
-		pnlSettings.add(lblFluid1);
+		pnlSettings.add(new JLabel("Fluids"), "center, span 2");
+		pnlSettings.add(new JLabel("Network"), "center, wrap, span 2");
+		pnlSettings.add(new JLabel("Fluid 1"));
 		pnlSettings.add(tfFluid1, "grow, width 50:150:200");
-		pnlSettings.add(lblPortClient);
+		pnlSettings.add(new JLabel("Client Port"));
 		pnlSettings.add(tfPortClient, "wrap, w 100!");
-		pnlSettings.add(lblFluid2);
+		pnlSettings.add(new JLabel("Fluid 2"));
 		pnlSettings.add(tfFluid2, "grow");
-		pnlSettings.add(lblPortArduino);
+		pnlSettings.add(new JLabel("Arduino Port"));
 		pnlSettings.add(tfPortArduino, "wrap, w 100!");
-		pnlSettings.add(lblFluid3);
+		pnlSettings.add(new JLabel("Fluid 3"));
 		pnlSettings.add(tfFluid3, "grow, wrap");
-		pnlSettings.add(lblFluid4);
+		pnlSettings.add(new JLabel("Fluid 4"));
 		pnlSettings.add(tfFluid4, "grow, wrap");
 		pnlSettings.add(userScrollPane, "wrap, span 4, grow");
 		pnlSettings.add(btnEditUser, "span 2");
 		pnlSettings.add(btnNewUser);
 		pnlSettings.add(btnDeleteUser);
 
-		// Status Panel
+		// Log Panel
 		logScrollPane = new JScrollPane(taLog);
 		logScrollPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-		pnlStatus = new JPanel();
-		pnlStatus.add(logScrollPane);
+		
+		// Status panel
+		iconConnected = new ImageIcon(getClass().getResource("/check.png"));
+		iconDisconnected = new ImageIcon(getClass().getResource("/information.png"));
+		lblArduinoConnected = new JLabel(iconDisconnected);
+		lblGrogInTheMaking = new JLabel("Nothing much");
+		btnCancelGrog = new JButton("Cancel Grog", new ImageIcon(getClass().getResource("/close.png")));
+		
+		pnlStatus = new JPanel(new MigLayout());
+		pnlStatus.add(new JLabel("Barduino Connection"));
+		pnlStatus.add(new JLabel("Barduino Status"), "wrap");
+		pnlStatus.add(lblArduinoConnected);
+		pnlStatus.add(lblGrogInTheMaking, "wrap");
+		pnlStatus.add(btnCancelGrog, "wrap, span, gapleft push");
+		
 
 		// Tabbed Pane
 		tabbedPane = new JTabbedPane();
 		tabbedPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+		tabbedPane.add("Status", pnlStatus);
 		tabbedPane.add("Log", logScrollPane);
 		tabbedPane.add("Settings", pnlSettings);
 
