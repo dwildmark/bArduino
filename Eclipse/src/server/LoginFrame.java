@@ -2,11 +2,6 @@ package server;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Properties;
 
 import javax.swing.JButton;
@@ -32,14 +27,18 @@ public class LoginFrame extends JFrame {
 	private JPasswordField pfPassword;
 	private JButton logIn;
 	private JCheckBox saveUser;
-	private Properties prop = new Properties();
+	private Properties prop;
 	private ServerProtocolParser parser = ServerProtocolParser.getInstance();
 	private Controller controller;
 	
 
 	public LoginFrame(Controller controller) {
 		this.controller = controller;
-		loadConfigs();
+		try {
+			prop = controller.loadServerConfig();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
 		setLayout(new MigLayout());
 
@@ -57,6 +56,7 @@ public class LoginFrame extends JFrame {
 
 		saveUser = new JCheckBox("Save Username");
 		add(saveUser, "wrap");
+		saveUser.setSelected(true);
 
 		add(new JLabel("Password:"));
 		pfPassword = new JPasswordField();
@@ -72,36 +72,10 @@ public class LoginFrame extends JFrame {
 		setLocationRelativeTo(null);
 	}
 
-	private void loadConfigs() {
-		File initialFile = new File(ServerApp.propFileName);
-		InputStream inputStream;
-		try {
-			inputStream = new FileInputStream(initialFile);
-			prop.load(inputStream);
-			inputStream.close();
-		} catch (IOException e) {
-			try {
-				File dir = new File("./resources");
-				dir.mkdir();
-				FileOutputStream out = new FileOutputStream(
-						ServerApp.propFileName);
-				prop.setProperty("fluid1", "Fluid 1");
-				prop.setProperty("fluid2", "Fluid 2");
-				prop.setProperty("fluid3", "Fluid 3");
-				prop.setProperty("fluid4", "Fluid 4");
-				prop.setProperty("clientport", "4444");
-				prop.setProperty("arduinoport", "8008");
-				prop.store(out, "Default values");
-				out.close();
-			} catch (Exception e2) {
-
-			}
-		}
-	}
+	
 
 	private void saveConfigs() {
 		try {
-			FileOutputStream out = new FileOutputStream(ServerApp.propFileName);
 			prop.setProperty("server_adress", tfServerAdress.getText());
 			prop.setProperty("database_name", tfDatabaseName.getText());
 
@@ -110,9 +84,7 @@ public class LoginFrame extends JFrame {
 			} else {
 				prop.remove("sql_username");
 			}
-
-			prop.store(out, null);
-			out.close();
+			controller.saveServerConfig(prop);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
