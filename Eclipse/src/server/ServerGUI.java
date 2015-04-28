@@ -35,7 +35,7 @@ public class ServerGUI extends JFrame {
 	private JButton btnRestart, btnSave, btnQuit, btnEditUser, btnNewUser,
 			btnDeleteUser, btnRefresh, btnCancelGrog, btnSuspendUser,
 			btnDequeueGrog;
-	private JPanel pnlSettings, pnlButtons, pnlStatus, pnlMain;
+	private JPanel pnlSettings, pnlButtons, pnlStatus, pnlMain, pnlBarduinoConnection, pnlBarduinoStatus;
 	private JTabbedPane tabbedPane;
 	private JScrollPane logScrollPane, userScrollPane, connectedUserScroll,
 			grogQueueScroll;
@@ -145,12 +145,19 @@ public class ServerGUI extends JFrame {
 		btnCancelGrog = new JButton("Cancel Grog", new ImageIcon(getClass()
 				.getResource("/close.png")));
 		btnSuspendUser = new JButton("Suspend User");
-
+		pnlBarduinoConnection = new JPanel(new MigLayout());
+		pnlBarduinoConnection.setBorder(BorderFactory
+				.createTitledBorder("Barduino Connection"));
+		pnlBarduinoConnection.add(lblArduinoConnected);
+		pnlBarduinoStatus = new JPanel(new MigLayout());
+		pnlBarduinoStatus.setBorder(BorderFactory
+				.createTitledBorder("Barduino Status"));
+		pnlBarduinoStatus.add(lblGrogInTheMaking);
+		
+		
 		pnlStatus = new JPanel(new MigLayout());
-		pnlStatus.add(new JLabel("Barduino Connection"));
-		pnlStatus.add(new JLabel("Barduino Status"), "wrap");
-		pnlStatus.add(lblArduinoConnected);
-		pnlStatus.add(lblGrogInTheMaking, "wrap");
+		pnlStatus.add(pnlBarduinoConnection, "w 120");
+		pnlStatus.add(pnlBarduinoStatus,"wrap");
 		pnlStatus.add(btnCancelGrog, "wrap, span, gapleft, push, al right");
 		pnlStatus.add(new JLabel("Grog Queue"), "wrap");
 		pnlStatus.add(grogQueueScroll, "span, wrap, grow");

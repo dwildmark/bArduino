@@ -2,6 +2,8 @@ package server;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.Properties;
 
 import javax.swing.JButton;
@@ -30,7 +32,6 @@ public class LoginFrame extends JFrame {
 	private Properties prop;
 	private ServerProtocolParser parser = ServerProtocolParser.getInstance();
 	private Controller controller;
-	
 
 	public LoginFrame(Controller controller) {
 		this.controller = controller;
@@ -61,6 +62,7 @@ public class LoginFrame extends JFrame {
 		add(new JLabel("Password:"));
 		pfPassword = new JPasswordField();
 		add(pfPassword, "wrap, w 150!");
+		pfPassword.addKeyListener(new KeyBoardListener());
 
 		logIn = new JButton("Log In");
 		logIn.addActionListener(new Listener());
@@ -70,9 +72,8 @@ public class LoginFrame extends JFrame {
 		pack();
 		setVisible(true);
 		setLocationRelativeTo(null);
-	}
 
-	
+	}
 
 	private void saveConfigs() {
 		try {
@@ -90,19 +91,39 @@ public class LoginFrame extends JFrame {
 		}
 	}
 
+	private void login() {
+		parser.setSQLCredentials(tfUserName.getText(),
+				new String(pfPassword.getPassword()), tfServerAdress.getText(),
+				tfDatabaseName.getText());
+		if (UserTools.testConnection()) {
+			saveConfigs();
+			setVisible(false);
+			controller.startServerGUI();
+		}
+	}
+
 	private class Listener implements ActionListener {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			parser.setSQLCredentials(tfUserName.getText(), new String(
-					pfPassword.getPassword()), tfServerAdress.getText(),
-					tfDatabaseName.getText());
-			if(UserTools.testConnection()){
-				saveConfigs();
-				setVisible(false);
-				controller.startServerGUI();
+			login();
+		}
+	}
+
+	private class KeyBoardListener implements KeyListener {
+
+		@Override
+		public void keyPressed(KeyEvent arg0) {}
+
+		@Override
+		public void keyReleased(KeyEvent e) {
+			if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+				login();
 			}
 		}
+
+		@Override
+		public void keyTyped(KeyEvent e) {}
 
 	}
 

@@ -7,7 +7,6 @@ package server;
  */
 public class ServerApp {
 	public final static String propFileName = "./resources/config.properties";
-	public final static String usersFileName = "./resources/users.properties";
 
 	public static void main(String[] args) {
 		loginWindow();
