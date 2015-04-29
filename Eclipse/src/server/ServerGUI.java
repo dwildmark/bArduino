@@ -7,12 +7,15 @@ import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.awt.image.BufferedImage;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Properties;
+import java.util.Vector;
 import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 
 import org.imgscalr.Scalr;
 
@@ -39,7 +42,8 @@ public class ServerGUI extends JFrame {
 	private JTabbedPane tabbedPane;
 	private JScrollPane logScrollPane, userScrollPane, connectedUserScroll,
 			grogQueueScroll;
-	private JList<String> userList, connectedUserList, grogQueueList;
+	private JTable userList;
+	private JList<String> connectedUserList, grogQueueList;
 	private ImageIcon iconConnected, iconDisconnected;
 	private Logger logger;
 	private Properties prop = null;
@@ -98,7 +102,7 @@ public class ServerGUI extends JFrame {
 		tfFluid4 = new JTextField(prop.getProperty("fluid4"));
 
 		// Users Panel
-		userList = new JList<String>(new DefaultListModel<String>());
+		userList = new JTable();
 		userScrollPane = new JScrollPane(userList);
 		btnEditUser = new JButton("Change User Password", new ImageIcon(
 				getClass().getResource("/edit.png")));
@@ -231,17 +235,38 @@ public class ServerGUI extends JFrame {
 	 */
 	public void printUsers() {
 		ResultSet users = UserTools.getAllUsers();
-		DefaultListModel<String> listModel = (DefaultListModel<String>) userList
-				.getModel();
-		listModel.clear();
+		DefaultTableModel tableModel = null;
 		try {
-			while (users.next()) {
-				listModel.addElement(users.getString(1));
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-			JOptionPane.showMessageDialog(null, e.getMessage());
-		}
+			tableModel = buildTableModel(users);
+		} catch (SQLException e) {}
+		
+		userList.setModel(tableModel);
+	}
+	
+	public static DefaultTableModel buildTableModel(ResultSet rs)
+	        throws SQLException {
+
+	    ResultSetMetaData metaData = rs.getMetaData();
+
+	    // names of columns
+	    Vector<String> columnNames = new Vector<String>();
+	    int columnCount = metaData.getColumnCount();
+	    for (int column = 1; column <= columnCount; column++) {
+	        columnNames.add(metaData.getColumnName(column));
+	    }
+
+	    // data of the table
+	    Vector<Vector<Object>> data = new Vector<Vector<Object>>();
+	    while (rs.next()) {
+	        Vector<Object> vector = new Vector<Object>();
+	        for (int columnIndex = 1; columnIndex <= columnCount; columnIndex++) {
+	            vector.add(rs.getObject(columnIndex));
+	        }
+	        data.add(vector);
+	    }
+
+	    return new DefaultTableModel(data, columnNames);
+
 	}
 
 	public void setArduinoConnected(boolean b) {
@@ -263,16 +288,6 @@ public class ServerGUI extends JFrame {
 		listModel.removeElement(username);
 	}
 	
-	/**
-	 * Updates the fluids from the Properties object
-	 */
-	public void updateFluids() {
-		tfFluid1.setText(prop.getProperty("fluid1"));
-		tfFluid2.setText(prop.getProperty("fluid2"));
-		tfFluid3.setText(prop.getProperty("fluid3"));
-		tfFluid4.setText(prop.getProperty("fluid4"));
-	}
-
 	private class Listener implements ActionListener {
 
 		@Override
@@ -284,11 +299,11 @@ public class ServerGUI extends JFrame {
 			} else if (e.getSource() == btnRefresh) {
 				try {
 					prop = controller.loadServerConfig();
+					printUsers();
 				} catch (Exception e1) {
 					JOptionPane.showMessageDialog(null, e1.getMessage());
 					e1.printStackTrace();
 				}
-				updateFluids();
 
 			} else if (e.getSource() == btnQuit) {
 				System.exit(0);
@@ -322,19 +337,24 @@ public class ServerGUI extends JFrame {
 				frame.setLocationRelativeTo(ServerGUI.this);
 
 			} else if (e.getSource() == btnDeleteUser) {
-
-				if (userList.getSelectedValue() != null
+				int selectedRowIndex = userList.getSelectedRow();
+				int selectedColumnIndex = userList.getSelectedColumn();
+				String selectedObject = (String) userList.getModel().getValueAt(selectedRowIndex, selectedColumnIndex);
+				if (selectedObject != null
 						&& JOptionPane.showConfirmDialog(ServerGUI.this,
 								"Are you sure you want to delete user '"
-										+ userList.getSelectedValue() + "'") == JOptionPane.YES_OPTION)
-					UserTools.removeUser(userList.getSelectedValue());
+										+ selectedObject + "'") == JOptionPane.YES_OPTION)
+					UserTools.removeUser(selectedObject);
 				printUsers();
 
 			} else if (e.getSource() == btnEditUser) {
-				if (userList.getSelectedValue() != null) {
+				int selectedRowIndex = userList.getSelectedRow();
+				int selectedColumnIndex = userList.getSelectedColumn();
+				String selectedObject = (String) userList.getModel().getValueAt(selectedRowIndex, selectedColumnIndex);
+				if (selectedObject != null) {
 					JFrame frame = new JFrame();
 					EditUserPane pane = new EditUserPane(frame,
-							userList.getSelectedValue());
+							selectedObject);
 					frame.add(pane);
 					frame.pack();
 					frame.setVisible(true);
