@@ -35,9 +35,9 @@ public class ServerGUI extends JFrame {
 			tfPortArduino;
 	private JTextArea taLog;
 	private JLabel lblArduinoConnected, lblGrogInTheMaking;
-	private JButton btnRestart, btnSave, btnQuit, btnEditUser, btnNewUser,
+	private JButton btnRestart, btnSave, btnQuit, btnRefund, btnNewUser,
 			btnDeleteUser, btnRefresh, btnCancelGrog, btnSuspendUser,
-			btnDequeueGrog;
+			btnDequeueGrog, btnAddCredits;
 	private JPanel pnlSettings, pnlButtons, pnlStatus, pnlMain, pnlBarduinoConnection, pnlBarduinoStatus;
 	private JTabbedPane tabbedPane;
 	private JScrollPane logScrollPane, userScrollPane, connectedUserScroll,
@@ -104,12 +104,14 @@ public class ServerGUI extends JFrame {
 		// Users Panel
 		userList = new JTable();
 		userScrollPane = new JScrollPane(userList);
-		btnEditUser = new JButton("Change User Password", new ImageIcon(
-				getClass().getResource("/edit.png")));
+		btnRefund = new JButton("Refund", new ImageIcon(
+				getClass().getResource("/cash.png")));
 		btnNewUser = new JButton("New User", new ImageIcon(getClass()
 				.getResource("/add.png")));
 		btnDeleteUser = new JButton("Delete User", new ImageIcon(getClass()
 				.getResource("/delete.png")));
+		btnAddCredits = new JButton("Add credits", new ImageIcon(getClass()
+				.getResource("/addcredits.png")));
 
 		pnlSettings = new JPanel(new MigLayout());
 		pnlSettings.add(new JLabel("Fluids"), "center, span 2");
@@ -127,7 +129,8 @@ public class ServerGUI extends JFrame {
 		pnlSettings.add(new JLabel("Fluid 4"));
 		pnlSettings.add(tfFluid4, "grow, wrap");
 		pnlSettings.add(userScrollPane, "wrap, span 4, grow");
-		pnlSettings.add(btnEditUser, "span 2");
+		pnlSettings.add(btnAddCredits);
+		pnlSettings.add(btnRefund);
 		pnlSettings.add(btnNewUser);
 		pnlSettings.add(btnDeleteUser);
 
@@ -215,7 +218,7 @@ public class ServerGUI extends JFrame {
 
 		btnNewUser.addActionListener(usersListener);
 		btnDeleteUser.addActionListener(usersListener);
-		btnEditUser.addActionListener(usersListener);
+		btnAddCredits.addActionListener(usersListener);
 
 		// The log window moves with the log being printed for visibility
 		logScrollPane.getVerticalScrollBar().addAdjustmentListener(
@@ -347,7 +350,7 @@ public class ServerGUI extends JFrame {
 					UserTools.removeUser(selectedObject);
 				printUsers();
 
-			} else if (e.getSource() == btnEditUser) {
+			} else if (e.getSource() == btnAddCredits) {
 				int selectedRowIndex = userList.getSelectedRow();
 				int selectedColumnIndex = userList.getSelectedColumn();
 				String selectedObject = (String) userList.getModel().getValueAt(selectedRowIndex, selectedColumnIndex);

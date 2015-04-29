@@ -11,6 +11,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
+import javax.swing.JTextField;
 
 import protocol.UserTools;
 import net.miginfocom.swing.MigLayout;
@@ -24,50 +25,37 @@ import net.miginfocom.swing.MigLayout;
 public class EditUserPane extends JPanel {
 
 	private static final long serialVersionUID = -8698004788538931737L;
-	private JButton btnSave;
-	private JPasswordField tfOldPass, tfNewPass, tfPassConfirm;
-	private JLabel lblOldPass, lblNewPass, lblPassConfirm;
+	private JButton btnAdd;
+	private JTextField tfSum;
+	private String user;
+	private JFrame frame;
 
 	public EditUserPane(JFrame frame, String user) {
+		this.user = user;
+		this.frame = frame;
+
 		setLayout(new MigLayout());
+		btnAdd = new JButton("Add credits");
+		tfSum = new JTextField("");
+		add(tfSum, "w 100!");
+		add(btnAdd);
 
-		tfOldPass = new JPasswordField();
-		tfNewPass = new JPasswordField();
-		tfPassConfirm = new JPasswordField();
+		btnAdd.addActionListener(new ButtonListener());
+	}
 
-		lblOldPass = new JLabel("Old Password:");
-		lblNewPass = new JLabel("New Password: ");
-		lblPassConfirm = new JLabel("Confirm Password:");
+	private class ButtonListener implements ActionListener {
 
-		btnSave = new JButton("Save");
-		btnSave.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if(new String(tfNewPass.getPassword()).equals(":") || new String(tfNewPass.getPassword()).contains(" ")){
-					JOptionPane.showMessageDialog(EditUserPane.this, "Password Can Not Contain Character ':' Or Blank Spaces");
-					
-				} else if (UserTools.confirmUser(user, tfOldPass.getPassword())
-						&& Arrays.equals(tfNewPass.getPassword(),
-								tfPassConfirm.getPassword())) {
-					UserTools.changePassword(user, tfNewPass.getPassword());
-					JOptionPane.showMessageDialog(EditUserPane.this, "Password Changed!");
-					frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
-					
-				} else {
-					JOptionPane.showMessageDialog(EditUserPane.this, "One Or More Passwords Are Not Correct");
-				}
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			String sum = tfSum.getText();
+			try {
+				UserTools.alterCredits(user, Double.parseDouble(sum));
+				frame.dispatchEvent(new WindowEvent(frame,
+						WindowEvent.WINDOW_CLOSING));
+			} catch (Exception a) {
 
 			}
+		}
 
-		});
-		
-		add(lblOldPass);
-		add(tfOldPass, "wrap, w 100!, grow");
-		add(lblNewPass);
-		add(tfNewPass, "wrap, grow");
-		add(lblPassConfirm);
-		add(tfPassConfirm, "wrap, grow");
-		add(btnSave, "span 2, center");
 	}
 }

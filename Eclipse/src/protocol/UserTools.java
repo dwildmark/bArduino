@@ -117,6 +117,21 @@ public class UserTools {
 			JOptionPane.showMessageDialog(null, e.getMessage());
 		}
 	}
+	
+	public synchronized static void alterCredits(String username, double credit) {
+		String query = "UPDATE user_data set credits = credits + " + credit +
+				" WHERE username = '" + username +"'";
+		Connection conn;
+		try {
+			conn = getConnection();
+			PreparedStatement preparedStmt = conn.prepareStatement(query);
+			preparedStmt.execute();
+			conn.close();
+		} catch (SQLException e) {
+			JOptionPane.showMessageDialog(null, e.getMessage());
+		}
+		
+	}
 
 	/**
 	 * Returns all users with their credits and approved status in a ResultSet
@@ -135,6 +150,8 @@ public class UserTools {
 			return null;
 		}
 	}
+	
+	
 
 	/**
 	 * A simple method to test the connection with the MySQL server
