@@ -9,6 +9,10 @@ import java.awt.image.BufferedImage;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
 import java.util.Properties;
 import java.util.Vector;
 import java.util.logging.Logger;
@@ -16,6 +20,7 @@ import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 
 import org.imgscalr.Scalr;
 
@@ -31,18 +36,18 @@ import net.miginfocom.swing.*;
 public class ServerGUI extends JFrame {
 
 	private static final long serialVersionUID = 2486865764551934155L;
-	private JTextField tfFluid1, tfFluid2, tfFluid3, tfFluid4, tfPortClient,
-			tfPortArduino;
+	private JTextField tfPortClient, tfPortArduino;
 	private JTextArea taLog;
 	private JLabel lblArduinoConnected, lblGrogInTheMaking;
 	private JButton btnRestart, btnSave, btnQuit, btnRefund, btnNewUser,
 			btnDeleteUser, btnRefresh, btnCancelGrog, btnSuspendUser,
-			btnDequeueGrog, btnAddCredits;
-	private JPanel pnlSettings, pnlButtons, pnlStatus, pnlMain, pnlBarduinoConnection, pnlBarduinoStatus;
+			btnDequeueGrog, btnAddCredits, btnAddFluid;
+	private JPanel pnlSettings, pnlButtons, pnlStatus, pnlUsers, pnlMain,
+			pnlBarduinoConnection, pnlBarduinoStatus;
 	private JTabbedPane tabbedPane;
 	private JScrollPane logScrollPane, userScrollPane, connectedUserScroll,
 			grogQueueScroll;
-	private JTable userList;
+	private JTable userTable, fluidsTable;
 	private JList<String> connectedUserList, grogQueueList;
 	private ImageIcon iconConnected, iconDisconnected;
 	private Logger logger;
@@ -95,17 +100,28 @@ public class ServerGUI extends JFrame {
 		tfPortClient = new JTextField(prop.getProperty("clientport"));
 		tfPortArduino = new JTextField(prop.getProperty("arduinoport"));
 
-		// Settings
-		tfFluid1 = new JTextField(prop.getProperty("fluid1"));
-		tfFluid2 = new JTextField(prop.getProperty("fluid2"));
-		tfFluid3 = new JTextField(prop.getProperty("fluid3"));
-		tfFluid4 = new JTextField(prop.getProperty("fluid4"));
+		// Fluids
+		fluidsTable = new JTable(new FluidsTableModel());
+		populateFluidsTable(fluidsTable.getModel());
+		btnAddFluid = new JButton("Add fluid");
+
+
+		// Settings panel
+		pnlSettings = new JPanel(new MigLayout());
+		pnlSettings.add(new JLabel("Fluids"), "wrap");
+		pnlSettings.add(new JScrollPane(fluidsTable));
+		pnlSettings.add(btnAddFluid, "wrap");
+		pnlSettings.add(new JLabel("Network"), "wrap");		
+		pnlSettings.add(new JLabel("Client Port"), "wrap");
+		pnlSettings.add(tfPortClient, "wrap, w 100!");
+		pnlSettings.add(new JLabel("Arduino Port"), "wrap");
+		pnlSettings.add(tfPortArduino, "wrap, w 100!");
 
 		// Users Panel
-		userList = new JTable();
-		userScrollPane = new JScrollPane(userList);
-		btnRefund = new JButton("Refund", new ImageIcon(
-				getClass().getResource("/cash.png")));
+		userTable = new JTable();
+		userScrollPane = new JScrollPane(userTable);
+		btnRefund = new JButton("Refund", new ImageIcon(getClass().getResource(
+				"/cash.png")));
 		btnNewUser = new JButton("New User", new ImageIcon(getClass()
 				.getResource("/add.png")));
 		btnDeleteUser = new JButton("Delete User", new ImageIcon(getClass()
@@ -113,26 +129,12 @@ public class ServerGUI extends JFrame {
 		btnAddCredits = new JButton("Add credits", new ImageIcon(getClass()
 				.getResource("/addcredits.png")));
 
-		pnlSettings = new JPanel(new MigLayout());
-		pnlSettings.add(new JLabel("Fluids"), "center, span 2");
-		pnlSettings.add(new JLabel("Network"), "center, wrap, span 2");
-		pnlSettings.add(new JLabel("Fluid 1"));
-		pnlSettings.add(tfFluid1, "grow, width 50:150:200");
-		pnlSettings.add(new JLabel("Client Port"));
-		pnlSettings.add(tfPortClient, "wrap, w 100!");
-		pnlSettings.add(new JLabel("Fluid 2"));
-		pnlSettings.add(tfFluid2, "grow");
-		pnlSettings.add(new JLabel("Arduino Port"));
-		pnlSettings.add(tfPortArduino, "wrap, w 100!");
-		pnlSettings.add(new JLabel("Fluid 3"));
-		pnlSettings.add(tfFluid3, "grow, wrap");
-		pnlSettings.add(new JLabel("Fluid 4"));
-		pnlSettings.add(tfFluid4, "grow, wrap");
-		pnlSettings.add(userScrollPane, "wrap, span 4, grow");
-		pnlSettings.add(btnAddCredits);
-		pnlSettings.add(btnRefund);
-		pnlSettings.add(btnNewUser);
-		pnlSettings.add(btnDeleteUser);
+		pnlUsers = new JPanel(new MigLayout());
+		pnlUsers.add(userScrollPane, "wrap, span 4, grow");
+		pnlUsers.add(btnAddCredits);
+		pnlUsers.add(btnRefund);
+		pnlUsers.add(btnNewUser);
+		pnlUsers.add(btnDeleteUser);
 
 		// Log Panel
 		logScrollPane = new JScrollPane(taLog);
@@ -160,11 +162,10 @@ public class ServerGUI extends JFrame {
 		pnlBarduinoStatus.setBorder(BorderFactory
 				.createTitledBorder("Barduino Status"));
 		pnlBarduinoStatus.add(lblGrogInTheMaking);
-		
-		
+
 		pnlStatus = new JPanel(new MigLayout());
 		pnlStatus.add(pnlBarduinoConnection, "w 120");
-		pnlStatus.add(pnlBarduinoStatus,"wrap");
+		pnlStatus.add(pnlBarduinoStatus, "wrap");
 		pnlStatus.add(btnCancelGrog, "wrap, span, gapleft, push, al right");
 		pnlStatus.add(new JLabel("Grog Queue"), "wrap");
 		pnlStatus.add(grogQueueScroll, "span, wrap, grow");
@@ -177,11 +178,11 @@ public class ServerGUI extends JFrame {
 		tabbedPane = new JTabbedPane();
 		tabbedPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		tabbedPane.add("Status", pnlStatus);
+		tabbedPane.add("Users", pnlUsers);
 		tabbedPane.add("Log", logScrollPane);
 		tabbedPane.add("Settings", pnlSettings);
 
 		// Logo Label
-		// File absolutePath = new File("images/Barduino.png");
 		BufferedImage image = ImageIO.read(getClass().getResource(
 				"/Barduino.png"));
 		BufferedImage scaledImage = Scalr.resize(image, 320);
@@ -193,10 +194,7 @@ public class ServerGUI extends JFrame {
 		pnlMain.add(pnlButtons, "wrap, center");
 		pnlMain.add(tabbedPane, "grow, span, push");
 		pnlMain.setPreferredSize(new Dimension(485, 555));
-		;
 
-		// String absoluteIconPath = new File("images/bArduino_icon.png")
-		// .getAbsolutePath();
 		setIconImage(new ImageIcon(getClass().getResource("/bArduino_icon.png"))
 				.getImage());
 		setLayout(new MigLayout());
@@ -210,6 +208,9 @@ public class ServerGUI extends JFrame {
 		// actionlistners
 		Listener btnlistner = new Listener();
 		UsersListener usersListener = new UsersListener();
+		FluidsListener fluidListener = new FluidsListener();
+		
+		btnAddFluid.addActionListener(fluidListener);
 
 		btnQuit.addActionListener(btnlistner);
 		btnRestart.addActionListener(btnlistner);
@@ -241,34 +242,35 @@ public class ServerGUI extends JFrame {
 		DefaultTableModel tableModel = null;
 		try {
 			tableModel = buildTableModel(users);
-		} catch (SQLException e) {}
-		
-		userList.setModel(tableModel);
+		} catch (SQLException e) {
+		}
+
+		userTable.setModel(tableModel);
 	}
-	
+
 	public static DefaultTableModel buildTableModel(ResultSet rs)
-	        throws SQLException {
+			throws SQLException {
 
-	    ResultSetMetaData metaData = rs.getMetaData();
+		ResultSetMetaData metaData = rs.getMetaData();
 
-	    // names of columns
-	    Vector<String> columnNames = new Vector<String>();
-	    int columnCount = metaData.getColumnCount();
-	    for (int column = 1; column <= columnCount; column++) {
-	        columnNames.add(metaData.getColumnName(column));
-	    }
+		// names of columns
+		Vector<String> columnNames = new Vector<String>();
+		int columnCount = metaData.getColumnCount();
+		for (int column = 1; column <= columnCount; column++) {
+			columnNames.add(metaData.getColumnName(column));
+		}
 
-	    // data of the table
-	    Vector<Vector<Object>> data = new Vector<Vector<Object>>();
-	    while (rs.next()) {
-	        Vector<Object> vector = new Vector<Object>();
-	        for (int columnIndex = 1; columnIndex <= columnCount; columnIndex++) {
-	            vector.add(rs.getObject(columnIndex));
-	        }
-	        data.add(vector);
-	    }
+		// data of the table
+		Vector<Vector<Object>> data = new Vector<Vector<Object>>();
+		while (rs.next()) {
+			Vector<Object> vector = new Vector<Object>();
+			for (int columnIndex = 1; columnIndex <= columnCount; columnIndex++) {
+				vector.add(rs.getObject(columnIndex));
+			}
+			data.add(vector);
+		}
 
-	    return new DefaultTableModel(data, columnNames);
+		return new DefaultTableModel(data, columnNames);
 
 	}
 
@@ -291,6 +293,105 @@ public class ServerGUI extends JFrame {
 		listModel.removeElement(username);
 	}
 	
+	private void populateFluidsTable(TableModel tableModel){
+		Enumeration<Object> keyList = prop.keys();
+		String key;
+		List<String> list = new ArrayList<String>();
+		
+		// Find all fluid keys
+		while(keyList.hasMoreElements()){
+			key = (String)keyList.nextElement();
+			
+			if(key.contains("fluid") && key.contains("name")){
+				list.add(key);				
+			}
+		}
+		
+		// Sort the keys
+		Collections.sort(list);
+		
+		// Clear table
+		int rows = ((DefaultTableModel)tableModel).getRowCount();
+		for(int i = 0; i < rows; i++){
+			((DefaultTableModel)tableModel).removeRow(i);
+		}
+		
+		// Add Values to table
+		for(String fluid : list){
+			Vector<String> rowValue = new Vector<String>();
+			rowValue.add(prop.getProperty(fluid));
+			rowValue.add(prop.getProperty(fluid.split(".")[0] + ".price"));
+			
+			((DefaultTableModel) tableModel).addRow(rowValue);
+		}
+	}
+	
+	private void saveProperties(){
+		DefaultTableModel model = (DefaultTableModel)fluidsTable.getModel();
+		Enumeration<Object> keyList = prop.keys();
+		String key;
+		List<String> list = new ArrayList<String>();
+		
+		// Find all fluid keys
+		while(keyList.hasMoreElements()){
+			key = (String)keyList.nextElement();
+			
+			if(key.contains("fluid") && key.contains("name")){
+				list.add(key);				
+			}
+		}
+		
+		// Sort the keys
+		Collections.sort(list);
+		for(int i = 0; i < model.getRowCount(); i++){
+			prop.setProperty(list.get(i), (String)model.getValueAt(i, 0));
+			prop.setProperty(list.get(i).split(".")[0] + ".price",  (String)model.getValueAt(i, 1));
+		}
+		
+		prop.setProperty("clientport", tfPortClient.getText());
+		prop.setProperty("arduinoport", tfPortArduino.getText());
+		controller.saveServerConfig(prop);
+	}
+	
+	private void addFluid(String name, int price){
+		Enumeration<Object> keyList = prop.keys();
+		String key;
+		List<String> list = new ArrayList<String>();
+		
+		// Find all fluid keys
+		while(keyList.hasMoreElements()){
+			key = (String)keyList.nextElement();
+			
+			if(key.contains("fluid") && key.contains("name")){
+				list.add(key);				
+			}
+		}
+		// Sort the keys
+		Collections.sort(list);
+		
+		// Figure out property key for the new fluid
+		String fluidOrder = "fluid" + (Integer.parseInt(list.get(list.size()-1).split(".")[0].substring("fluid".length())) + 1);
+		
+		// Save the fluid
+		prop.setProperty(fluidOrder + ".name", name);
+		prop.setProperty(fluidOrder + ".price", "" + price);
+		
+		// Save properties and refresh fluids table
+		controller.saveServerConfig(prop);
+		populateFluidsTable(fluidsTable.getModel());
+	}
+	
+	private class FluidsListener implements ActionListener {
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			if (e.getSource() == btnAddFluid) {
+				addFluid("new fluid", 0);
+			}
+		}
+		
+	}
+
 	private class Listener implements ActionListener {
 
 		@Override
@@ -315,14 +416,7 @@ public class ServerGUI extends JFrame {
 				JOptionPane.showConfirmDialog(btnSave,
 						"Are you sure that you want to save?"
 								+ " Old settings will be lost!");
-
-				prop.setProperty("fluid1", tfFluid1.getText());
-				prop.setProperty("fluid2", tfFluid2.getText());
-				prop.setProperty("fluid3", tfFluid3.getText());
-				prop.setProperty("fluid4", tfFluid4.getText());
-				prop.setProperty("clientport", tfPortClient.getText());
-				prop.setProperty("arduinoport", tfPortArduino.getText());
-				controller.saveServerConfig(prop);
+				saveProperties();
 			}
 		}
 	}
@@ -340,9 +434,10 @@ public class ServerGUI extends JFrame {
 				frame.setLocationRelativeTo(ServerGUI.this);
 
 			} else if (e.getSource() == btnDeleteUser) {
-				int selectedRowIndex = userList.getSelectedRow();
-				int selectedColumnIndex = userList.getSelectedColumn();
-				String selectedObject = (String) userList.getModel().getValueAt(selectedRowIndex, selectedColumnIndex);
+				int selectedRowIndex = userTable.getSelectedRow();
+				int selectedColumnIndex = userTable.getSelectedColumn();
+				String selectedObject = (String) userTable.getModel()
+						.getValueAt(selectedRowIndex, selectedColumnIndex);
 				if (selectedObject != null
 						&& JOptionPane.showConfirmDialog(ServerGUI.this,
 								"Are you sure you want to delete user '"
@@ -351,13 +446,13 @@ public class ServerGUI extends JFrame {
 				printUsers();
 
 			} else if (e.getSource() == btnAddCredits) {
-				int selectedRowIndex = userList.getSelectedRow();
-				int selectedColumnIndex = userList.getSelectedColumn();
-				String selectedObject = (String) userList.getModel().getValueAt(selectedRowIndex, selectedColumnIndex);
+				int selectedRowIndex = userTable.getSelectedRow();
+				int selectedColumnIndex = userTable.getSelectedColumn();
+				String selectedObject = (String) userTable.getModel()
+						.getValueAt(selectedRowIndex, selectedColumnIndex);
 				if (selectedObject != null) {
 					JFrame frame = new JFrame();
-					EditUserPane pane = new EditUserPane(frame,
-							selectedObject);
+					EditUserPane pane = new EditUserPane(frame, selectedObject);
 					frame.add(pane);
 					frame.pack();
 					frame.setVisible(true);
@@ -365,5 +460,15 @@ public class ServerGUI extends JFrame {
 				}
 			}
 		}
+	}
+	
+	private class FluidsTableModel extends DefaultTableModel {
+
+		private static final long serialVersionUID = 3536620580454020553L;
+
+		public FluidsTableModel() {
+	        addColumn("Name");
+	        addColumn("Price/cl");
+	    }
 	}
 }
