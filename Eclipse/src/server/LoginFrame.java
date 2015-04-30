@@ -30,7 +30,7 @@ public class LoginFrame extends JFrame {
 	private JButton logIn;
 	private JCheckBox saveUser;
 	private Properties prop;
-	private ServerProtocolParser parser = ServerProtocolParser.getInstance();
+	private ServerProtocolParser parser;
 	private Controller controller;
 
 	public LoginFrame(Controller controller) {
@@ -40,7 +40,8 @@ public class LoginFrame extends JFrame {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
+		parser = ServerProtocolParser.getInstance();
+		
 		setLayout(new MigLayout());
 
 		add(new JLabel("Server Adress:"));

@@ -105,13 +105,12 @@ public class ServerGUI extends JFrame {
 		populateFluidsTable(fluidsTable.getModel());
 		btnAddFluid = new JButton("Add fluid");
 
-
 		// Settings panel
 		pnlSettings = new JPanel(new MigLayout());
 		pnlSettings.add(new JLabel("Fluids"), "wrap");
 		pnlSettings.add(new JScrollPane(fluidsTable));
 		pnlSettings.add(btnAddFluid, "wrap");
-		pnlSettings.add(new JLabel("Network"), "wrap");		
+		pnlSettings.add(new JLabel("Network"), "wrap");
 		pnlSettings.add(new JLabel("Client Port"), "wrap");
 		pnlSettings.add(tfPortClient, "wrap, w 100!");
 		pnlSettings.add(new JLabel("Arduino Port"), "wrap");
@@ -209,7 +208,7 @@ public class ServerGUI extends JFrame {
 		Listener btnlistner = new Listener();
 		UsersListener usersListener = new UsersListener();
 		FluidsListener fluidListener = new FluidsListener();
-		
+
 		btnAddFluid.addActionListener(fluidListener);
 
 		btnQuit.addActionListener(btnlistner);
@@ -292,95 +291,107 @@ public class ServerGUI extends JFrame {
 				.getModel();
 		listModel.removeElement(username);
 	}
-	
-	private void populateFluidsTable(TableModel tableModel){
+
+	private void populateFluidsTable(TableModel tableModel) {
 		Enumeration<Object> keyList = prop.keys();
 		String key;
 		List<String> list = new ArrayList<String>();
-		
+
 		// Find all fluid keys
-		while(keyList.hasMoreElements()){
-			key = (String)keyList.nextElement();
-			
-			if(key.contains("fluid") && key.contains("name")){
-				list.add(key);				
+		while (keyList.hasMoreElements()) {
+			key = (String) keyList.nextElement();
+
+			if (key.contains("fluid") && key.contains("name")) {
+				list.add(key);
 			}
 		}
-		
+
 		// Sort the keys
 		Collections.sort(list);
-		
+
 		// Clear table
-		int rows = ((DefaultTableModel)tableModel).getRowCount();
-		for(int i = 0; i < rows; i++){
-			((DefaultTableModel)tableModel).removeRow(i);
+		int rows = ((DefaultTableModel) tableModel).getRowCount();
+		for (int i = 0; i < rows; i++) {
+			((DefaultTableModel) tableModel).removeRow(i);
 		}
-		
+
 		// Add Values to table
-		for(String fluid : list){
-			Vector<String> rowValue = new Vector<String>();
-			rowValue.add(prop.getProperty(fluid));
-			rowValue.add(prop.getProperty(fluid.split(".")[0] + ".price"));
-			
-			((DefaultTableModel) tableModel).addRow(rowValue);
+		if (list.size() > 0) {
+			String fluid;
+			for (int i = 0; i < list.size(); i++) {
+				fluid = list.get(i);
+				Vector<String> rowValue = new Vector<String>();
+				rowValue.add(prop.getProperty(fluid));
+				String[] splitStr = fluid.split("_");
+				rowValue.add(prop.getProperty(splitStr[0] + "_price"));
+
+				((DefaultTableModel) tableModel).addRow(rowValue);
+			}
 		}
 	}
-	
-	private void saveProperties(){
-		DefaultTableModel model = (DefaultTableModel)fluidsTable.getModel();
+
+	private void saveProperties() {
+		DefaultTableModel model = (DefaultTableModel) fluidsTable.getModel();
 		Enumeration<Object> keyList = prop.keys();
 		String key;
 		List<String> list = new ArrayList<String>();
-		
+
 		// Find all fluid keys
-		while(keyList.hasMoreElements()){
-			key = (String)keyList.nextElement();
-			
-			if(key.contains("fluid") && key.contains("name")){
-				list.add(key);				
+		while (keyList.hasMoreElements()) {
+			key = (String) keyList.nextElement();
+
+			if (key.contains("fluid") && key.contains("name")) {
+				list.add(key);
 			}
 		}
-		
+
 		// Sort the keys
 		Collections.sort(list);
-		for(int i = 0; i < model.getRowCount(); i++){
-			prop.setProperty(list.get(i), (String)model.getValueAt(i, 0));
-			prop.setProperty(list.get(i).split(".")[0] + ".price",  (String)model.getValueAt(i, 1));
+		for (int i = 0; i < model.getRowCount(); i++) {
+			prop.setProperty(list.get(i), (String) model.getValueAt(i, 0));
+			prop.setProperty(list.get(i).split("_")[0] + "_price",
+					(String) model.getValueAt(i, 1));
 		}
-		
+
 		prop.setProperty("clientport", tfPortClient.getText());
 		prop.setProperty("arduinoport", tfPortArduino.getText());
 		controller.saveServerConfig(prop);
 	}
-	
-	private void addFluid(String name, int price){
+
+	private void addFluid(String name, int price) {
 		Enumeration<Object> keyList = prop.keys();
 		String key;
 		List<String> list = new ArrayList<String>();
-		
+
 		// Find all fluid keys
-		while(keyList.hasMoreElements()){
-			key = (String)keyList.nextElement();
-			
-			if(key.contains("fluid") && key.contains("name")){
-				list.add(key);				
+		while (keyList.hasMoreElements()) {
+			key = (String) keyList.nextElement();
+
+			if (key.contains("fluid") && key.contains("name")) {
+				list.add(key);
 			}
 		}
 		// Sort the keys
 		Collections.sort(list);
-		
+
 		// Figure out property key for the new fluid
-		String fluidOrder = "fluid" + (Integer.parseInt(list.get(list.size()-1).split(".")[0].substring("fluid".length())) + 1);
-		
+		String fluidOrder;
+		if (list.size() > 0)
+			fluidOrder = "fluid"
+					+ (Integer.parseInt(list.get(list.size() - 1).split("_")[0]
+							.substring("fluid".length())) + 1);
+		else
+			fluidOrder = "fluid1";
+
 		// Save the fluid
-		prop.setProperty(fluidOrder + ".name", name);
-		prop.setProperty(fluidOrder + ".price", "" + price);
-		
+		prop.setProperty(fluidOrder + "_name", name);
+		prop.setProperty(fluidOrder + "_price", "" + price);
+
 		// Save properties and refresh fluids table
 		controller.saveServerConfig(prop);
 		populateFluidsTable(fluidsTable.getModel());
 	}
-	
+
 	private class FluidsListener implements ActionListener {
 
 		@Override
@@ -389,7 +400,7 @@ public class ServerGUI extends JFrame {
 				addFluid("new fluid", 0);
 			}
 		}
-		
+
 	}
 
 	private class Listener implements ActionListener {
@@ -461,14 +472,14 @@ public class ServerGUI extends JFrame {
 			}
 		}
 	}
-	
+
 	private class FluidsTableModel extends DefaultTableModel {
 
 		private static final long serialVersionUID = 3536620580454020553L;
 
 		public FluidsTableModel() {
-	        addColumn("Name");
-	        addColumn("Price/cl");
-	    }
+			addColumn("Name");
+			addColumn("Price/cl");
+		}
 	}
 }
