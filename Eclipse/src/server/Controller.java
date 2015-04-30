@@ -6,7 +6,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.Enumeration;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
@@ -69,10 +73,6 @@ public class Controller {
 			File dir = new File("./resources");
 			dir.mkdir();
 			FileOutputStream out = new FileOutputStream(ServerApp.propFileName);
-			prop.setProperty("fluid1", "Fluid 1");
-			prop.setProperty("fluid2", "Fluid 2");
-			prop.setProperty("fluid3", "Fluid 3");
-			prop.setProperty("fluid4", "Fluid 4");
 			prop.setProperty("clientport", "4444");
 			prop.setProperty("arduinoport", "8008");
 			prop.store(out, "Default values");
@@ -92,6 +92,24 @@ public class Controller {
 			e.printStackTrace();
 		}		
 		
+	}
+	
+	public List<String> getFluidKeys() throws IOException{
+		Enumeration<Object> keyList = loadServerConfig().keys();
+		String key;
+		List<String> list = new ArrayList<String>();
+
+		// Find all fluid keys
+		while (keyList.hasMoreElements()) {
+			key = (String) keyList.nextElement();
+
+			if (key.contains("fluid") && key.contains("name")) {
+				list.add(key);
+			}
+		}
+		// Sort the keys
+		Collections.sort(list);
+		return list;
 	}
 	
 	public void setArduinoConnected(boolean b) {

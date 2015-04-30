@@ -4,7 +4,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
 import java.util.Queue;
 
@@ -71,7 +75,7 @@ public class ServerProtocolParser {
 		return sqlServerName;
 	}
 
-	public void updateProps() {
+	public synchronized void updateProps() {
 		try {
 			prop = new Properties();
 			File initialFile = new File(ServerApp.propFileName);
@@ -115,19 +119,34 @@ public class ServerProtocolParser {
 
 	/**
 	 * Returns a string formatted as
-	 * "INGREDIENTS:'fluid1','fluid2','fluid3','fluid4'" with the fluid names in
+	 * "INGREDIENTS:'fluid1','fluid2', etc" with the fluid names in
 	 * chronological order The names is read from {@code ServerApp.propFileName}
 	 * local file
 	 * 
-	 * @return A string with 4 fluids names
+	 * @return A string with all fluids names
 	 */
 	public synchronized String getIngredients() {
 		updateProps();
+		Enumeration<Object> keyList = prop.keys();
+		String key;
+		List<String> list = new ArrayList<String>();
 		String ingredients = "INGREDIENTS:";
-		ingredients += prop.getProperty("fluid1");
-		ingredients += "," + prop.getProperty("fluid2");
-		ingredients += "," + prop.getProperty("fluid3");
-		ingredients += "," + prop.getProperty("fluid4");
+		
+		// Find all fluid keys
+		while(keyList.hasMoreElements()){
+			key = (String)keyList.nextElement();
+			
+			if(key.contains("fluid") && key.contains("name")){
+				list.add(key);				
+			}
+		}
+		
+		// Sort the keys
+		Collections.sort(list);
+		
+		for(String fluid : list){
+			ingredients += prop.getProperty(fluid) + ",";
+		}
 
 		return ingredients;
 	}

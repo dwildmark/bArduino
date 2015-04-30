@@ -6,12 +6,10 @@ import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 import java.util.Vector;
@@ -41,7 +39,7 @@ public class ServerGUI extends JFrame {
 	private JLabel lblArduinoConnected, lblGrogInTheMaking;
 	private JButton btnRestart, btnSave, btnQuit, btnRefund, btnNewUser,
 			btnDeleteUser, btnRefresh, btnCancelGrog, btnSuspendUser,
-			btnDequeueGrog, btnAddCredits, btnAddFluid;
+			btnDequeueGrog, btnAddCredits, btnAddFluid, btnRemoveFluid;
 	private JPanel pnlSettings, pnlButtons, pnlStatus, pnlUsers, pnlMain,
 			pnlBarduinoConnection, pnlBarduinoStatus;
 	private JTabbedPane tabbedPane;
@@ -104,11 +102,13 @@ public class ServerGUI extends JFrame {
 		fluidsTable = new JTable(new FluidsTableModel());
 		populateFluidsTable(fluidsTable.getModel());
 		btnAddFluid = new JButton("Add fluid");
+		btnRemoveFluid = new JButton("Remove Fluid");
 
 		// Settings panel
 		pnlSettings = new JPanel(new MigLayout());
 		pnlSettings.add(new JLabel("Fluids"), "wrap");
-		pnlSettings.add(new JScrollPane(fluidsTable));
+		pnlSettings.add(new JScrollPane(fluidsTable), "spany 2");
+		pnlSettings.add(btnRemoveFluid,"wrap");
 		pnlSettings.add(btnAddFluid, "wrap");
 		pnlSettings.add(new JLabel("Network"), "wrap");
 		pnlSettings.add(new JLabel("Client Port"), "wrap");
@@ -292,22 +292,9 @@ public class ServerGUI extends JFrame {
 		listModel.removeElement(username);
 	}
 
-	private void populateFluidsTable(TableModel tableModel) {
-		Enumeration<Object> keyList = prop.keys();
-		String key;
-		List<String> list = new ArrayList<String>();
-
-		// Find all fluid keys
-		while (keyList.hasMoreElements()) {
-			key = (String) keyList.nextElement();
-
-			if (key.contains("fluid") && key.contains("name")) {
-				list.add(key);
-			}
-		}
-
-		// Sort the keys
-		Collections.sort(list);
+	private void populateFluidsTable(TableModel tableModel) throws IOException {
+		List<String> list = controller.getFluidKeys();
+		prop = controller.loadServerConfig();
 
 		// Clear table
 		int rows = ((DefaultTableModel) tableModel).getRowCount();
@@ -330,23 +317,11 @@ public class ServerGUI extends JFrame {
 		}
 	}
 
-	private void saveProperties() {
+	private void saveProperties() throws IOException {
 		DefaultTableModel model = (DefaultTableModel) fluidsTable.getModel();
-		Enumeration<Object> keyList = prop.keys();
-		String key;
-		List<String> list = new ArrayList<String>();
-
-		// Find all fluid keys
-		while (keyList.hasMoreElements()) {
-			key = (String) keyList.nextElement();
-
-			if (key.contains("fluid") && key.contains("name")) {
-				list.add(key);
-			}
-		}
-
-		// Sort the keys
-		Collections.sort(list);
+		List<String> list = controller.getFluidKeys();
+		prop = controller.loadServerConfig();
+		
 		for (int i = 0; i < model.getRowCount(); i++) {
 			prop.setProperty(list.get(i), (String) model.getValueAt(i, 0));
 			prop.setProperty(list.get(i).split("_")[0] + "_price",
@@ -358,22 +333,10 @@ public class ServerGUI extends JFrame {
 		controller.saveServerConfig(prop);
 	}
 
-	private void addFluid(String name, int price) {
-		Enumeration<Object> keyList = prop.keys();
-		String key;
-		List<String> list = new ArrayList<String>();
-
-		// Find all fluid keys
-		while (keyList.hasMoreElements()) {
-			key = (String) keyList.nextElement();
-
-			if (key.contains("fluid") && key.contains("name")) {
-				list.add(key);
-			}
-		}
-		// Sort the keys
-		Collections.sort(list);
-
+	private void addFluid(String name, int price) throws IOException {
+		List<String> list = controller.getFluidKeys();
+		prop = controller.loadServerConfig();
+		
 		// Figure out property key for the new fluid
 		String fluidOrder;
 		if (list.size() > 0)
@@ -389,7 +352,26 @@ public class ServerGUI extends JFrame {
 
 		// Save properties and refresh fluids table
 		controller.saveServerConfig(prop);
-		populateFluidsTable(fluidsTable.getModel());
+		try {
+			populateFluidsTable(fluidsTable.getModel());
+		} catch (IOException e) {}
+	}
+	
+	private void removeFluid(int selectedRow) throws IOException{
+		DefaultTableModel model = (DefaultTableModel) fluidsTable.getModel();
+		List<String> list = controller.getFluidKeys();
+		prop = controller.loadServerConfig();
+		
+		for (int i = 0; i < list.size(); i++) {
+			if(model.getValueAt(selectedRow, 0).equals(list.get(i))){
+				prop.remove(list.get(i));
+				prop.remove(list.get(i).split("_")[0] + "_price");
+			}
+		}
+		controller.saveServerConfig(prop);
+		try {
+			populateFluidsTable(fluidsTable.getModel());
+		} catch (IOException e) {}
 	}
 
 	private class FluidsListener implements ActionListener {
@@ -397,10 +379,15 @@ public class ServerGUI extends JFrame {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if (e.getSource() == btnAddFluid) {
-				addFluid("new fluid", 0);
+				try {
+					addFluid("new fluid", 0);
+				} catch (IOException e1) {}
+			} else if (e.getSource() == btnRemoveFluid){
+				try {
+					removeFluid(fluidsTable.getSelectedRow());
+				} catch (IOException e1) {}
 			}
 		}
-
 	}
 
 	private class Listener implements ActionListener {
@@ -427,7 +414,9 @@ public class ServerGUI extends JFrame {
 				JOptionPane.showConfirmDialog(btnSave,
 						"Are you sure that you want to save?"
 								+ " Old settings will be lost!");
-				saveProperties();
+				try {
+					saveProperties();
+				} catch (IOException e1) {}
 			}
 		}
 	}
