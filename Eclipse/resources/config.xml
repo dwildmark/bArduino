@@ -20,7 +20,7 @@
     </Fluids>
     <serverAdress>localhost</serverAdress>
     <databaseName>barduino</databaseName>
-    <username>barduino</username>
+    <username>root</username>
     <arduinoPort>8008</arduinoPort>
     <clientPort>4444</clientPort>
 </ServerConfiguration>

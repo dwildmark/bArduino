@@ -8,7 +8,9 @@ import java.util.Queue;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
 
+import server.ClientHandler;
 import server.Fluid;
+import server.Grog;
 import server.PropertiesWrapper;
 import server.ServerApp;
 
@@ -31,7 +33,7 @@ public class ServerProtocolParser {
 	
 	private String sqlPassword, sqlUserName, sqlDatabaseName, sqlServerName;
 	private int numberOfAvailableFluids = 4;
-	private Queue<String> arduinoMessages = new LinkedList<String>();
+	private Queue<Grog> grogQueue = new LinkedList<Grog>();
 	private PropertiesWrapper prop;
 	private boolean grogAvailable = false;
 	private int state;
@@ -140,10 +142,12 @@ public class ServerProtocolParser {
 	 * 
 	 * @param message
 	 *            Message recieved from client
+	 * @param clientHandler 
+	 * 			  User who sent the message
 	 * @return An appropriate response depending of the state of server and
 	 *         content of message
 	 */
-	public synchronized String processClientMessage(String message) {
+	public synchronized String processClientMessage(String message, ClientHandler clientHandler) {
 		String response = null;
 
 		if (message.equals("INGREDIENTS")) {
@@ -154,7 +158,7 @@ public class ServerProtocolParser {
 			if (message.equals("AVAREQ"))
 				response = "AVAILABLE";
 			else
-				response = processGrogRequest(message);
+				response = processGrogRequest(message, clientHandler);
 
 		} else if (state == BUSY) {
 			response = "ERROR BUSY";
@@ -174,13 +178,15 @@ public class ServerProtocolParser {
 	 * 
 	 * @param message
 	 *            A GROG formatted request
+	 * @param clientHandler 
+	 * 			  User who sent the message
 	 * @return Returns "ERROR WRONGFORMAT" if the format is wrong and "GROGOK"
 	 *         if the formatting is accepted.
 	 */
-	public synchronized String processGrogRequest(String message) {
+	public synchronized String processGrogRequest(String message, ClientHandler clientHandler) {
 		String response = null;
 		String[] request = message.split(" ");
-		arduinoMessages.clear();
+		Queue<String> arduinoMessages = new LinkedList<String>();
 		char fluid = 'A';
 
 		if (!(request[0].equals("GROG"))
@@ -200,13 +206,14 @@ public class ServerProtocolParser {
 					}
 					fluid++;
 				}
+				
 				response = "GROGOK";
 				if (arduinoMessages.size() > 0) {
 					grogAvailable = true;
 					state = BUSY;
+					grogQueue.add(new Grog(arduinoMessages, clientHandler));
 				}
-				System.out.println("Server: GROG available, now BUSY");
-
+				
 			} catch (NumberFormatException e) {
 				arduinoMessages.clear();
 				response = "ERROR WRONGFORMAT";
@@ -232,11 +239,11 @@ public class ServerProtocolParser {
 	 * @return An {@link String} for sending to the Arduino, containing which
 	 *         fluid and how much.
 	 */
-	public synchronized String dequeueGrog() {
-		String str = null;
+	public synchronized Grog dequeueGrog() {
+		Grog str = null;
 		if (grogAvailable) {
-			str = arduinoMessages.remove();
-			if (arduinoMessages.isEmpty()) {
+			str = grogQueue.remove();
+			if (grogQueue.isEmpty()) {
 				grogAvailable = false;
 			}
 		}
@@ -247,7 +254,7 @@ public class ServerProtocolParser {
 	 * Removes all queued Arduino messages
 	 */
 	public synchronized void clearGrog() {
-		arduinoMessages.clear();
+		grogQueue.clear();
 		grogAvailable = false;
 	}
 }

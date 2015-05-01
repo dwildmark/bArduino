@@ -64,11 +64,12 @@ public class ArduinoHandler extends Thread {
 	public void run() {
 		String message;
 		String answer;
+		Grog grog;
 
 		try {
-			PropertiesWrapper prop = controller.loadServerConfig();		
+			PropertiesWrapper prop = controller.loadServerConfig();
 			arduinoServerSocket = new ServerSocket(prop.getArduinoPort());
-			
+
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
@@ -92,19 +93,22 @@ public class ArduinoHandler extends Thread {
 
 					while (mOut != null && in != null) {
 						if (parser.isGrogAvailable()) {
+							grog = parser.dequeueGrog();
 							timer.cancel();
 							timer.purge();
-							message = parser.dequeueGrog();
+							
+							while (grog.hasMoreMessages()) {
+								message = grog.dequeueMessage();
 
-							if (message != null) {
-								mOut.println(message);
-								logger.info("Server to Arduino: " + message);
-								answer = in.readLine();
-								logger.info("Arduino said: " + answer);
-								if(!parser.isGrogAvailable()){
-									parser.setState(ServerProtocolParser.VACANT);
+								if (message != null) {
+									mOut.println(message);
+									logger.info("Server to Arduino: " + message);
+									answer = in.readLine();
+									logger.info("Arduino said: " + answer);
+									if (!grog.hasMoreMessages()) {
+										parser.setState(ServerProtocolParser.VACANT);
+									}
 								}
-
 							}
 							timer = new Timer();
 							timer.scheduleAtFixedRate(new ToDoTask(), 0, 1000);
@@ -143,6 +147,6 @@ public class ArduinoHandler extends Thread {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 	}
 }

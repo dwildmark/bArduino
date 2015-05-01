@@ -13,14 +13,15 @@ import protocol.ServerProtocolParser;
 import protocol.UserTools;
 
 /**
- * This class handles the connection to a client. It uses a the serversocket to send data between the client and
- * the server. The serverProtocolParser is acts as the interpreter between the the messages sent from and to the 
- * client. We also need a bufferedReader to write and read from and to the propertyfile,
+ * This class handles the connection to a client. It uses a the serversocket to
+ * send data between the client and the server. The serverProtocolParser is acts
+ * as the interpreter between the the messages sent from and to the client. We
+ * also need a bufferedReader to write and read from and to the propertyfile,
  * that contains information the client uses.
+ * 
  * @author Andreas, Jonathan, Olle.
  *
  */
-
 public class ClientHandler extends Thread {
 	private Socket client;
 	private PrintWriter mOut;
@@ -30,12 +31,15 @@ public class ClientHandler extends Thread {
 	private boolean loggedIn = false;
 	private String username = null;
 	private Controller controller;
-	
+
 	/**
 	 * Constructor for the class.
-	 * @param controller 
-	 * @param client, the specific client that is connected.
-	 * @param logger, logs all data.
+	 * 
+	 * @param controller
+	 * @param client
+	 *            , the specific client that is connected.
+	 * @param logger
+	 *            , logs all data.
 	 */
 
 	public ClientHandler(Socket client, Logger logger, Controller controller) {
@@ -44,14 +48,18 @@ public class ClientHandler extends Thread {
 		this.parser = ServerProtocolParser.getInstance();
 		this.controller = controller;
 	}
-	/**
-	 * mOut writes to the file and in reads from the file. We catch exceptions if
-	 * something goes wrong during reading or writing. 
-	 * We use a try and then a while to constantly check for messages that are sent and received.
-	 * if something that is tried and fails, we catch the exception and prints
-	 * the stactrace in the console.
-	 */
+	
+	public String getUsername(){
+		return username;
+	}
 
+	/**
+	 * mOut writes to the file and in reads from the file. We catch exceptions
+	 * if something goes wrong during reading or writing. We use a try and then
+	 * a while to constantly check for messages that are sent and received. if
+	 * something that is tried and fails, we catch the exception and prints the
+	 * stactrace in the console.
+	 */
 	public void run() {
 		try {
 			mOut = new PrintWriter(new BufferedWriter(new OutputStreamWriter(
@@ -69,11 +77,11 @@ public class ClientHandler extends Thread {
 				message = in.readLine();
 				if (message == null)
 					break;
-				
+
 				if (message.substring(0, 5).equals("LOGIN")) {
 					logger.info("Client: " + client.getInetAddress()
 							+ " said: LOGIN");
-				}else if (!message.equals("AVAREQ")){
+				} else if (!message.equals("AVAREQ")) {
 					logger.info("Client: " + client.getInetAddress()
 							+ " said: " + message);
 				}
@@ -84,11 +92,11 @@ public class ClientHandler extends Thread {
 					break;
 				}
 
-				if (message.substring(0, 5).equals("LOGIN")){
+				if (message.substring(0, 5).equals("LOGIN")) {
 					if (UserTools.confirmUser(
 							message.substring(6).split(":")[0], message
-									.substring(6).split(":")[1].toCharArray())){
-						
+									.substring(6).split(":")[1].toCharArray())) {
+
 						username = message.substring(6).split(":")[0];
 						controller.userLoggedIn(username);
 						answer = "LOGIN OK";
@@ -97,8 +105,8 @@ public class ClientHandler extends Thread {
 						answer = "LOGIN BAD";
 					}
 				} else {
-					if(loggedIn){
-						answer = parser.processClientMessage(message);
+					if (loggedIn) {
+						answer = parser.processClientMessage(message, this);
 					} else {
 						answer = "ERROR NOLOGIN";
 					}
@@ -125,10 +133,10 @@ public class ClientHandler extends Thread {
 			e.printStackTrace();
 		}
 	}
-	
-/**
- * closes the connection. and catches any exception.
- */
+
+	/**
+	 * closes the connection. and catches any exception.
+	 */
 	public void close() {
 		try {
 			controller.userLoggedOut(username);

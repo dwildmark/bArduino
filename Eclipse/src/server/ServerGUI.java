@@ -105,10 +105,11 @@ public class ServerGUI extends JFrame {
 
 		// Settings panel
 		pnlSettings = new JPanel(new MigLayout());
-		pnlSettings.add(new JLabel("Fluids"), "wrap");
-		pnlSettings.add(new JScrollPane(fluidsTable), "spany 2");
-		pnlSettings.add(btnRemoveFluid, "wrap");
+//		pnlSettings.add(new JLabel("Fluids"));
+		pnlSettings.add(btnRemoveFluid);
 		pnlSettings.add(btnAddFluid, "wrap");
+		pnlSettings.add(new JScrollPane(fluidsTable), "wrap, span 2");
+		
 		pnlSettings.add(new JLabel("Network"), "wrap");
 		pnlSettings.add(new JLabel("Client Port"), "wrap");
 		pnlSettings.add(tfPortClient, "wrap, w 100!");
