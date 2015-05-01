@@ -1,17 +1,15 @@
 package protocol;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Properties;
 import java.util.Queue;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Unmarshaller;
+
+import server.Fluid;
+import server.PropertiesWrapper;
 import server.ServerApp;
 
 /**
@@ -34,7 +32,7 @@ public class ServerProtocolParser {
 	private String sqlPassword, sqlUserName, sqlDatabaseName, sqlServerName;
 	private int numberOfAvailableFluids = 4;
 	private Queue<String> arduinoMessages = new LinkedList<String>();
-	private Properties prop;
+	private PropertiesWrapper prop;
 	private boolean grogAvailable = false;
 	private int state;
 
@@ -77,15 +75,14 @@ public class ServerProtocolParser {
 
 	public synchronized void updateProps() {
 		try {
-			prop = new Properties();
-			File initialFile = new File(ServerApp.propFileName);
-			InputStream inputStream = new FileInputStream(initialFile);
-
-			prop.load(inputStream);
-			inputStream.close();
-
+			JAXBContext jaxbContext = JAXBContext
+					.newInstance(PropertiesWrapper.class);
+			Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
+			prop = (PropertiesWrapper) jaxbUnmarshaller
+					.unmarshal(new File(ServerApp.configFileName));
+			
 		} catch (Exception e) {
-			e.printStackTrace();
+			
 		}
 
 	}
@@ -127,60 +124,14 @@ public class ServerProtocolParser {
 	 */
 	public synchronized String getIngredients() {
 		updateProps();
-		Enumeration<Object> keyList = prop.keys();
-		String key;
-		List<String> list = new ArrayList<String>();
+		List<Fluid> list = prop.getFluidList();
 		String ingredients = "INGREDIENTS:";
 		
-		// Find all fluid keys
-		while(keyList.hasMoreElements()){
-			key = (String)keyList.nextElement();
-			
-			if(key.contains("fluid") && key.contains("name")){
-				list.add(key);				
-			}
-		}
-		
-		// Sort the keys
-		Collections.sort(list);
-		
-		for(String fluid : list){
-			ingredients += prop.getProperty(fluid) + ",";
+		for(Fluid fluid : list){
+			ingredients += fluid.getName() + ",";
 		}
 
 		return ingredients;
-	}
-
-	/**
-	 * Sets the fluids names
-	 * 
-	 * @param ingredients
-	 *            4 fluid names in chronological order separated with ","
-	 * @return "INGREDIENTSOK" if fluids is set successfully,
-	 *         "ERROR WRONGFORMAT" if its less than 4 ingredients or the file
-	 *         {@code ServerApp.propFileName} is missing
-	 */
-	public synchronized String setIngredients(String ingredients) {
-		String response;
-		String[] str = ingredients.split(",");
-		FileOutputStream out;
-
-		try {
-			out = new FileOutputStream(ServerApp.propFileName);
-			prop.setProperty("fluid1", str[0]);
-			prop.setProperty("fluid2", str[1]);
-			prop.setProperty("fluid3", str[2]);
-			prop.setProperty("fluid4", str[3]);
-			prop.store(out, null);
-			out.close();
-			response = "INGREDIENTSOK";
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			response = "ERROR WRONGFORMAT";
-		}
-		return response;
-
 	}
 
 	/**
@@ -198,8 +149,6 @@ public class ServerProtocolParser {
 		if (message.equals("INGREDIENTS")) {
 			response = getIngredients();
 
-		} else if (message.split(":")[0].equals("SETINGREDIENTS")) {
-			response = setIngredients(message.split(":")[1]);
 		} else if (state == VACANT) {
 
 			if (message.equals("AVAREQ"))

@@ -3,14 +3,10 @@ package server;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
-import java.util.Arrays;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
 import protocol.UserTools;
@@ -29,10 +25,12 @@ public class EditUserPane extends JPanel {
 	private JTextField tfSum;
 	private String user;
 	private JFrame frame;
+	private ServerGUI serverGUI;
 
-	public EditUserPane(JFrame frame, String user) {
+	public EditUserPane(JFrame frame, String user, ServerGUI serverGUI) {
 		this.user = user;
 		this.frame = frame;
+		this.serverGUI = serverGUI;
 
 		setLayout(new MigLayout());
 		btnAdd = new JButton("Add credits");
@@ -50,6 +48,7 @@ public class EditUserPane extends JPanel {
 			String sum = tfSum.getText();
 			try {
 				UserTools.alterCredits(user, Double.parseDouble(sum));
+				serverGUI.printUsers();
 				frame.dispatchEvent(new WindowEvent(frame,
 						WindowEvent.WINDOW_CLOSING));
 			} catch (Exception a) {

@@ -4,7 +4,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.util.Properties;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -29,7 +28,7 @@ public class LoginFrame extends JFrame {
 	private JPasswordField pfPassword;
 	private JButton logIn;
 	private JCheckBox saveUser;
-	private Properties prop;
+	private PropertiesWrapper prop;
 	private ServerProtocolParser parser;
 	private Controller controller;
 
@@ -45,15 +44,15 @@ public class LoginFrame extends JFrame {
 		setLayout(new MigLayout());
 
 		add(new JLabel("Server Adress:"));
-		tfServerAdress = new JTextField(prop.getProperty("server_adress"));
+		tfServerAdress = new JTextField(prop.getServerAdress());
 		add(tfServerAdress, "wrap, w 150!");
 
 		add(new JLabel("Database Name:"));
-		tfDatabaseName = new JTextField(prop.getProperty("database_name"));
+		tfDatabaseName = new JTextField(prop.getDatabaseName());
 		add(tfDatabaseName, "wrap, w 150!");
 
 		add(new JLabel("Username:"));
-		tfUserName = new JTextField(prop.getProperty("sql_username"));
+		tfUserName = new JTextField(prop.getUsername());
 		add(tfUserName, "wrap, w 150!");
 
 		saveUser = new JCheckBox("Save Username");
@@ -78,13 +77,13 @@ public class LoginFrame extends JFrame {
 
 	private void saveConfigs() {
 		try {
-			prop.setProperty("server_adress", tfServerAdress.getText());
-			prop.setProperty("database_name", tfDatabaseName.getText());
+			prop.setServerAdress(tfServerAdress.getText());
+			prop.setDatabaseName(tfDatabaseName.getText());
 
 			if (saveUser.isSelected()) {
-				prop.setProperty("sql_username", tfUserName.getText());
+				prop.setUsername(tfUserName.getText());
 			} else {
-				prop.remove("sql_username");
+				prop.setUsername("");
 			}
 			controller.saveServerConfig(prop);
 		} catch (Exception e) {

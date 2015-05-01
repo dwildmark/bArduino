@@ -51,8 +51,10 @@ public class GUI extends JPanel {
 	private TCPClient tcpClient;
 	public JTextArea hiddenLog;
 	private Timer timer;
+	@SuppressWarnings("unused")
 	private boolean loggedIn;
 	private JFrame frame;
+	@SuppressWarnings("unused")
 	private GUIWrapper guiWrapper;
 
 	public GUI(String relPath, JFrame frame, GUIWrapper guiWrapper) throws IOException {

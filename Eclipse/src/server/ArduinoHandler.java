@@ -1,15 +1,10 @@
 package server;
 
-import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Logger;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -71,17 +66,10 @@ public class ArduinoHandler extends Thread {
 		String answer;
 
 		try {
-			Properties prop = new Properties();
-			File initialFile = new File(ServerApp.propFileName);
-			InputStream inputStream = new FileInputStream(initialFile);
+			PropertiesWrapper prop = controller.loadServerConfig();		
+			arduinoServerSocket = new ServerSocket(prop.getArduinoPort());
 			
-			prop.load(inputStream);
-			inputStream.close();
-			
-			arduinoServerSocket = new ServerSocket(
-					Integer.parseInt((String) prop.get("arduinoport")));
-			
-		} catch (IOException e1) {
+		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
 		while (running) {

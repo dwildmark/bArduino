@@ -6,13 +6,10 @@ package server;
  *
  */
 public class ServerApp {
-	public final static String propFileName = "./resources/config.properties";
+	public final static String configFileName = "./resources/config.xml";
+	public final static String resourceDirectory = "./resources";
 
 	public static void main(String[] args) {
-		loginWindow();
-	}
-	
-	public static void loginWindow(){
 		new LoginFrame(new Controller());
 	}
 }

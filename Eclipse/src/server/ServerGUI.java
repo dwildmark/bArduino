@@ -6,19 +6,17 @@ import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 import java.util.Vector;
 import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
 
 import org.imgscalr.Scalr;
 
@@ -34,7 +32,7 @@ import net.miginfocom.swing.*;
 public class ServerGUI extends JFrame {
 
 	private static final long serialVersionUID = 2486865764551934155L;
-	private JTextField tfPortClient, tfPortArduino;
+	private JTextField tfPortClient, tfPortArduino, userSearch;
 	private JTextArea taLog;
 	private JLabel lblArduinoConnected, lblGrogInTheMaking;
 	private JButton btnRestart, btnSave, btnQuit, btnRefund, btnNewUser,
@@ -49,7 +47,7 @@ public class ServerGUI extends JFrame {
 	private JList<String> connectedUserList, grogQueueList;
 	private ImageIcon iconConnected, iconDisconnected;
 	private Logger logger;
-	private Properties prop = null;
+	private PropertiesWrapper prop = null;
 	private Controller controller;
 
 	/**
@@ -95,12 +93,13 @@ public class ServerGUI extends JFrame {
 		pnlButtons.add(btnQuit);
 
 		// Network
-		tfPortClient = new JTextField(prop.getProperty("clientport"));
-		tfPortArduino = new JTextField(prop.getProperty("arduinoport"));
+		tfPortClient = new JTextField(prop.getClientPort() + "");
+		tfPortArduino = new JTextField(prop.getArduinoPort() + "");
 
 		// Fluids
-		fluidsTable = new JTable(new FluidsTableModel());
-		populateFluidsTable(fluidsTable.getModel());
+		fluidsTable = new JTable();
+		fluidsTable.getTableHeader().setReorderingAllowed(false);
+		populateFluidsTable();
 		btnAddFluid = new JButton("Add fluid");
 		btnRemoveFluid = new JButton("Remove Fluid");
 
@@ -108,7 +107,7 @@ public class ServerGUI extends JFrame {
 		pnlSettings = new JPanel(new MigLayout());
 		pnlSettings.add(new JLabel("Fluids"), "wrap");
 		pnlSettings.add(new JScrollPane(fluidsTable), "spany 2");
-		pnlSettings.add(btnRemoveFluid,"wrap");
+		pnlSettings.add(btnRemoveFluid, "wrap");
 		pnlSettings.add(btnAddFluid, "wrap");
 		pnlSettings.add(new JLabel("Network"), "wrap");
 		pnlSettings.add(new JLabel("Client Port"), "wrap");
@@ -117,7 +116,9 @@ public class ServerGUI extends JFrame {
 		pnlSettings.add(tfPortArduino, "wrap, w 100!");
 
 		// Users Panel
+		userSearch = new JTextField();
 		userTable = new JTable();
+		userTable.getTableHeader().setReorderingAllowed(false);
 		userScrollPane = new JScrollPane(userTable);
 		btnRefund = new JButton("Refund", new ImageIcon(getClass().getResource(
 				"/cash.png")));
@@ -129,6 +130,8 @@ public class ServerGUI extends JFrame {
 				.getResource("/addcredits.png")));
 
 		pnlUsers = new JPanel(new MigLayout());
+		pnlUsers.add(new JLabel("Search"), "wrap");
+		pnlUsers.add(userSearch, "wrap, w 100!");
 		pnlUsers.add(userScrollPane, "wrap, span 4, grow");
 		pnlUsers.add(btnAddCredits);
 		pnlUsers.add(btnRefund);
@@ -210,6 +213,7 @@ public class ServerGUI extends JFrame {
 		FluidsListener fluidListener = new FluidsListener();
 
 		btnAddFluid.addActionListener(fluidListener);
+		btnRemoveFluid.addActionListener(fluidListener);
 
 		btnQuit.addActionListener(btnlistner);
 		btnRestart.addActionListener(btnlistner);
@@ -238,17 +242,17 @@ public class ServerGUI extends JFrame {
 	 */
 	public void printUsers() {
 		ResultSet users = UserTools.getAllUsers();
-		DefaultTableModel tableModel = null;
+		UserTableModel tableModel = null;
 		try {
 			tableModel = buildTableModel(users);
 		} catch (SQLException e) {
 		}
 
 		userTable.setModel(tableModel);
+		userTable.setAutoCreateRowSorter(true);
 	}
 
-	public static DefaultTableModel buildTableModel(ResultSet rs)
-			throws SQLException {
+	public UserTableModel buildTableModel(ResultSet rs) throws SQLException {
 
 		ResultSetMetaData metaData = rs.getMetaData();
 
@@ -269,7 +273,7 @@ public class ServerGUI extends JFrame {
 			data.add(vector);
 		}
 
-		return new DefaultTableModel(data, columnNames);
+		return new UserTableModel(data, columnNames);
 
 	}
 
@@ -292,100 +296,94 @@ public class ServerGUI extends JFrame {
 		listModel.removeElement(username);
 	}
 
-	private void populateFluidsTable(TableModel tableModel) throws IOException {
-		List<String> list = controller.getFluidKeys();
-		prop = controller.loadServerConfig();
-
-		// Clear table
-		int rows = ((DefaultTableModel) tableModel).getRowCount();
-		for (int i = 0; i < rows; i++) {
-			((DefaultTableModel) tableModel).removeRow(i);
-		}
+	private void populateFluidsTable() {
+		List<Fluid> list = prop.getFluidList();
+		FluidsTableModel tableModel = new FluidsTableModel();
 
 		// Add Values to table
 		if (list.size() > 0) {
-			String fluid;
+			Fluid fluid;
 			for (int i = 0; i < list.size(); i++) {
 				fluid = list.get(i);
 				Vector<String> rowValue = new Vector<String>();
-				rowValue.add(prop.getProperty(fluid));
-				String[] splitStr = fluid.split("_");
-				rowValue.add(prop.getProperty(splitStr[0] + "_price"));
 
-				((DefaultTableModel) tableModel).addRow(rowValue);
+				rowValue.add(fluid.getId() + "");
+				rowValue.add(fluid.getName());
+				rowValue.add(fluid.getCost() + "");
+
+				tableModel.addRow(rowValue);
 			}
 		}
+		fluidsTable.setModel(tableModel);
+		fluidsTable.repaint();
 	}
 
-	private void saveProperties() throws IOException {
-		DefaultTableModel model = (DefaultTableModel) fluidsTable.getModel();
-		List<String> list = controller.getFluidKeys();
-		prop = controller.loadServerConfig();
-		
+	private void saveProperties() throws Exception {
+		List<Fluid> list = prop.getFluidList();
+		FluidsTableModel model = (FluidsTableModel) fluidsTable.getModel();
+		Fluid tempFluid;
+
 		for (int i = 0; i < model.getRowCount(); i++) {
-			prop.setProperty(list.get(i), (String) model.getValueAt(i, 0));
-			prop.setProperty(list.get(i).split("_")[0] + "_price",
-					(String) model.getValueAt(i, 1));
+			tempFluid = list.get(i);
+			tempFluid.setId(Integer.parseInt((String) model.getValueAt(i, 0)));
+			tempFluid.setName((String) model.getValueAt(i, 1));
+			tempFluid
+					.setCost(Integer.parseInt((String) model.getValueAt(i, 2)));
 		}
 
-		prop.setProperty("clientport", tfPortClient.getText());
-		prop.setProperty("arduinoport", tfPortArduino.getText());
+		prop.setClientPort(Integer.parseInt(tfPortClient.getText()));
+		prop.setArduinoPort(Integer.parseInt(tfPortArduino.getText()));
 		controller.saveServerConfig(prop);
+
 	}
 
-	private void addFluid(String name, int price) throws IOException {
-		List<String> list = controller.getFluidKeys();
-		prop = controller.loadServerConfig();
-		
-		// Figure out property key for the new fluid
-		String fluidOrder;
-		if (list.size() > 0)
-			fluidOrder = "fluid"
-					+ (Integer.parseInt(list.get(list.size() - 1).split("_")[0]
-							.substring("fluid".length())) + 1);
-		else
-			fluidOrder = "fluid1";
+	private void addFluid(String name, int price) throws Exception {
+		List<Fluid> list = prop.getFluidList();
+		Collections.sort(list);
 
-		// Save the fluid
-		prop.setProperty(fluidOrder + "_name", name);
-		prop.setProperty(fluidOrder + "_price", "" + price);
+		Fluid newFluid = new Fluid();
+		if (list.size() > 0)
+			newFluid.setId(list.get(list.size() - 1).getId() + 1);
+		else
+			newFluid.setId(1);
+		newFluid.setName(name);
+		newFluid.setCost(price);
+
+		prop.addFluid(newFluid);
 
 		// Save properties and refresh fluids table
 		controller.saveServerConfig(prop);
-		try {
-			populateFluidsTable(fluidsTable.getModel());
-		} catch (IOException e) {}
+		populateFluidsTable();
 	}
-	
-	private void removeFluid(int selectedRow) throws IOException{
-		DefaultTableModel model = (DefaultTableModel) fluidsTable.getModel();
-		List<String> list = controller.getFluidKeys();
-		prop = controller.loadServerConfig();
-		
+
+	private void removeFluid(String fluid) throws Exception {
+		List<Fluid> list = prop.getFluidList();
+
 		for (int i = 0; i < list.size(); i++) {
-			if(model.getValueAt(selectedRow, 0).equals(list.get(i))){
-				prop.remove(list.get(i));
-				prop.remove(list.get(i).split("_")[0] + "_price");
+			if (list.get(i).getName().equals(fluid)) {
+				prop.removeFluid(list.get(i));
+				break;
 			}
 		}
 		controller.saveServerConfig(prop);
-		try {
-			populateFluidsTable(fluidsTable.getModel());
-		} catch (IOException e) {}
+		populateFluidsTable();
 	}
 
 	private class FluidsListener implements ActionListener {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			if (e.getSource() == btnAddFluid) {
-				try {
+			try {
+				if (e.getSource() == btnAddFluid) {
 					addFluid("new fluid", 0);
-				} catch (IOException e1) {}
-			} else if (e.getSource() == btnRemoveFluid){
-				try {
-					removeFluid(fluidsTable.getSelectedRow());
-				} catch (IOException e1) {}
+
+				} else if (e.getSource() == btnRemoveFluid) {
+					removeFluid((String) fluidsTable.getValueAt(
+							fluidsTable.getSelectedRow(), 1));
+
+				}
+			} catch (Exception e1) {
+				JOptionPane.showMessageDialog(null, e1.getMessage());
 			}
 		}
 	}
@@ -411,12 +409,16 @@ public class ServerGUI extends JFrame {
 				System.exit(0);
 
 			} else if (e.getSource() == btnSave) {
-				JOptionPane.showConfirmDialog(btnSave,
+				if (JOptionPane.showConfirmDialog(btnSave,
 						"Are you sure that you want to save?"
-								+ " Old settings will be lost!");
-				try {
-					saveProperties();
-				} catch (IOException e1) {}
+								+ " Old settings will be lost!") == JOptionPane.YES_OPTION) {
+					try {
+						saveProperties();
+					} catch (Exception e1) {
+						JOptionPane.showMessageDialog(null, e1.getMessage());
+						e1.printStackTrace();
+					}
+				}
 			}
 		}
 	}
@@ -435,28 +437,32 @@ public class ServerGUI extends JFrame {
 
 			} else if (e.getSource() == btnDeleteUser) {
 				int selectedRowIndex = userTable.getSelectedRow();
-				int selectedColumnIndex = userTable.getSelectedColumn();
-				String selectedObject = (String) userTable.getModel()
-						.getValueAt(selectedRowIndex, selectedColumnIndex);
-				if (selectedObject != null
-						&& JOptionPane.showConfirmDialog(ServerGUI.this,
-								"Are you sure you want to delete user '"
-										+ selectedObject + "'") == JOptionPane.YES_OPTION)
-					UserTools.removeUser(selectedObject);
-				printUsers();
+				if (selectedRowIndex >= 0) {
+					String selectedObject = (String) userTable.getModel()
+							.getValueAt(selectedRowIndex, 0);
+					if (selectedObject != null
+							&& JOptionPane.showConfirmDialog(ServerGUI.this,
+									"Are you sure you want to delete user '"
+											+ selectedObject + "'") == JOptionPane.YES_OPTION)
+						UserTools.removeUser(selectedObject);
+					printUsers();
+				}
 
 			} else if (e.getSource() == btnAddCredits) {
 				int selectedRowIndex = userTable.getSelectedRow();
-				int selectedColumnIndex = userTable.getSelectedColumn();
-				String selectedObject = (String) userTable.getModel()
-						.getValueAt(selectedRowIndex, selectedColumnIndex);
-				if (selectedObject != null) {
-					JFrame frame = new JFrame();
-					EditUserPane pane = new EditUserPane(frame, selectedObject);
-					frame.add(pane);
-					frame.pack();
-					frame.setVisible(true);
-					frame.setLocationRelativeTo(ServerGUI.this);
+				if (selectedRowIndex >= 0) {
+					String selectedObject = (String) userTable.getModel()
+							.getValueAt(selectedRowIndex, 0);
+
+					if (selectedObject != null) {
+						JFrame frame = new JFrame();
+						EditUserPane pane = new EditUserPane(frame,
+								selectedObject, ServerGUI.this);
+						frame.add(pane);
+						frame.pack();
+						frame.setVisible(true);
+						frame.setLocationRelativeTo(ServerGUI.this);
+					}
 				}
 			}
 		}
@@ -467,8 +473,24 @@ public class ServerGUI extends JFrame {
 		private static final long serialVersionUID = 3536620580454020553L;
 
 		public FluidsTableModel() {
+			addColumn("Id");
 			addColumn("Name");
 			addColumn("Price/cl");
+		}
+	}
+
+	public class UserTableModel extends DefaultTableModel {
+		private static final long serialVersionUID = -7402718922329474450L;
+
+		public UserTableModel(Vector<Vector<Object>> data,
+				Vector<String> columnNames) {
+			super(data, columnNames);
+		}
+
+		// table is not editable
+		@Override
+		public boolean isCellEditable(int row, int column) {
+			return false;
 		}
 	}
 }

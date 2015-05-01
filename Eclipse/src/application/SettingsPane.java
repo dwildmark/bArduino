@@ -32,7 +32,9 @@ public class SettingsPane extends JPanel {
 	private TCPClient tcpClient;
 	private OnMessageReceived messageListener;
 	private JFrame frame;
+	@SuppressWarnings("unused")
 	private int SERVERPORT;
+	@SuppressWarnings("unused")
 	private String IPADDRESS;
 
 	public SettingsPane(GUI gui, TCPClient tcpClient, JFrame frame) {

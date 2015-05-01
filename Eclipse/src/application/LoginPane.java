@@ -12,6 +12,7 @@ import javax.swing.JTextField;
 
 import net.miginfocom.swing.MigLayout;
 
+@SuppressWarnings("serial")
 public class LoginPane extends JPanel{
 	private JTextField userTF;
 	private JPasswordField passwordTF;

@@ -6,7 +6,6 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.LinkedList;
-import java.util.Properties;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
 
@@ -48,10 +47,9 @@ public class Server extends Thread {
 		running = true;
 
 		try {
-			Properties prop = controller.loadServerConfig();
+			PropertiesWrapper prop = controller.loadServerConfig();
 			
-			serverSocket = new ServerSocket(Integer.parseInt((String) prop
-					.get("clientport")));
+			serverSocket = new ServerSocket(prop.getClientPort());
 			logger.info("Server: Running " + InetAddress.getLocalHost() + "/"
 					+ serverSocket.getLocalPort());
 			ArduinoHandler tempArduino = new ArduinoHandler(logger, controller);

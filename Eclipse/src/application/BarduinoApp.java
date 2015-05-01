@@ -22,9 +22,9 @@ public class BarduinoApp {
 			e.printStackTrace();
 		} 
 		JFrame frame = new JFrame();
-		GUIWrapper guiWrap = new GUIWrapper("resources/Barduino.png", frame);
+		GUIWrapper guiWrap = new GUIWrapper("./images/Barduino.png", frame);
 		//GUI gui = new GUI("resources/Barduino.png", frame);
-		String absolutePath = new File("resources/bArduino_icon.png").getAbsolutePath();
+		String absolutePath = new File("./images/bArduino_icon.png").getAbsolutePath();
 		frame.setIconImage(new ImageIcon(absolutePath).getImage());
 		frame.add(guiWrap);
 		frame.pack();
