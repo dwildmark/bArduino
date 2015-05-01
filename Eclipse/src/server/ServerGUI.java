@@ -16,7 +16,12 @@ import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableRowSorter;
 
 import org.imgscalr.Scalr;
 
@@ -46,6 +51,7 @@ public class ServerGUI extends JFrame {
 	private JTable userTable, fluidsTable;
 	private JList<String> connectedUserList, grogQueueList;
 	private ImageIcon iconConnected, iconDisconnected;
+	private TableRowSorter<UserTableModel> sorter;
 	private Logger logger;
 	private PropertiesWrapper prop = null;
 	private Controller controller;
@@ -105,11 +111,11 @@ public class ServerGUI extends JFrame {
 
 		// Settings panel
 		pnlSettings = new JPanel(new MigLayout());
-//		pnlSettings.add(new JLabel("Fluids"));
+		// pnlSettings.add(new JLabel("Fluids"));
 		pnlSettings.add(btnRemoveFluid);
 		pnlSettings.add(btnAddFluid, "wrap");
 		pnlSettings.add(new JScrollPane(fluidsTable), "wrap, span 2");
-		
+
 		pnlSettings.add(new JLabel("Network"), "wrap");
 		pnlSettings.add(new JLabel("Client Port"), "wrap");
 		pnlSettings.add(tfPortClient, "wrap, w 100!");
@@ -118,6 +124,19 @@ public class ServerGUI extends JFrame {
 
 		// Users Panel
 		userSearch = new JTextField();
+		userSearch.getDocument().addDocumentListener(new DocumentListener() {
+			public void changedUpdate(DocumentEvent e) {
+				newFilter();
+			}
+
+			public void insertUpdate(DocumentEvent e) {
+				newFilter();
+			}
+
+			public void removeUpdate(DocumentEvent e) {
+				newFilter();
+			}
+		});
 		userTable = new JTable();
 		userTable.getTableHeader().setReorderingAllowed(false);
 		userScrollPane = new JScrollPane(userTable);
@@ -246,11 +265,23 @@ public class ServerGUI extends JFrame {
 		UserTableModel tableModel = null;
 		try {
 			tableModel = buildTableModel(users);
+			sorter = new TableRowSorter<UserTableModel>(tableModel);
 		} catch (SQLException e) {
 		}
 
 		userTable.setModel(tableModel);
-		userTable.setAutoCreateRowSorter(true);
+		userTable.setRowSorter(sorter);
+		userTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		userTable.getSelectionModel().addListSelectionListener(
+				new ListSelectionListener() {
+					public void valueChanged(ListSelectionEvent event) {
+						int viewRow = userTable.getSelectedRow();
+						if (viewRow > 0) {
+							// Selection got filtered away.
+							userTable.convertRowIndexToModel(viewRow);
+						}
+					}
+				});
 	}
 
 	public UserTableModel buildTableModel(ResultSet rs) throws SQLException {
@@ -278,6 +309,16 @@ public class ServerGUI extends JFrame {
 
 	}
 
+	public void setGrogInTheMaking(Grog grog) {
+		if (grog == null) {
+			lblGrogInTheMaking.setText("Nothing much");
+		} else {
+			String str = "Making " + grog.getClientHandler().getUsername()
+					+ "s grog!";
+			lblGrogInTheMaking.setText(str);
+		}
+	}
+
 	public void setArduinoConnected(boolean b) {
 		if (b)
 			lblArduinoConnected.setIcon(iconConnected);
@@ -295,6 +336,21 @@ public class ServerGUI extends JFrame {
 		DefaultListModel<String> listModel = (DefaultListModel<String>) connectedUserList
 				.getModel();
 		listModel.removeElement(username);
+	}
+
+	/**
+	 * Update the row filter regular expression from the expression in the text
+	 * box.
+	 */
+	private void newFilter() {
+		RowFilter<UserTableModel, Object> rf = null;
+		// If current expression doesn't parse, don't update.
+		try {
+			rf = RowFilter.regexFilter(userSearch.getText(), 0);
+		} catch (java.util.regex.PatternSyntaxException e) {
+			return;
+		}
+		sorter.setRowFilter(rf);
 	}
 
 	private void populateFluidsTable() {
@@ -439,8 +495,8 @@ public class ServerGUI extends JFrame {
 			} else if (e.getSource() == btnDeleteUser) {
 				int selectedRowIndex = userTable.getSelectedRow();
 				if (selectedRowIndex >= 0) {
-					String selectedObject = (String) userTable.getModel()
-							.getValueAt(selectedRowIndex, 0);
+					String selectedObject = (String) userTable.getValueAt(
+							selectedRowIndex, 0);
 					if (selectedObject != null
 							&& JOptionPane.showConfirmDialog(ServerGUI.this,
 									"Are you sure you want to delete user '"
@@ -452,8 +508,8 @@ public class ServerGUI extends JFrame {
 			} else if (e.getSource() == btnAddCredits) {
 				int selectedRowIndex = userTable.getSelectedRow();
 				if (selectedRowIndex >= 0) {
-					String selectedObject = (String) userTable.getModel()
-							.getValueAt(selectedRowIndex, 0);
+					String selectedObject = (String) userTable.getValueAt(
+							selectedRowIndex, 0);
 
 					if (selectedObject != null) {
 						JFrame frame = new JFrame();

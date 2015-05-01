@@ -7,6 +7,11 @@ import java.nio.file.Paths;
 
 import javax.swing.JOptionPane;
 
+/**
+ * 
+ * @author Jonathan Böcker 2015-04-30
+ *
+ */
 public class ProjectLineCount {
 	private static int linesOfCode = 0;
 	private static int filesInProject = 0;

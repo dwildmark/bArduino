@@ -12,6 +12,11 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
+/**
+ * 
+ * @author Jonathan Böcker 20015-04-20
+ *
+ */
 public class Controller {
 	public static Logger logger = Logger.getLogger(Server.class.getName());
 	private static Date date = new Date();
@@ -105,6 +110,10 @@ public class Controller {
 
 	public void userLoggedOut(String username) {
 		serverGUI.userLoggedOut(username);
+	}
+	
+	public void setGrogInTheMaking(Grog grog) {
+		serverGUI.setGrogInTheMaking(grog);
 	}
 
 	/*

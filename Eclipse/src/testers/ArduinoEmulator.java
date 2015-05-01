@@ -13,6 +13,11 @@ import java.net.Socket;
 
 import javax.swing.*;
 
+/**
+ * 
+ * @author Jonathan Böcker 2015-04-4
+ *
+ */
 public class ArduinoEmulator extends JFrame{
 
 	private static final long serialVersionUID = 2747429611864023738L;

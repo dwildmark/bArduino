@@ -94,6 +94,7 @@ public class ArduinoHandler extends Thread {
 					while (mOut != null && in != null) {
 						if (parser.isGrogAvailable()) {
 							grog = parser.dequeueGrog();
+							controller.setGrogInTheMaking(grog);
 							timer.cancel();
 							timer.purge();
 							
@@ -110,6 +111,7 @@ public class ArduinoHandler extends Thread {
 									}
 								}
 							}
+							controller.setGrogInTheMaking(null);
 							timer = new Timer();
 							timer.scheduleAtFixedRate(new ToDoTask(), 0, 1000);
 						}

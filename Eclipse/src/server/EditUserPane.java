@@ -14,7 +14,7 @@ import net.miginfocom.swing.MigLayout;
 
 /**
  * 
- * @author Jonathan Böcker
+ * @author Jonathan Böcker 2015-04-15
  *
  */
 

@@ -9,6 +9,11 @@ import server.Fluid;
 import server.PropertiesWrapper;
 import server.ServerApp;
 
+/**
+ * 
+ * @author Jonathan Böcker 2015-04-30
+ *
+ */
 public class JAXBUnmarshallingTest {
 
 	public static void main(String[] args) throws Exception {
