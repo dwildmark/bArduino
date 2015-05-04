@@ -2,8 +2,7 @@ package server;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetSocketAddress;
-import java.net.SocketException;
+import java.net.InetAddress;
 
 /**
  * 
@@ -26,8 +25,8 @@ public class DiscoveryListener extends Thread {
 		
 
 		try {
-			recieveSocket = new DatagramSocket(new InetSocketAddress(controller
-					.loadServerConfig().getDiscoveryPort()));
+			recieveSocket = new DatagramSocket(controller
+					.loadServerConfig().getDiscoveryPort(), InetAddress.getByName("0.0.0.0"));
 			recieveSocket.setBroadcast(true);
 		} catch (Exception e) {
 			e.printStackTrace();
