@@ -38,7 +38,7 @@ public class Controller {
 		logger.addHandler(fh);
 
 		try {
-			new DiscoveryListener().start();
+			new DiscoveryListener(this).start();
 			serverGUI = new ServerGUI(logger, this);
 			server = new Server(Controller.logger, this);
 			server.start();
@@ -72,6 +72,7 @@ public class Controller {
 			props = new PropertiesWrapper();
 			props.setArduinoPort(8008);
 			props.setClientPort(4444);
+			props.setDiscoveryPort(28785);
 			props.setDatabaseName("barduino");
 			props.setServerAdress("localhost");
 			props.setUsername("barduino");

@@ -23,6 +23,7 @@ public class PropertiesWrapper {
 	private String username;
 	private int arduinoPort;
 	private int clientPort;
+	private int discoveryPort;
 	
 	public PropertiesWrapper() {
 	}
@@ -51,7 +52,6 @@ public class PropertiesWrapper {
 		return this.serverAdress;
 	}
 	
-//	@XmlElement
 	public void setServerAdress(String adress){
 		this.serverAdress = adress;
 	}
@@ -60,7 +60,6 @@ public class PropertiesWrapper {
 		return this.databaseName;
 	}
 	
-//	@XmlElement
 	public void setDatabaseName(String database){
 		this.databaseName = database;
 	}
@@ -69,7 +68,6 @@ public class PropertiesWrapper {
 		return username;
 	}
 
-//	@XmlElement
 	public void setUsername(String username) {
 		this.username = username;
 	}
@@ -78,7 +76,6 @@ public class PropertiesWrapper {
 		return arduinoPort;
 	}
 
-//	@XmlElement
 	public void setArduinoPort(int arduinoPort) {
 		this.arduinoPort = arduinoPort;
 	}
@@ -87,8 +84,16 @@ public class PropertiesWrapper {
 		return clientPort;
 	}
 
-//	@XmlElement
 	public void setClientPort(int clientPort) {
 		this.clientPort = clientPort;
 	}
+	
+	public int getDiscoveryPort() {
+		return discoveryPort;
+	}
+	
+	public void setDiscoveryPort(int discoveryPort) {
+		this.discoveryPort = discoveryPort;
+	}
+	
 }

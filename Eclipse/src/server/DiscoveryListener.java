@@ -10,6 +10,11 @@ import java.net.InetSocketAddress;
  *
  */
 public class DiscoveryListener extends Thread {
+	private Controller controller;
+
+	public DiscoveryListener(Controller controller) {
+		this.controller = controller;
+	}
 
 	@SuppressWarnings("resource")
 	public void run() {
@@ -20,7 +25,8 @@ public class DiscoveryListener extends Thread {
 		byte[] buf;
 
 		try {
-			recieveSocket = new DatagramSocket(new InetSocketAddress(28785));
+			recieveSocket = new DatagramSocket(new InetSocketAddress(controller
+					.loadServerConfig().getDiscoveryPort()));
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -30,11 +36,12 @@ public class DiscoveryListener extends Thread {
 			try {
 				packet = new DatagramPacket(new byte[10], 10);
 				recieveSocket.receive(packet);
+				System.out.println("Recieved packet from" + packet.getAddress());
 				buf = packet.getData();
 				answerPacket = new DatagramPacket(buf, buf.length);
 				sendSocket = new DatagramSocket(packet.getSocketAddress());
 				sendSocket.send(answerPacket);
-				
+
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
