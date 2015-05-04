@@ -1,26 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <ServerConfiguration>
-    <Fluids>
-        <Fluid id="1">
-            <cost>20</cost>
-            <name>Våtka</name>
-        </Fluid>
-        <Fluid id="2">
-            <cost>1</cost>
-            <name>Blannevann</name>
-        </Fluid>
-        <Fluid id="3">
-            <cost>30</cost>
-            <name>Rom</name>
-        </Fluid>
-        <Fluid id="4">
-            <cost>1</cost>
-            <name>Cola</name>
-        </Fluid>
-    </Fluids>
+    <Fluids/>
     <serverAdress>localhost</serverAdress>
     <databaseName>barduino</databaseName>
-    <username>root</username>
+    <username>barduino</username>
     <arduinoPort>8008</arduinoPort>
     <clientPort>4444</clientPort>
+    <discoveryPort>28785</discoveryPort>
 </ServerConfiguration>

@@ -3,6 +3,7 @@ package server;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
+import java.net.SocketException;
 
 /**
  * 
@@ -19,28 +20,27 @@ public class DiscoveryListener extends Thread {
 	@SuppressWarnings("resource")
 	public void run() {
 		DatagramSocket recieveSocket = null;
-		DatagramSocket sendSocket = null;
 		DatagramPacket packet = null;
-		DatagramPacket answerPacket = null;
-		byte[] buf;
+		
+		
+		
 
 		try {
 			recieveSocket = new DatagramSocket(new InetSocketAddress(controller
 					.loadServerConfig().getDiscoveryPort()));
-
+			recieveSocket.setBroadcast(true);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
 		while (true) {
 			try {
-				packet = new DatagramPacket(new byte[10], 10);
-				recieveSocket.receive(packet);
+				byte[] recvBuf = new byte[15000];
+				packet = new DatagramPacket(recvBuf, recvBuf.length);
+		        recieveSocket.receive(packet);
 				System.out.println("Recieved packet from" + packet.getAddress());
-				buf = packet.getData();
-				answerPacket = new DatagramPacket(buf, buf.length);
-				sendSocket = new DatagramSocket(packet.getSocketAddress());
-				sendSocket.send(answerPacket);
+				DatagramPacket sendPacket = new DatagramPacket(packet.getData(), packet.getData().length, packet.getAddress(), packet.getPort());
+				recieveSocket.send(sendPacket);
 
 			} catch (Exception e) {
 				e.printStackTrace();
