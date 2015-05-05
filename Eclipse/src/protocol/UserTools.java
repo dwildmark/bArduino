@@ -26,7 +26,7 @@ public class UserTools {
 	 * @param password
 	 *            password
 	 */
-	public synchronized static void addUser(String user, char[] password) {
+	public synchronized static boolean addUser(String user, char[] password) {
 		String query = " insert into user_data (username, password_hash)"
 				+ " values (?, ?)";
 
@@ -37,8 +37,9 @@ public class UserTools {
 			preparedStmt.setString(2, PasswordHash.createHash(password));
 			preparedStmt.execute();
 			conn.close();
+			return true;
 		} catch (Exception e) {
-			JOptionPane.showMessageDialog(null, e.getMessage());
+			return false;
 		}
 
 	}

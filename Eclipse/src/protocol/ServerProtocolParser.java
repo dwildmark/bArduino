@@ -132,7 +132,7 @@ public class ServerProtocolParser {
 		String ingredients = "INGREDIENTS:";
 		
 		for(Fluid fluid : list){
-			ingredients += fluid.getName() + ",";
+			ingredients += fluid.getName() + "$" + fluid.getCost()+ ",";
 		}
 
 		return ingredients;
@@ -214,8 +214,8 @@ public class ServerProtocolParser {
 					fluid++;
 				}
 				
-				response = "GROGOK";
 				UserTools.alterCredits(clientHandler.getUsername(), 0 - cost);
+				response = "GROGOK " + UserTools.getCredits(clientHandler.getUsername());
 				
 				if (arduinoMessages.size() > 0) {
 					grogAvailable = true;

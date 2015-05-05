@@ -74,14 +74,12 @@ public class ClientHandler extends Thread {
 			while (true) {
 				String message = null;
 				String answer = null;
+				
 				message = in.readLine();
 				if (message == null)
 					break;
 
-				if (message.substring(0, 5).equals("LOGIN")) {
-					logger.info("Client: " + client.getInetAddress()
-							+ " said: LOGIN");
-				} else if (!message.equals("AVAREQ")) {
+				if (!message.substring(0, 5).equals("LOGIN") || !message.equals("AVAREQ")) {
 					logger.info("Client: " + client.getInetAddress()
 							+ " said: " + message);
 				}
@@ -92,14 +90,22 @@ public class ClientHandler extends Thread {
 					break;
 				}
 
-				if (message.substring(0, 5).equals("LOGIN")) {
+				if (message.substring(0, 8).equals("REGISTER")) {
+					if(UserTools.addUser(message.substring(9).split(":")[0], message
+							.substring(9).split(":")[1].toCharArray()))
+						answer = "REGISTER OK";
+					else
+						answer = "REGISTER BAD";
+					
+				} else if (message.substring(0, 5).equals("LOGIN")) {
 					if (UserTools.confirmUser(
 							message.substring(6).split(":")[0], message
 									.substring(6).split(":")[1].toCharArray())) {
 
 						username = message.substring(6).split(":")[0];
 						controller.userLoggedIn(username);
-						answer = "LOGIN OK";
+						logger.info(username + " logged in to server!");
+						answer = "LOGIN OK " + UserTools.getCredits(username);
 						loggedIn = true;
 					} else {
 						answer = "LOGIN BAD";
