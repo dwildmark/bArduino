@@ -43,6 +43,7 @@ public class Server extends Thread {
 	public void run() {
 		parser = ServerProtocolParser.getInstance();
 		parser.setState(ServerProtocolParser.MISSING_ARDUINO);
+		parser.setController(controller);
 		Socket client;
 		running = true;
 

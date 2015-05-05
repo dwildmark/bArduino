@@ -9,6 +9,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
 
 import server.ClientHandler;
+import server.Controller;
 import server.Fluid;
 import server.Grog;
 import server.PropertiesWrapper;
@@ -37,6 +38,7 @@ public class ServerProtocolParser {
 	private PropertiesWrapper prop;
 	private boolean grogAvailable = false;
 	private int state;
+	private Controller controller;
 
 	private static ServerProtocolParser parser = new ServerProtocolParser();
 
@@ -188,14 +190,19 @@ public class ServerProtocolParser {
 		String[] request = message.split(" ");
 		Queue<String> arduinoMessages = new LinkedList<String>();
 		char fluid = 'A';
-
+		double credit = UserTools.getCredits(clientHandler.getUsername());
+		System.out.println(credit);
 		if (!(request[0].equals("GROG"))
 				|| (request.length - 1) > numberOfAvailableFluids) {
 			response = "ERROR WRONGFORMAT";
 		} else if (grogAvailable) {
 			response = "ERROR BUSY";
 		} else {
-
+			double cost = calculateCost(message);
+			System.out.println(cost);
+			if(cost > credit) {
+				response = "ERROR INSUFFICIENT FUNDS";
+			} else { 
 			try {
 				int volume = 0;
 				for (int i = 1; i < request.length; i++) {
@@ -208,6 +215,8 @@ public class ServerProtocolParser {
 				}
 				
 				response = "GROGOK";
+				UserTools.alterCredits(clientHandler.getUsername(), 0 - cost);
+				
 				if (arduinoMessages.size() > 0) {
 					grogAvailable = true;
 					state = BUSY;
@@ -219,10 +228,28 @@ public class ServerProtocolParser {
 				response = "ERROR WRONGFORMAT";
 			}
 		}
-
+		}
 		return response;
+	
 	}
-
+	private double calculateCost(String grog) {
+		double cost = 0;
+		List<Fluid> list;
+		String[] amount = grog.split(" ");
+		try {
+			list = controller.loadServerConfig().getFluidList();
+			for(int i = 0; i < list.size(); i++) {
+				cost += (list.get(i).getCost() * Integer.parseInt(amount[i + 1]));
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return cost;
+	}
+	public void setController(Controller controller) {
+		this.controller = controller;
+	}
+	
 	/**
 	 * This method is used for making sure there is a grog to be sent to the
 	 * Arduino, so that the method getGrog() can be called safely and return a
