@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <ServerConfiguration>
     <Fluids/>
-    <serverAdress>192.168.1.42</serverAdress>
+    <serverAdress>192.168.1.41</serverAdress>
     <databaseName>barduino</databaseName>
     <username>barduino</username>
     <arduinoPort>8008</arduinoPort>

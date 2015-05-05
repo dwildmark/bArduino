@@ -148,11 +148,11 @@ int determineAmount(int centiliters) {
 void discoverServer() {
   boolean a = true;
   while (a) {
-    IPAddress broadcastIP(255, 255, 255, 255);
+    //IPAddress broadcastIP(255, 255, 255, 255);
 
-    udp.beginPacket(broadcastIP, udpPort);
-    udp.write("DISCOVER_FUIFSERVER_REQUEST");
-    udp.endPacket();
+    //udp.beginPacket(broadcastIP, udpPort);
+    //udp.write("DISCOVER_FUIFSERVER_REQUEST");
+    //udp.endPacket();
 
     int packetSize = udp.parsePacket();
     if (packetSize) {
@@ -163,7 +163,7 @@ void discoverServer() {
       }
       a = false;
     }
-    delay(1000);
+    //delay(1000);
   }
 }
 

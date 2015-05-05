@@ -27,6 +27,7 @@ public class ArduinoHandler extends Thread {
 	private Timer timer;
 	private Logger logger;
 	private Controller controller;
+	private DiscoverySender discoverySender;
 	private boolean running = true;
 
 	public ArduinoHandler(Logger logger, Controller controller) {
@@ -69,6 +70,8 @@ public class ArduinoHandler extends Thread {
 		try {
 			PropertiesWrapper prop = controller.loadServerConfig();
 			arduinoServerSocket = new ServerSocket(prop.getArduinoPort());
+			discoverySender = new DiscoverySender(controller);
+			discoverySender.start();
 
 		} catch (Exception e1) {
 			e1.printStackTrace();
@@ -86,6 +89,7 @@ public class ArduinoHandler extends Thread {
 							arduino.getInputStream()));
 					logger.info("Server: Arduino connected at "
 							+ arduino.getInetAddress());
+					discoverySender.close();
 					timer = new Timer();
 					timer.scheduleAtFixedRate(new ToDoTask(), 0, 1000);
 					parser.setState(ServerProtocolParser.VACANT);
@@ -123,6 +127,8 @@ public class ArduinoHandler extends Thread {
 				controller.setArduinoConnected(false);
 				mOut = null;
 				in = null;
+				discoverySender = new DiscoverySender(controller);
+				discoverySender.start();
 				e.printStackTrace();
 			}
 		}
