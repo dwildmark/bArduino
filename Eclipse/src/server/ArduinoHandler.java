@@ -34,6 +34,8 @@ public class ArduinoHandler extends Thread {
 		this.parser = ServerProtocolParser.getInstance();
 		this.logger = logger;
 		this.controller = controller;
+		discoverySender = new DiscoverySender();
+		discoverySender.start();
 	}
 
 	class ToDoTask extends TimerTask {
@@ -51,12 +53,8 @@ public class ArduinoHandler extends Thread {
 				}
 
 			} catch (Exception e) {
-				logger.warning("Lost connection to Arduino");
 				this.cancel();
-				mOut = null;
-				in = null;
-				parser.setState(ServerProtocolParser.MISSING_ARDUINO);
-				controller.setArduinoConnected(false);
+				arduinoDisconnected();
 			}
 		}
 	}
@@ -70,8 +68,6 @@ public class ArduinoHandler extends Thread {
 		try {
 			PropertiesWrapper prop = controller.loadServerConfig();
 			arduinoServerSocket = new ServerSocket(prop.getArduinoPort());
-			discoverySender = new DiscoverySender(controller);
-			discoverySender.start();
 
 		} catch (Exception e1) {
 			e1.printStackTrace();
@@ -123,12 +119,7 @@ public class ArduinoHandler extends Thread {
 				}
 
 			} catch (Exception e) {
-				parser.setState(ServerProtocolParser.MISSING_ARDUINO);
-				controller.setArduinoConnected(false);
-				mOut = null;
-				in = null;
-				discoverySender = new DiscoverySender(controller);
-				discoverySender.start();
+				arduinoDisconnected();
 				e.printStackTrace();
 			}
 		}
@@ -156,5 +147,15 @@ public class ArduinoHandler extends Thread {
 			e.printStackTrace();
 		}
 
+	}
+	
+	public void arduinoDisconnected() {
+		logger.warning("Lost connection to Arduino");
+		mOut = null;
+		in = null;
+		parser.setState(ServerProtocolParser.MISSING_ARDUINO);
+		controller.setArduinoConnected(false);
+		discoverySender = new DiscoverySender();
+		discoverySender.start();
 	}
 }

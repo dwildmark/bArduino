@@ -23,7 +23,7 @@ IPAddress remote;
 
 unsigned int tcpPort = 8008;
 
-unsigned int udpPort = 28785;
+unsigned int udpPort = 28780;
 
 EthernetClient client;
 

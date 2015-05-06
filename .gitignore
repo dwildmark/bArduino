@@ -8,3 +8,5 @@
 Eclipse/resources/config.properties
 
 *.properties
+
+Eclipse/resources/config.xml
