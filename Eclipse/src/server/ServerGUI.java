@@ -31,7 +31,7 @@ import net.miginfocom.swing.*;
 /**
  * A graphical user interface for the Barduino App.
  * 
- * @author Jonathan Böcker 20015-04-27
+ * @author Jonathan Böcker, Olle Casperson
  *
  */
 public class ServerGUI extends JFrame {

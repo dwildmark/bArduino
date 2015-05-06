@@ -119,7 +119,7 @@ public class UserTools {
 		}
 	}
 	
-	public synchronized static void alterCredits(String username, double credit) {
+	public synchronized static void alterCredits(String username, int credit) {
 		String query = "UPDATE user_data set credits = credits + " + credit +
 				" WHERE username = '" + username +"'";
 		Connection conn;

@@ -132,7 +132,7 @@ public class ServerProtocolParser {
 		String ingredients = "INGREDIENTS:";
 		
 		for(Fluid fluid : list){
-			ingredients += fluid.getName() + "$" + fluid.getCost()+ ",";
+			ingredients += fluid.getName() + "<cost>" + fluid.getCost()+ ",";
 		}
 
 		return ingredients;
@@ -198,7 +198,7 @@ public class ServerProtocolParser {
 		} else if (grogAvailable) {
 			response = "ERROR BUSY";
 		} else {
-			double cost = calculateCost(message);
+			int cost = calculateCost(message);
 			System.out.println(cost);
 			if(cost > credit) {
 				response = "ERROR INSUFFICIENT FUNDS";
@@ -232,8 +232,8 @@ public class ServerProtocolParser {
 		return response;
 	
 	}
-	private double calculateCost(String grog) {
-		double cost = 0;
+	private int calculateCost(String grog) {
+		int cost = 0;
 		List<Fluid> list;
 		String[] amount = grog.split(" ");
 		try {
