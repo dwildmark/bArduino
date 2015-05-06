@@ -78,8 +78,9 @@ public class ClientHandler extends Thread {
 				message = in.readLine();
 				if (message == null)
 					break;
-
-				if (!message.substring(0, Math.min(message.length(), 5)).equals("LOGIN") || !message.equals("AVAREQ")) {
+				if(message.contains("AVAREQ")) {
+				}
+				else if (!message.substring(0, Math.min(message.length(), 5)).equals("LOGIN")) {
 					logger.info("Client: " + client.getInetAddress()
 							+ " said: " + message);
 				}

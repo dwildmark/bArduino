@@ -77,7 +77,7 @@ public class ArduinoHandler extends Thread {
 				while (!arduinoServerSocket.isClosed()) {
 
 					arduino = arduinoServerSocket.accept();
-
+					arduino.setSoTimeout(500);
 					mOut = new PrintWriter(new BufferedWriter(
 							new OutputStreamWriter(arduino.getOutputStream())),
 							true);
