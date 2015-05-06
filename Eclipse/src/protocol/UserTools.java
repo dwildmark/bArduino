@@ -152,17 +152,17 @@ public class UserTools {
 		}
 	}
 	
-	public synchronized static double getCredits(String user) {
+	public synchronized static int getCredits(String user) {
 		String query = "SELECT credits FROM user_data WHERE username = '"
 				+ user + "';";
-		double credit = 0;
+		int credit = 0;
 		
 		try {
 			Connection conn = getConnection();
 			PreparedStatement preparedStmt = conn.prepareStatement(query);
 			ResultSet rs = preparedStmt.executeQuery();
 			rs.next();
-			credit = rs.getDouble("credits");
+			credit = rs.getInt("credits");
 			conn.close();
 
 		} catch (Exception e) {

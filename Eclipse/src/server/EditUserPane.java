@@ -47,7 +47,7 @@ public class EditUserPane extends JPanel {
 		public void actionPerformed(ActionEvent e) {
 			String sum = tfSum.getText();
 			try {
-				UserTools.alterCredits(user, Double.parseDouble(sum));
+				UserTools.alterCredits(user, Integer.parseInt(sum));
 				serverGUI.printUsers();
 				frame.dispatchEvent(new WindowEvent(frame,
 						WindowEvent.WINDOW_CLOSING));
