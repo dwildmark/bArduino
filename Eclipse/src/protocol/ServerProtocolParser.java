@@ -191,7 +191,6 @@ public class ServerProtocolParser {
 		Queue<String> arduinoMessages = new LinkedList<String>();
 		char fluid = 'A';
 		double credit = UserTools.getCredits(clientHandler.getUsername());
-		System.out.println(credit);
 		if(UserTools.getApproved(clientHandler.getUsername()).equals("no")){
 			response = "ERROR BLOCKED";
 		}else if (!(request[0].equals("GROG"))
@@ -201,7 +200,6 @@ public class ServerProtocolParser {
 			response = "ERROR BUSY";
 		} else {
 			int cost = calculateCost(message);
-			System.out.println(cost);
 			if(cost > credit) {
 				response = "ERROR INSUFFICIENT FUNDS";
 			} else { 
