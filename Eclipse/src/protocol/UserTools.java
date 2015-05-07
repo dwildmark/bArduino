@@ -169,9 +169,74 @@ public class UserTools {
 			e.printStackTrace();
 		}
 		return credit;
-
 	}
 	
+	public synchronized static int getRefund(String user) {
+		String query = "SELECT credits FROM user_data WHERE username = '"
+				+ user + "';";
+		int credit = 0;
+		
+		try {
+			Connection conn = getConnection();
+			PreparedStatement preparedStmt = conn.prepareStatement(query);
+			ResultSet rs = preparedStmt.executeQuery();
+			rs.next();
+			credit = rs.getInt("credits");
+			conn.close();
+			alterCredits(user, (0 - credit));
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return credit;
+	}
+	
+	public synchronized static void changeApproved(String user) {
+		String query = "SELECT approved FROM user_data WHERE username = '"
+				+ user + "';";
+		String approved;
+		try {
+			Connection conn = getConnection();
+			PreparedStatement preparedStmt = conn.prepareStatement(query);
+			ResultSet rs = preparedStmt.executeQuery();
+			rs.next();
+			approved = rs.getString("approved");
+			
+			if(approved.equals("yes")){
+				query = "UPDATE user_data set approved = 'no' " +
+						" WHERE username = '" + user +"'";
+			} else {
+				query = "UPDATE user_data set approved = 'yes' " +
+						" WHERE username = '" + user +"'";
+			}
+			
+			preparedStmt = conn.prepareStatement(query);
+			preparedStmt.execute();
+			conn.close();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public synchronized static String getApproved(String user) {
+		String query = "SELECT approved FROM user_data WHERE username = '"
+				+ user + "';";
+		String approved = null;
+		
+		try {
+			Connection conn = getConnection();
+			PreparedStatement preparedStmt = conn.prepareStatement(query);
+			ResultSet rs = preparedStmt.executeQuery();
+			rs.next();
+			approved = rs.getString("approved");
+			conn.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return approved;	
+	}
 
 	/**
 	 * A simple method to test the connection with the MySQL server

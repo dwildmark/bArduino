@@ -27,15 +27,12 @@ public class ArduinoHandler extends Thread {
 	private Timer timer;
 	private Logger logger;
 	private Controller controller;
-	private DiscoverySender discoverySender;
 	private boolean running = true;
 
 	public ArduinoHandler(Logger logger, Controller controller) {
 		this.parser = ServerProtocolParser.getInstance();
 		this.logger = logger;
 		this.controller = controller;
-		discoverySender = new DiscoverySender();
-		discoverySender.start();
 	}
 
 	class ToDoTask extends TimerTask {
@@ -45,6 +42,7 @@ public class ArduinoHandler extends Thread {
 			try {
 				if (parser.getState() == ServerProtocolParser.VACANT
 						&& mOut != null && in != null) {
+					arduino.setSoTimeout(500);
 					mOut.println("Q");
 					in.readLine();
 				} else if (parser.getState() != ServerProtocolParser.BUSY) {
@@ -77,7 +75,6 @@ public class ArduinoHandler extends Thread {
 				while (!arduinoServerSocket.isClosed()) {
 
 					arduino = arduinoServerSocket.accept();
-					arduino.setSoTimeout(500);
 					mOut = new PrintWriter(new BufferedWriter(
 							new OutputStreamWriter(arduino.getOutputStream())),
 							true);
@@ -85,7 +82,6 @@ public class ArduinoHandler extends Thread {
 							arduino.getInputStream()));
 					logger.info("Server: Arduino connected at "
 							+ arduino.getInetAddress());
-					discoverySender.close();
 					timer = new Timer();
 					timer.scheduleAtFixedRate(new ToDoTask(), 0, 1000);
 					parser.setState(ServerProtocolParser.VACANT);
@@ -97,7 +93,7 @@ public class ArduinoHandler extends Thread {
 							controller.setGrogInTheMaking(grog);
 							timer.cancel();
 							timer.purge();
-							
+							arduino.setSoTimeout(0);
 							while (grog.hasMoreMessages()) {
 								message = grog.dequeueMessage();
 
@@ -155,7 +151,5 @@ public class ArduinoHandler extends Thread {
 		in = null;
 		parser.setState(ServerProtocolParser.MISSING_ARDUINO);
 		controller.setArduinoConnected(false);
-		discoverySender = new DiscoverySender();
-		discoverySender.start();
 	}
 }

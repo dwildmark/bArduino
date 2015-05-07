@@ -32,7 +32,6 @@ public class DiscoverySender extends Thread {
 	public DiscoverySender() {
 		timer = new Timer();
 		toDoTask = new ToDoTask();
-		timer.scheduleAtFixedRate(toDoTask, 0, 1000);
 	}
 	
 	/**
@@ -42,6 +41,10 @@ public class DiscoverySender extends Thread {
 		timer.cancel();
 		timer.purge();
 		socket = null;
+	}
+	
+	public void sendBroadcast() {
+		toDoTask.run();
 	}
 	
 	/**

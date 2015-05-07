@@ -192,7 +192,9 @@ public class ServerProtocolParser {
 		char fluid = 'A';
 		double credit = UserTools.getCredits(clientHandler.getUsername());
 		System.out.println(credit);
-		if (!(request[0].equals("GROG"))
+		if(UserTools.getApproved(clientHandler.getUsername()).equals("no")){
+			response = "ERROR BLOCKED";
+		}else if (!(request[0].equals("GROG"))
 				|| (request.length - 1) > numberOfAvailableFluids) {
 			response = "ERROR WRONGFORMAT";
 		} else if (grogAvailable) {

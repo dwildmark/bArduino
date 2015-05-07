@@ -39,8 +39,8 @@ public class ServerGUI extends JFrame {
 	private static final long serialVersionUID = 2486865764551934155L;
 	private JTextField tfPortClient, tfPortArduino, userSearch;
 	private JTextArea taLog;
-	private JLabel lblArduinoConnected, lblGrogInTheMaking;
-	private JButton btnRestart, btnSave, btnQuit, btnRefund, btnNewUser,
+	private JLabel lblGrogInTheMaking;
+	private JButton btnArduinoConnected, btnRestart, btnSave, btnQuit, btnRefund, btnBlockUser,
 			btnDeleteUser, btnRefresh, btnCancelGrog, btnSuspendUser,
 			btnDequeueGrog, btnAddCredits, btnAddFluid, btnRemoveFluid;
 	private JPanel pnlSettings, pnlButtons, pnlStatus, pnlUsers, pnlMain,
@@ -142,11 +142,11 @@ public class ServerGUI extends JFrame {
 		userScrollPane = new JScrollPane(userTable);
 		btnRefund = new JButton("Refund", new ImageIcon(getClass().getResource(
 				"/cash.png")));
-		btnNewUser = new JButton("New User", new ImageIcon(getClass()
-				.getResource("/add.png")));
+		btnBlockUser = new JButton("Block/Unblock", new ImageIcon(getClass()
+				.getResource("/prohibit.png")));
 		btnDeleteUser = new JButton("Delete User", new ImageIcon(getClass()
 				.getResource("/delete.png")));
-		btnAddCredits = new JButton("Add credits", new ImageIcon(getClass()
+		btnAddCredits = new JButton("Add Credits", new ImageIcon(getClass()
 				.getResource("/addcredits.png")));
 
 		pnlUsers = new JPanel(new MigLayout());
@@ -155,7 +155,7 @@ public class ServerGUI extends JFrame {
 		pnlUsers.add(userScrollPane, "wrap, span 4, grow");
 		pnlUsers.add(btnAddCredits);
 		pnlUsers.add(btnRefund);
-		pnlUsers.add(btnNewUser);
+		pnlUsers.add(btnBlockUser);
 		pnlUsers.add(btnDeleteUser);
 
 		// Log Panel
@@ -166,7 +166,8 @@ public class ServerGUI extends JFrame {
 		iconConnected = new ImageIcon(getClass().getResource("/check.png"));
 		iconDisconnected = new ImageIcon(getClass().getResource(
 				"/information.png"));
-		lblArduinoConnected = new JLabel(iconDisconnected);
+		btnArduinoConnected = new JButton(iconDisconnected);
+		btnArduinoConnected.setDisabledIcon(iconConnected);
 		lblGrogInTheMaking = new JLabel("Nothing much");
 		grogQueueList = new JList<String>(new DefaultListModel<String>());
 		connectedUserList = new JList<String>(new DefaultListModel<String>());
@@ -179,7 +180,7 @@ public class ServerGUI extends JFrame {
 		pnlBarduinoConnection = new JPanel(new MigLayout());
 		pnlBarduinoConnection.setBorder(BorderFactory
 				.createTitledBorder("Barduino Connection"));
-		pnlBarduinoConnection.add(lblArduinoConnected);
+		pnlBarduinoConnection.add(btnArduinoConnected);
 		pnlBarduinoStatus = new JPanel(new MigLayout());
 		pnlBarduinoStatus.setBorder(BorderFactory
 				.createTitledBorder("Barduino Status"));
@@ -235,14 +236,16 @@ public class ServerGUI extends JFrame {
 		btnAddFluid.addActionListener(fluidListener);
 		btnRemoveFluid.addActionListener(fluidListener);
 
+		btnArduinoConnected.addActionListener(btnlistner);
 		btnQuit.addActionListener(btnlistner);
 		btnRestart.addActionListener(btnlistner);
 		btnSave.addActionListener(btnlistner);
 		btnRefresh.addActionListener(btnlistner);
 
-		btnNewUser.addActionListener(usersListener);
+		btnBlockUser.addActionListener(usersListener);
 		btnDeleteUser.addActionListener(usersListener);
 		btnAddCredits.addActionListener(usersListener);
+		btnRefund.addActionListener(usersListener);
 
 		// The log window moves with the log being printed for visibility
 		logScrollPane.getVerticalScrollBar().addAdjustmentListener(
@@ -320,10 +323,11 @@ public class ServerGUI extends JFrame {
 	}
 
 	public void setArduinoConnected(boolean b) {
-		if (b)
-			lblArduinoConnected.setIcon(iconConnected);
-		else
-			lblArduinoConnected.setIcon(iconDisconnected);
+		if (b){
+			btnArduinoConnected.setEnabled(false);
+		} else {
+			btnArduinoConnected.setEnabled(true);
+		}
 	}
 
 	public void userLoggedIn(String username) {
@@ -476,6 +480,8 @@ public class ServerGUI extends JFrame {
 						e1.printStackTrace();
 					}
 				}
+			} else if (e.getSource() == btnArduinoConnected) {
+				controller.arduinoBroadcast();
 			}
 		}
 	}
@@ -484,13 +490,15 @@ public class ServerGUI extends JFrame {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			if (e.getSource() == btnNewUser) {
-				JFrame frame = new JFrame();
-				NewUserPane pane = new NewUserPane(frame, ServerGUI.this);
-				frame.add(pane);
-				frame.pack();
-				frame.setVisible(true);
-				frame.setLocationRelativeTo(ServerGUI.this);
+			if (e.getSource() == btnBlockUser) {
+				int selectedRowIndex = userTable.getSelectedRow();
+				if (selectedRowIndex >= 0) {
+					String selectedObject = (String) userTable.getValueAt(
+							selectedRowIndex, 0);
+					if (selectedObject != null)
+						UserTools.changeApproved(selectedObject);
+					printUsers();
+				}
 
 			} else if (e.getSource() == btnDeleteUser) {
 				int selectedRowIndex = userTable.getSelectedRow();
@@ -520,6 +528,15 @@ public class ServerGUI extends JFrame {
 						frame.setVisible(true);
 						frame.setLocationRelativeTo(ServerGUI.this);
 					}
+				}
+			} else if (e.getSource() == btnRefund) {
+				int selectedRowIndex = userTable.getSelectedRow();
+				if (selectedRowIndex >= 0) {
+					String selectedObject = (String) userTable.getValueAt(
+							selectedRowIndex, 0);
+					if (selectedObject != null)
+						JOptionPane.showMessageDialog(null, "User " + selectedObject + " recieves " + UserTools.getRefund(selectedObject) + " credits");
+					printUsers();
 				}
 			}
 		}

@@ -22,6 +22,7 @@ public class Controller {
 	private static Date date = new Date();
 	private Server server;
 	private ServerGUI serverGUI;
+	private DiscoverySender discoverySender;
 
 	public void startServerGUI() {
 		FileHandler fh = null;
@@ -38,6 +39,8 @@ public class Controller {
 		logger.addHandler(fh);
 
 		try {
+			discoverySender = new DiscoverySender();
+			discoverySender.start();
 			new DiscoveryListener(this).start();
 			serverGUI = new ServerGUI(logger, this);
 			server = new Server(Controller.logger, this);
@@ -115,6 +118,10 @@ public class Controller {
 	
 	public void setGrogInTheMaking(Grog grog) {
 		serverGUI.setGrogInTheMaking(grog);
+	}
+	
+	public void arduinoBroadcast(){
+		discoverySender.sendBroadcast();
 	}
 
 	/*
