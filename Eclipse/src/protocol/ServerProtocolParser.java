@@ -213,7 +213,7 @@ public class ServerProtocolParser {
 					}
 					fluid++;
 				}
-				
+				arduinoMessages.add("K");
 				UserTools.alterCredits(clientHandler.getUsername(), 0 - cost);
 				response = "GROGOK " + UserTools.getCredits(clientHandler.getUsername());
 				
@@ -230,7 +230,7 @@ public class ServerProtocolParser {
 		}
 		}
 		return response;
-	
+
 	}
 	private int calculateCost(String grog) {
 		int cost = 0;
