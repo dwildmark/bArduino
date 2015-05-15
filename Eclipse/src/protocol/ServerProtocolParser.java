@@ -33,7 +33,6 @@ public class ServerProtocolParser {
 	public static final int MISSING_ARDUINO = 2;
 	
 	private String sqlPassword, sqlUserName, sqlDatabaseName, sqlServerName;
-	private int numberOfAvailableFluids = 4;
 	private Queue<Grog> grogQueue = new LinkedList<Grog>();
 	private PropertiesWrapper prop;
 	private boolean grogAvailable = false;
@@ -194,7 +193,7 @@ public class ServerProtocolParser {
 		if(UserTools.getApproved(clientHandler.getUsername()).equals("no")){
 			response = "ERROR BLOCKED";
 		}else if (!(request[0].equals("GROG"))
-				|| (request.length - 1) > numberOfAvailableFluids) {
+				|| (request.length - 1) > prop.getFluidList().size()) {
 			response = "ERROR WRONGFORMAT";
 		} else if (grogAvailable) {
 			response = "ERROR BUSY";
