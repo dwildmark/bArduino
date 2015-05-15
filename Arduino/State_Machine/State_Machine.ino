@@ -27,6 +27,7 @@ int liquid2 = 8;
 int liquid3 = 7;
 int liquid4 = 6;
 int glassPlacedPin = 5;
+int glassIndicatedPin = 4;
 
 volatile int pulses = 0;
 volatile int chosen_liquid;
@@ -128,8 +129,10 @@ void loop() {
   while (true) {
     if (digitalRead(glassPlacedPin) == HIGH) {
       glassPlaced = true;
+      digitalWrite(glassIndicatedPin, HIGH);
     } else {
-      glassPlaced = true;
+      glassPlaced = false;
+      digitalWrite(glassIndicatedPin, LOW);
     }
     switch (current_state) {
       case NOT_CONNECTED:
@@ -164,7 +167,6 @@ void loop() {
         }
         break;
       case DRINK_DONE:
-        digitalWrite(liquid3, HIGH);
         if (recieve()) {
           if ( (char)recieveBuffer[0] == 'Q') {
             client.print("OK\n");
