@@ -31,6 +31,7 @@ int glassIndicatedPin = 4;
 
 volatile int pulses = 0;
 volatile int chosen_liquid;
+volatile int consIter;
 
 volatile boolean glassUsed = false;
 volatile boolean glassPlaced = false;
@@ -60,6 +61,7 @@ void setup() {
   pinMode(liquid3, OUTPUT);
   pinMode(liquid4, OUTPUT);
   pinMode(glassPlacedPin, INPUT);
+  pinMode(glassIndicatedPin, OUTPUT);
 }
 
 boolean discoverServer() {
@@ -114,8 +116,23 @@ void pourDrink(int pin, int amount) {
   int realAmount = ((amount * 35) - 35) / 10 ;
   attachInterrupt(0, addPulse, RISING);
   pulses = 0;
+  int oldPulses = 0;
   while ( pulses < realAmount) {
-    digitalWrite(pin, HIGH);
+    if(oldPulses == pulses) {
+      consIter++;
+    }
+    oldPulses = pulses;
+    if (consIter > 10000) {
+      break;
+    }
+    if(digitalRead(glassPlacedPin) == HIGH){
+      digitalWrite(pin, HIGH);
+      digitalWrite(glassIndicatedPin, HIGH);
+    } else {
+      digitalWrite(pin, LOW);
+      digitalWrite(glassIndicatedPin, LOW);
+    }
+    
   }
   digitalWrite(pin, LOW);
   detachInterrupt(0);
@@ -123,6 +140,7 @@ void pourDrink(int pin, int amount) {
 
 void addPulse() {
   pulses++;
+  consIter = 0;
 }
 
 void loop() {
@@ -167,11 +185,6 @@ void loop() {
         }
         break;
       case DRINK_DONE:
-        if (recieve()) {
-          if ( (char)recieveBuffer[0] == 'Q') {
-            client.print("OK\n");
-          }
-        }
         if (!glassPlaced) {
           client.print("ACK\n");
           next_state = READY;
