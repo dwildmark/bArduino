@@ -283,4 +283,17 @@ public class ServerProtocolParser {
 		grogQueue.clear();
 		grogAvailable = false;
 	}
+	
+	public String getScreenMessage() {
+		switch(state) {
+		case VACANT:
+			return "READY";
+		case BUSY:
+			return "MAKING DRINK";
+		case MISSING_ARDUINO:
+			return "BARDUINO DC";
+		default:
+			return "";
+		}
+	}
 }

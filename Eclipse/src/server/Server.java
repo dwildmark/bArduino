@@ -26,6 +26,7 @@ public class Server extends Thread {
 	private LinkedList<ClientHandler> clientQueue = new LinkedList<ClientHandler>();
 	private LinkedList<ArduinoHandler> arduinoQueue = new LinkedList<ArduinoHandler>();
 	private Controller controller;
+	private ArduinoScreenHandler screenHandler;
 
 	public Server(Logger logger, Controller controller) {
 		Server.logger = logger;
@@ -56,6 +57,8 @@ public class Server extends Thread {
 			ArduinoHandler tempArduino = new ArduinoHandler(logger, controller);
 			arduinoQueue.add(tempArduino);
 			tempArduino.start();
+			screenHandler = new ArduinoScreenHandler(logger, controller);
+			screenHandler.start();
 			
 			while (running) {
 				client = serverSocket.accept();
@@ -101,6 +104,8 @@ public class Server extends Thread {
 			}
 		}
 		arduinoQueue.clear();
+		screenHandler.close();
+		screenHandler = null;
 		running = false;
 		try {
 			serverSocket.close();
