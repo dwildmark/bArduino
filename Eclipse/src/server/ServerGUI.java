@@ -1,6 +1,7 @@
 package server;
 
 import java.awt.Dimension;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
@@ -15,7 +16,23 @@ import java.util.Vector;
 import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
-import javax.swing.*;
+import javax.swing.BorderFactory;
+import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.RowFilter;
+import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -23,10 +40,11 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 
+import net.miginfocom.swing.MigLayout;
+
 import org.imgscalr.Scalr;
 
 import protocol.UserTools;
-import net.miginfocom.swing.*;
 
 /**
  * A graphical user interface for the Barduino App.
@@ -40,11 +58,11 @@ public class ServerGUI extends JFrame {
 	private JTextField tfPortClient, tfPortArduino, userSearch;
 	private JTextArea taLog;
 	private JLabel lblGrogInTheMaking;
-	private JButton btnArduinoConnected, btnRestart, btnSave, btnQuit, btnRefund, btnBlockUser,
+	private JButton btnArduinoConnected, btnScreenConnected, btnRestart, btnSave, btnQuit, btnRefund, btnBlockUser,
 			btnDeleteUser, btnRefresh, btnCancelGrog, btnSuspendUser,
 			btnDequeueGrog, btnAddCredits, btnAddFluid, btnRemoveFluid;
 	private JPanel pnlSettings, pnlButtons, pnlStatus, pnlUsers, pnlMain,
-			pnlBarduinoConnection, pnlBarduinoStatus;
+			pnlBarduinoConnection, pnlScreenConnection, pnlBarduinoStatus;
 	private JTabbedPane tabbedPane;
 	private JScrollPane logScrollPane, userScrollPane, connectedUserScroll,
 			grogQueueScroll;
@@ -168,6 +186,8 @@ public class ServerGUI extends JFrame {
 				"/information.png"));
 		btnArduinoConnected = new JButton(iconDisconnected);
 		btnArduinoConnected.setDisabledIcon(iconConnected);
+		btnScreenConnected = new JButton(iconDisconnected);
+		btnScreenConnected.setDisabledIcon(iconConnected);
 		lblGrogInTheMaking = new JLabel("Nothing much");
 		grogQueueList = new JList<String>(new DefaultListModel<String>());
 		connectedUserList = new JList<String>(new DefaultListModel<String>());
@@ -181,13 +201,21 @@ public class ServerGUI extends JFrame {
 		pnlBarduinoConnection.setBorder(BorderFactory
 				.createTitledBorder("Barduino Connection"));
 		pnlBarduinoConnection.add(btnArduinoConnected);
+		pnlScreenConnection = new JPanel(new MigLayout());
+		pnlScreenConnection.setBorder(BorderFactory
+				.createTitledBorder("Screen Connection"));
+		pnlScreenConnection.add(btnScreenConnected);
+		
 		pnlBarduinoStatus = new JPanel(new MigLayout());
 		pnlBarduinoStatus.setBorder(BorderFactory
 				.createTitledBorder("Barduino Status"));
 		pnlBarduinoStatus.add(lblGrogInTheMaking);
 
 		pnlStatus = new JPanel(new MigLayout());
-		pnlStatus.add(pnlBarduinoConnection, "w 120");
+		JPanel combinePnl = new JPanel(new GridLayout(1, 2));
+		combinePnl.add(pnlBarduinoConnection);
+		combinePnl.add(pnlScreenConnection);
+		pnlStatus.add(combinePnl, "w 120");
 		pnlStatus.add(pnlBarduinoStatus, "wrap");
 		pnlStatus.add(btnCancelGrog, "wrap, span, gapleft, push, al right");
 		pnlStatus.add(new JLabel("Grog Queue"), "wrap");
@@ -237,6 +265,7 @@ public class ServerGUI extends JFrame {
 		btnRemoveFluid.addActionListener(fluidListener);
 
 		btnArduinoConnected.addActionListener(btnlistner);
+		btnScreenConnected.addActionListener(btnlistner);
 		btnQuit.addActionListener(btnlistner);
 		btnRestart.addActionListener(btnlistner);
 		btnSave.addActionListener(btnlistner);
@@ -323,11 +352,11 @@ public class ServerGUI extends JFrame {
 	}
 
 	public void setArduinoConnected(boolean b) {
-		if (b){
-			btnArduinoConnected.setEnabled(false);
-		} else {
-			btnArduinoConnected.setEnabled(true);
-		}
+		btnArduinoConnected.setEnabled(!b);
+	}
+	
+	public void setScreenConnected(boolean b) {
+		btnScreenConnected.setEnabled(!b);
 	}
 
 	public void userLoggedIn(String username) {
@@ -480,7 +509,7 @@ public class ServerGUI extends JFrame {
 						e1.printStackTrace();
 					}
 				}
-			} else if (e.getSource() == btnArduinoConnected) {
+			} else if (e.getSource() == btnArduinoConnected || e.getSource() == btnScreenConnected) {
 				controller.arduinoBroadcast();
 			}
 		}

@@ -56,6 +56,7 @@ public class ArduinoScreenHandler extends Thread {
 							arduino.getInputStream()));
 					logger.info("Server: ArduinoScreen connected at "
 							+ arduino.getInetAddress());
+					controller.setScreenConnected(true);
 					String oldMessage = "";
 					while (mOut != null && in != null) {
 						String newMessage = parser.getScreenMessage();

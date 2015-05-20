@@ -107,6 +107,10 @@ public class Controller {
 	public void setArduinoConnected(boolean b) {
 		serverGUI.setArduinoConnected(b);
 	}
+	
+	public void setScreenConnected(boolean b) {
+		serverGUI.setScreenConnected(b);
+	}
 
 	public void userLoggedIn(String username) {
 		serverGUI.userLoggedIn(username);

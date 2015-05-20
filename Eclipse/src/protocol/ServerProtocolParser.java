@@ -38,6 +38,7 @@ public class ServerProtocolParser {
 	private boolean grogAvailable = false;
 	private int state;
 	private Controller controller;
+	private String currentGrogUser;
 
 	private static ServerProtocolParser parser = new ServerProtocolParser();
 
@@ -202,6 +203,7 @@ public class ServerProtocolParser {
 			if(cost > credit) {
 				response = "ERROR INSUFFICIENT FUNDS";
 			} else { 
+			currentGrogUser = clientHandler.getUsername();
 			try {
 				int volume = 0;
 				for (int i = 1; i < request.length; i++) {
@@ -289,7 +291,7 @@ public class ServerProtocolParser {
 		case VACANT:
 			return "READY";
 		case BUSY:
-			return "MAKING DRINK";
+			return currentGrogUser;
 		case MISSING_ARDUINO:
 			return "BARDUINO DC";
 		default:
