@@ -118,13 +118,6 @@ void pourDrink(int pin, int amount) {
   pulses = 0;
   int oldPulses = 0;
   while ( pulses < realAmount) {
-    if(oldPulses == pulses) {
-      consIter++;
-    }
-    oldPulses = pulses;
-    if (consIter > 10000) {
-      break;
-    }
     if(digitalRead(glassPlacedPin) == HIGH){
       digitalWrite(pin, HIGH);
       digitalWrite(glassIndicatedPin, HIGH);
