@@ -111,4 +111,16 @@ public class Server extends Thread {
 			serverSocket.close();
 		} catch (Exception e) {}
 	}
+	
+	public void cancelGrog() {
+		for (int i = 0; i < arduinoQueue.size(); i++) {
+			ArduinoHandler tempArduino = arduinoQueue.get(i);
+			if (tempArduino != null) {
+				tempArduino.close();
+			}
+		}
+		ArduinoHandler tempArduino = new ArduinoHandler(logger, controller);
+		arduinoQueue.add(tempArduino);
+		tempArduino.start();
+	}
 }

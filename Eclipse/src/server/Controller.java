@@ -127,6 +127,10 @@ public class Controller {
 	public void arduinoBroadcast(){
 		discoverySender.sendBroadcast();
 	}
+	
+	public void cancelGrog() {
+		server.cancelGrog();		
+	}
 
 	/*
 	 * Returns a Timestamp with the current time
@@ -135,4 +139,6 @@ public class Controller {
 		Timestamp currentTimestamp = new Timestamp(date.getTime());
 		return currentTimestamp;
 	}
+
+	
 }

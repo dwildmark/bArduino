@@ -270,6 +270,7 @@ public class ServerGUI extends JFrame {
 		btnRestart.addActionListener(btnlistner);
 		btnSave.addActionListener(btnlistner);
 		btnRefresh.addActionListener(btnlistner);
+		btnCancelGrog.addActionListener(btnlistner);
 
 		btnBlockUser.addActionListener(usersListener);
 		btnDeleteUser.addActionListener(usersListener);
@@ -511,6 +512,8 @@ public class ServerGUI extends JFrame {
 				}
 			} else if (e.getSource() == btnArduinoConnected || e.getSource() == btnScreenConnected) {
 				controller.arduinoBroadcast();
+			} else if (e.getSource() == btnCancelGrog){
+				controller.cancelGrog();
 			}
 		}
 	}
