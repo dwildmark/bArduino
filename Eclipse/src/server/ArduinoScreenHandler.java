@@ -1,7 +1,6 @@
 package server;
 
 import java.util.Timer;
-import java.util.TimerTask;
 import java.util.logging.Logger;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -11,7 +10,7 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import protocol.ServerProtocolParser;
+//import protocol.ServerProtocolParser;
 
 /**
  * 
@@ -19,7 +18,7 @@ import protocol.ServerProtocolParser;
  *
  */
 public class ArduinoScreenHandler extends Thread {
-	private ServerProtocolParser parser;
+//	private ServerProtocolParser parser;
 	private ServerSocket arduinoServerSocket;
 	private PrintWriter mOut;
 	private BufferedReader in;
@@ -30,9 +29,15 @@ public class ArduinoScreenHandler extends Thread {
 	private boolean running = true;
 
 	public ArduinoScreenHandler(Logger logger, Controller controller) {
-		this.parser = ServerProtocolParser.getInstance();
+//		this.parser = ServerProtocolParser.getInstance();
 		this.logger = logger;
 		this.controller = controller;
+	}
+	
+	public void sendMessage(String message) {
+		try{
+			mOut.println(message);
+		} catch (Exception e) {}
 	}
 
 	@Override
@@ -57,13 +62,13 @@ public class ArduinoScreenHandler extends Thread {
 					logger.info("Server: ArduinoScreen connected at "
 							+ arduino.getInetAddress());
 					controller.setScreenConnected(true);
-					String oldMessage = "";
+//					String oldMessage = "";
 					while (mOut != null && in != null) {
-						String newMessage = parser.getScreenMessage();
-						if(!(oldMessage.equals(newMessage))) {
-							mOut.println(newMessage);
-							oldMessage = newMessage;
-						}
+//						String newMessage = parser.getScreenMessage();
+//						if(!(oldMessage.equals(newMessage))) {
+//							mOut.println(newMessage);
+//							oldMessage = newMessage;
+//						}
 					}
 				}
 

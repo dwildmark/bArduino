@@ -28,11 +28,14 @@ public class ArduinoHandler extends Thread {
 	private Logger logger;
 	private Controller controller;
 	private boolean running = true;
+	private ArduinoScreenHandler screenHandler;
 
 	public ArduinoHandler(Logger logger, Controller controller) {
 		this.parser = ServerProtocolParser.getInstance();
 		this.logger = logger;
 		this.controller = controller;
+		screenHandler = new ArduinoScreenHandler(logger, controller);
+		screenHandler.start();
 	}
 
 	class ToDoTask extends TimerTask {
@@ -91,6 +94,9 @@ public class ArduinoHandler extends Thread {
 						if (parser.isGrogAvailable()) {
 							grog = parser.dequeueGrog();
 							controller.setGrogInTheMaking(grog);
+							
+							screenHandler.sendMessage(grog.getClientHandler().getUsername());
+							
 							timer.cancel();
 							timer.purge();
 							arduino.setSoTimeout(0);
@@ -103,6 +109,11 @@ public class ArduinoHandler extends Thread {
 									answer = in.readLine();
 									logger.info("Arduino said: " + answer);
 									if (!grog.hasMoreMessages()) {
+										
+										screenHandler.sendMessage("Drink Finished");
+										
+										mOut.println("K");
+										answer = in.readLine();
 										parser.setState(ServerProtocolParser.VACANT);
 									}
 								}
@@ -128,6 +139,8 @@ public class ArduinoHandler extends Thread {
 		mOut = null;
 		controller.setArduinoConnected(false);
 		try {
+			screenHandler.close();
+			screenHandler = null;
 			in.close();
 		} catch (Exception e) {
 			e.printStackTrace();
