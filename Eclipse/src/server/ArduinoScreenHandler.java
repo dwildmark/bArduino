@@ -14,8 +14,10 @@ import java.net.Socket;
 import protocol.ServerProtocolParser;
 
 /**
- * 
- * @author Jonathan Böcker, Olle Casperson 20015-04-27
+ * This class is a thread that handles the connection to the LED-screen.
+ * It collects a message from the server protocol and sends it as a 
+ * TCP-message to the arduino.
+ * @author Dennis Wildmark, Jonathan Böcker, Olle Casperson 2015-04-27
  *
  */
 public class ArduinoScreenHandler extends Thread {
@@ -29,6 +31,12 @@ public class ArduinoScreenHandler extends Thread {
 	private Controller controller;
 	private boolean running = true;
 
+	/**
+	 * Creates an ArduinoScreenHandler object with reference to
+	 * a Logger and a Controller object.
+	 * @param logger the logger.
+	 * @param controller the controller.
+	 */
 	public ArduinoScreenHandler(Logger logger, Controller controller) {
 		this.parser = ServerProtocolParser.getInstance();
 		this.logger = logger;
@@ -47,19 +55,27 @@ public class ArduinoScreenHandler extends Thread {
 		while (running) {
 			try {
 				while (!arduinoServerSocket.isClosed()) {
-
+					
+					//collect the incoming connection
 					arduino = arduinoServerSocket.accept();
+					
+					//assign the input- and output streams
 					mOut = new PrintWriter(new BufferedWriter(
 							new OutputStreamWriter(arduino.getOutputStream())),
 							true);
 					in = new BufferedReader(new InputStreamReader(
 							arduino.getInputStream()));
+					
+					//print to the log that the Arduino is connected
 					logger.info("Server: ArduinoScreen connected at "
 							+ arduino.getInetAddress());
 					controller.setScreenConnected(true);
 					String oldMessage = "";
 					while (mOut != null && in != null) {
 						String newMessage = parser.getScreenMessage();
+						/*if message differs from the message already on the screen,
+						 * send it to the Arduino
+						*/
 						if(!(oldMessage.equals(newMessage))) {
 							mOut.println(newMessage);
 							oldMessage = newMessage;
@@ -74,6 +90,9 @@ public class ArduinoScreenHandler extends Thread {
 		}
 	}
 
+	/**
+	 * This method closes any connections and cancels the timer-task.
+	 */
 	public void close() {
 		running = false;
 		timer.cancel();
@@ -97,6 +116,10 @@ public class ArduinoScreenHandler extends Thread {
 
 	}
 	
+	/**
+	 * Prints to the log that the screen is disconnected
+	 * and closes the input and output streams.
+	 */
 	public void arduinoDisconnected() {
 		logger.warning("Lost connection to ArduinoScreen");
 		mOut = null;
