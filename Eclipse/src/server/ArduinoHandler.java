@@ -15,7 +15,7 @@ import protocol.ServerProtocolParser;
 
 /**
  * 
- * @author Jonathan Böcker, Olle Casperson 20015-04-27
+ * @author Jonathan Böcker, Olle Casperson, Andreas Langhammer 2015-04-27
  *
  */
 public class ArduinoHandler extends Thread {
@@ -34,6 +34,11 @@ public class ArduinoHandler extends Thread {
 		this.logger = logger;
 		this.controller = controller;
 	}
+	/**
+	 * Checks the connection to the arduino by sending "Q" to the arduino, if no respond occurs 
+	 * within 0,5 seconds, we want to set the state to arduino disconnected. 
+	 * We catch this exception below as well. 
+	 */
 
 	class ToDoTask extends TimerTask {
 
@@ -56,6 +61,14 @@ public class ArduinoHandler extends Thread {
 			}
 		}
 	}
+	/**
+	 * Method starts a serversocket and listens for connection.
+	 * As long as the serversocket is up, we want current information to be send to
+	 * the servers log. The while-loop does this for us. If a grog is ordered we
+	 * use a second while-loop followed by a if-statement to pure up the liquid. then
+	 * the last while-loop is needed to check if another liquid is ordered, if so, we 
+	 * want to dequeue it and so on.
+	 */
 
 	@Override
 	public void run() {
@@ -120,6 +133,10 @@ public class ArduinoHandler extends Thread {
 			}
 		}
 	}
+	/**
+	 * Method closes Serversocket in order to do so we need to
+	 * cancel and purge the timer to disconnect correctly.
+	 */
 
 	public void close() {
 		running = false;
@@ -144,6 +161,12 @@ public class ArduinoHandler extends Thread {
 		}
 
 	}
+	/**
+	 * This method is only used if the connection to the arduino is lost,
+	 * if this happens we want the info to be printed in the logg.
+	 * We also want to set the state to missing arduino in the parser, and the state 
+	 * in the controller as well.
+	 */
 	
 	public void arduinoDisconnected() {
 		logger.warning("Lost connection to Arduino");
