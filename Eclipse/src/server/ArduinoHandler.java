@@ -17,6 +17,8 @@ import protocol.ServerProtocolParser;
  * 
  * @author Jonathan Böcker, Olle Casperson, Andreas Langhammer 2015-04-27
  *
+ *	This class handles all communication between the server and 
+ *	the arduino.
  */
 public class ArduinoHandler extends Thread {
 	private ServerProtocolParser parser;
