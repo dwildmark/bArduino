@@ -342,6 +342,11 @@ public class ServerGUI extends JFrame {
 
 	}
 
+	/**
+	 * Prints username of ordered grog in the GUI
+	 * 
+	 * @param grog
+	 */
 	public void setGrogInTheMaking(Grog grog) {
 		if (grog == null) {
 			lblGrogInTheMaking.setText("Nothing much");
@@ -360,12 +365,22 @@ public class ServerGUI extends JFrame {
 		btnScreenConnected.setEnabled(!b);
 	}
 
+	/**
+	 * Adds an element with logged in user to a JList
+	 * 
+	 * @param username
+	 */
 	public void userLoggedIn(String username) {
 		DefaultListModel<String> listModel = (DefaultListModel<String>) connectedUserList
 				.getModel();
 		listModel.addElement(username);
 	}
 
+	/**
+	 * Removes an element with logged in user to a JList
+	 * 
+	 * @param username
+	 */
 	public void userLoggedOut(String username) {
 		DefaultListModel<String> listModel = (DefaultListModel<String>) connectedUserList
 				.getModel();
@@ -387,6 +402,9 @@ public class ServerGUI extends JFrame {
 		sorter.setRowFilter(rf);
 	}
 
+	/*
+	 * Reads fluids from settings file and poulates a JTable 
+	 */
 	private void populateFluidsTable() {
 		List<Fluid> list = prop.getFluidList();
 		FluidsTableModel tableModel = new FluidsTableModel();
@@ -409,6 +427,9 @@ public class ServerGUI extends JFrame {
 		fluidsTable.repaint();
 	}
 
+	/*
+	 * Saves all possible settings except userrelated settings to file
+	 */
 	private void saveProperties() throws Exception {
 		List<Fluid> list = prop.getFluidList();
 		FluidsTableModel model = (FluidsTableModel) fluidsTable.getModel();
@@ -428,6 +449,9 @@ public class ServerGUI extends JFrame {
 
 	}
 
+	/*
+	 * Adds a fluid to the settings
+	 */
 	private void addFluid(String name, int price) throws Exception {
 		List<Fluid> list = prop.getFluidList();
 		Collections.sort(list);
@@ -447,6 +471,9 @@ public class ServerGUI extends JFrame {
 		populateFluidsTable();
 	}
 
+	/*
+	 * Removes a fluid from the settings
+	 */
 	private void removeFluid(String fluid) throws Exception {
 		List<Fluid> list = prop.getFluidList();
 
@@ -460,6 +487,9 @@ public class ServerGUI extends JFrame {
 		populateFluidsTable();
 	}
 
+	/*
+	 * A listener for all fluidrelated actions
+	 */
 	private class FluidsListener implements ActionListener {
 
 		@Override
@@ -479,6 +509,9 @@ public class ServerGUI extends JFrame {
 		}
 	}
 
+	/*
+	 * A General ActionListener
+	 */
 	private class Listener implements ActionListener {
 
 		@Override
@@ -518,6 +551,9 @@ public class ServerGUI extends JFrame {
 		}
 	}
 
+	/*
+	 * A listener for all User related actions
+	 */
 	private class UsersListener implements ActionListener {
 
 		@Override
@@ -574,6 +610,9 @@ public class ServerGUI extends JFrame {
 		}
 	}
 
+	/*
+	 * A custom TableModel for fluid settings
+	 */
 	private class FluidsTableModel extends DefaultTableModel {
 
 		private static final long serialVersionUID = 3536620580454020553L;
@@ -585,6 +624,9 @@ public class ServerGUI extends JFrame {
 		}
 	}
 
+	/*
+	 * A custom TableModel for displaying users
+	 */
 	public class UserTableModel extends DefaultTableModel {
 		private static final long serialVersionUID = -7402718922329474450L;
 

@@ -53,6 +53,14 @@ public class ServerProtocolParser {
 		return parser;
 	}
 	
+	/**
+	 * Sets the SQL login credentials to be used with user related operations.
+	 * 
+	 * @param user
+	 * @param password	
+	 * @param serverName
+	 * @param databaseName
+	 */
 	public synchronized void setSQLCredentials(String user, String password, String serverName, String databaseName){
 		this.sqlPassword = password;
 		this.sqlUserName = user;
@@ -77,6 +85,9 @@ public class ServerProtocolParser {
 		return sqlServerName;
 	}
 
+	/**
+	 * Reads and updates properties from file
+	 */
 	public synchronized void updateProps() {
 		try {
 			JAXBContext jaxbContext = JAXBContext
@@ -90,7 +101,6 @@ public class ServerProtocolParser {
 		}
 
 	}
-
 
 	/**
 	 * Sets state of server service. Available states are defined as constants
@@ -233,6 +243,13 @@ public class ServerProtocolParser {
 		return response;
 
 	}
+	
+	/**
+	 * Calculates the cost for a grog recieved from a client
+	 * 
+	 * @param grog The string recieved from client
+	 * @return The cost
+	 */
 	private int calculateCost(String grog) {
 		int cost = 0;
 		List<Fluid> list;
@@ -286,6 +303,11 @@ public class ServerProtocolParser {
 		grogAvailable = false;
 	}
 	
+	/**
+	 * Returns an up to date message about the server status to be shown on a screen.
+	 * 
+	 * @return The message
+	 */
 	public String getScreenMessage() {
 		switch(state) {
 		case VACANT:

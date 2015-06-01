@@ -14,7 +14,7 @@ import javax.xml.bind.Unmarshaller;
 
 /**
  * 
- * @author Jonathan Böcker 20015-04-20
+ * @author Jonathan Böcker 2015-04-20
  *
  */
 public class Controller {
@@ -24,6 +24,9 @@ public class Controller {
 	private ServerGUI serverGUI;
 	private DiscoverySender discoverySender;
 
+	/**
+	 * Initiates the graphical interface, UDP-plug&play function and serversockets
+	 */
 	public void startServerGUI() {
 		FileHandler fh = null;
 		SimpleFormatter formatter = new SimpleFormatter();
@@ -59,8 +62,11 @@ public class Controller {
 		server.start();
 	}
 
-	/*
+	/**
 	 * Loads server configuration from file on disk
+	 *
+	 * @return A {@link PropertiesWrapper} object with all server settings
+	 * @throws Exception If something happens
 	 */
 	public PropertiesWrapper loadServerConfig() throws Exception {
 		PropertiesWrapper props;
@@ -92,6 +98,12 @@ public class Controller {
 		return props;
 	}
 
+	/**
+	 * Saves a {@link PropertiesWrapper} to file on disk
+	 * 
+	 * @param prop The settings
+	 * @throws Exception If something happens
+	 */
 	public void saveServerConfig(PropertiesWrapper prop) throws Exception {
 		JAXBContext jaxbContext = JAXBContext.newInstance(PropertiesWrapper.class);
 		Marshaller jaxbMarshaller = jaxbContext.createMarshaller();

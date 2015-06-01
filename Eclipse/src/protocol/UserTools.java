@@ -118,10 +118,16 @@ public class UserTools {
 			JOptionPane.showMessageDialog(null, e.getMessage());
 		}
 	}
-	
+
+	/**
+	 * Adds an amount to provided users credits, can be negative.
+	 * 
+	 * @param username
+	 * @param credit
+	 */
 	public synchronized static void alterCredits(String username, int credit) {
-		String query = "UPDATE user_data set credits = credits + " + credit +
-				" WHERE username = '" + username +"'";
+		String query = "UPDATE user_data set credits = credits + " + credit
+				+ " WHERE username = '" + username + "'";
 		Connection conn;
 		try {
 			conn = getConnection();
@@ -131,7 +137,7 @@ public class UserTools {
 		} catch (SQLException e) {
 			JOptionPane.showMessageDialog(null, e.getMessage());
 		}
-		
+
 	}
 
 	/**
@@ -151,12 +157,18 @@ public class UserTools {
 			return null;
 		}
 	}
-	
+
+	/**
+	 * Returns a users balnce
+	 * 
+	 * @param user
+	 * @return Users credit balance
+	 */
 	public synchronized static int getCredits(String user) {
 		String query = "SELECT credits FROM user_data WHERE username = '"
 				+ user + "';";
 		int credit = 0;
-		
+
 		try {
 			Connection conn = getConnection();
 			PreparedStatement preparedStmt = conn.prepareStatement(query);
@@ -170,12 +182,19 @@ public class UserTools {
 		}
 		return credit;
 	}
-	
-	public synchronized static int getRefund(String user) {
+
+	/**
+	 * Resets a users credit balance, and returns whatever was on the account
+	 * before resetting.
+	 * 
+	 * @param username
+	 * @return Funds before resetting balance
+	 */
+	public synchronized static int getRefund(String username) {
 		String query = "SELECT credits FROM user_data WHERE username = '"
-				+ user + "';";
+				+ username + "';";
 		int credit = 0;
-		
+
 		try {
 			Connection conn = getConnection();
 			PreparedStatement preparedStmt = conn.prepareStatement(query);
@@ -183,17 +202,23 @@ public class UserTools {
 			rs.next();
 			credit = rs.getInt("credits");
 			conn.close();
-			alterCredits(user, (0 - credit));
+			alterCredits(username, (0 - credit));
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return credit;
 	}
-	
-	public synchronized static void changeApproved(String user) {
+
+	/**
+	 * Changes the "approved" status for a user. If not approved, the status
+	 * will be approved after method execution etc.
+	 * 
+	 * @param username
+	 */
+	public synchronized static void changeApproved(String username) {
 		String query = "SELECT approved FROM user_data WHERE username = '"
-				+ user + "';";
+				+ username + "';";
 		String approved;
 		try {
 			Connection conn = getConnection();
@@ -201,15 +226,15 @@ public class UserTools {
 			ResultSet rs = preparedStmt.executeQuery();
 			rs.next();
 			approved = rs.getString("approved");
-			
-			if(approved.equals("yes")){
-				query = "UPDATE user_data set approved = 'no' " +
-						" WHERE username = '" + user +"'";
+
+			if (approved.equals("yes")) {
+				query = "UPDATE user_data set approved = 'no' "
+						+ " WHERE username = '" + username + "'";
 			} else {
-				query = "UPDATE user_data set approved = 'yes' " +
-						" WHERE username = '" + user +"'";
+				query = "UPDATE user_data set approved = 'yes' "
+						+ " WHERE username = '" + username + "'";
 			}
-			
+
 			preparedStmt = conn.prepareStatement(query);
 			preparedStmt.execute();
 			conn.close();
@@ -218,12 +243,16 @@ public class UserTools {
 			e.printStackTrace();
 		}
 	}
-	
+
+	/**
+	 * @param user
+	 * @return The users "approved" status.
+	 */
 	public synchronized static String getApproved(String user) {
 		String query = "SELECT approved FROM user_data WHERE username = '"
 				+ user + "';";
 		String approved = null;
-		
+
 		try {
 			Connection conn = getConnection();
 			PreparedStatement preparedStmt = conn.prepareStatement(query);
@@ -234,8 +263,8 @@ public class UserTools {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
-		return approved;	
+
+		return approved;
 	}
 
 	/**

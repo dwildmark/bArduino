@@ -6,10 +6,11 @@ import java.net.InetAddress;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-
 /**
+ * A class that listens for UDP broadcast packets containing the string "BARDUINO"
+ * and sends "HELLO_CLIENT" back to sender.
  * 
- * @author Jonathan Böcker 20015-04-27
+ * @author Jonathan Böcker 2015-04-27
  *
  */
 public class DiscoveryListener extends Thread {

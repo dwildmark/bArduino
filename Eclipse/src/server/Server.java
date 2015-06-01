@@ -112,6 +112,9 @@ public class Server extends Thread {
 		} catch (Exception e) {}
 	}
 	
+	/**
+	 * Closes connection to Arduino and starts a new serverport for incoming connections
+	 */
 	public void cancelGrog() {
 		for (int i = 0; i < arduinoQueue.size(); i++) {
 			ArduinoHandler tempArduino = arduinoQueue.get(i);

@@ -1,6 +1,7 @@
 package server;
 
 /**
+ * An application for controlling a Barduino machine and handling clients
  * 
  * @author Jonathan Böcker 20015-04-27
  *

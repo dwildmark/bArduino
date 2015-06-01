@@ -17,8 +17,9 @@ import protocol.UserTools;
 import net.miginfocom.swing.MigLayout;
 
 /**
+ * A JFrame that is shown first at startup, demanding MySQL login credentials.
  * 
- * @author Jonathan Böcker 20015-04-27
+ * @author Jonathan Böcker 2015-04-27
  *
  */
 public class LoginFrame extends JFrame {
@@ -75,6 +76,9 @@ public class LoginFrame extends JFrame {
 
 	}
 
+	/*
+	 * Saves credentials to file
+	 */
 	private void saveConfigs() {
 		try {
 			prop.setServerAdress(tfServerAdress.getText());
@@ -91,6 +95,9 @@ public class LoginFrame extends JFrame {
 		}
 	}
 
+	/*
+	 * Tests if credentials is valid, if valid, starts the main program
+	 */
 	private void login() {
 		parser.setSQLCredentials(tfUserName.getText(),
 				new String(pfPassword.getPassword()), tfServerAdress.getText(),
@@ -124,7 +131,5 @@ public class LoginFrame extends JFrame {
 
 		@Override
 		public void keyTyped(KeyEvent e) {}
-
 	}
-
 }

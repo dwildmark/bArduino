@@ -3,8 +3,9 @@ package server;
 import java.util.Queue;
 
 /**
+ * A class that holds information about an ordered grog.
  * 
- * @author Jonathan Böcker 20015-05-01
+ * @author Jonathan Böcker 2015-05-01
  *
  */
 public class Grog {

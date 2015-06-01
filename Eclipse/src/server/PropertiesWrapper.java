@@ -6,6 +6,7 @@ import java.util.List;
 import javax.xml.bind.annotation.*;
 
 /**
+ * A class holding settings for the server application
  * 
  * @author Jonathan Böcker 2015-04-30
  *
