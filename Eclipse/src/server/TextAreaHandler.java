@@ -7,6 +7,7 @@ import java.util.logging.SimpleFormatter;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 /**
+ * Loghandler that logs into a text area.
  * 
  * @author Olle Casperson
  *
@@ -18,6 +19,10 @@ public class TextAreaHandler extends Handler {
 	public TextAreaHandler() {
 		textArea.setEditable(false);
 	}
+	/**
+	 * publish the log record
+	 * @param record log record to publish
+	 */
 	public void publish(LogRecord record) {
 		SwingUtilities.invokeLater(new Runnable() {
 
@@ -36,7 +41,7 @@ public class TextAreaHandler extends Handler {
 	@Override
 	public void flush() {
 	}
-
+	
 	public JTextArea getTextArea() {
 		return this.textArea;
 	}
