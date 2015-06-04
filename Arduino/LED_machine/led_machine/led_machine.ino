@@ -4,18 +4,14 @@
 #include <Ethernet.h>
 #include <EthernetUdp.h>
 
-byte mac[] = {
-  0xDE, 0xAD, 0xBE, 0xEF, 0xDD, 0xAE
-};
-
 // initialize the library with the numbers of the interface pins
 LiquidCrystal lcd(9, 8, 5, 4, 3, 2);
-
-IPAddress remote;
 
 #define tcpPort 8006
 
 #define udpPort 28780
+
+IPAddress remote;
 
 EthernetClient client;
 
@@ -26,6 +22,10 @@ char packetBuffer[UDP_TX_PACKET_MAX_SIZE];
 char recieveBuffer[40];
 
 void setup() {
+  byte mac[] = {
+  0xDE, 0xAD, 0xBE, 0xEF, 0xDD, 0xAE
+  };
+  
   Ethernet.begin(mac);
 
   udp.begin(udpPort);
