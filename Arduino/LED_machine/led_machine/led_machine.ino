@@ -13,9 +13,9 @@ LiquidCrystal lcd(9, 8, 5, 4, 3, 2);
 
 IPAddress remote;
 
-unsigned int tcpPort = 8006;
+#define tcpPort 8006
 
-unsigned int udpPort = 28780;
+#define udpPort 28780
 
 EthernetClient client;
 
@@ -50,16 +50,22 @@ void discoverServer() {
 }
 
 void recieve() {
-  if (client.available()) {
-    //Read the content into a char array
+  if (client.available()) {    
     int count = 0;
+    //Empty the buffer
+    for(int i = 0; i < recieveBuffer.length; i++) {
+      recieveBuffer[i] = 0;
+    }
+    //Read the content into a char array
     while (client.available() > 0) {
       recieveBuffer[count] = (char)client.read();
       count++;
     }
     String message = "";
     for(int i = 0; i < count - 1; i++) {
-      message += (char)recieveBuffer[i];
+      if(recieveBuffer[i] > 31 && recieveBuffer[i] < 166){
+        message += (char)recieveBuffer[i];
+      }
     }
     lcd.clear();
     lcd.print(message);
