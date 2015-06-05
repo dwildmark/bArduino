@@ -13,7 +13,7 @@
 */
 
 #include <SPI.h>
-#include <Ethernet.h>
+//#include <Ethernet.h>
 #include <EthernetUdp.h>
 
 IPAddress remote;
@@ -24,7 +24,57 @@ IPAddress remote;
 //define the udp port to use
 #define PORT_UDP (28780)
 
-EthernetClient client;
+
+
+class MockupClient {
+  public:
+  MockupClient();
+  void print(String trosa);
+  void stop();
+  boolean connected();
+  int available();
+  int read();
+  void connect(IPAddress remote, int port);
+};
+
+MockupClient::MockupClient()
+{
+  Serial.begin(115200);
+  while (!Serial);
+  Serial.println("Varfor???");
+}
+
+void MockupClient::connect(IPAddress remote, int port)
+{
+}
+
+void MockupClient::print(String trosa)
+{
+  Serial.println(trosa);
+}
+
+void MockupClient::stop()
+{
+}
+
+boolean MockupClient::connected()
+{
+  return true;
+}
+
+int MockupClient::read()
+{
+  return Serial.read();
+}
+
+int MockupClient::available()
+{
+  return Serial.available();
+}
+
+
+MockupClient client;
+//EthernetClient client;
 
 EthernetUDP udp;
 
@@ -58,7 +108,7 @@ void setup() {
     0xDE, 0xAD, 0xBE, 0xEF, 0xDD, 0xAF
   };
   //initialize the ethernet shield with DHCP
-  Ethernet.begin(mac);
+  //Ethernet.begin(mac);  remember to uncomment!
 
   //give the Ethernet shield a second to initialize:
   delay(1000);
