@@ -102,7 +102,7 @@ boolean discoverServer() {
 boolean receive(char receiveBuffer[], uint8_t bufferLength) {
   if (client.available()) {
     //Read the content into a char array
-    int count = 0;
+    uint8_t count = 0;
     while (client.available() > 0) {
       char character = (char)client.read();
       if (count < bufferLength) {
@@ -150,7 +150,6 @@ void pourDrink(int pin, uint16_t amount) {
   uint16_t realAmount = ((amount * CONST_PULSESPERCL) - CONST_PULSESPERCL) / 10 ;
   attachInterrupt(PIN_INTERRUPT, addPulse, RISING);
   pulses = 0;
-  int oldPulses = 0;
   while ( pulses < realAmount) {
     if (glassPlaced()) {
       digitalWrite(pin, HIGH);
@@ -190,7 +189,6 @@ boolean glassPlaced() {
   action depending on what state it currently is in.
 */
 void loop() {
-  while(true) {
   int chosen_liquid;
   static char receiveBuffer[BUFFERLENGTH];
   static state_t current_state = NOT_CONNECTED;
@@ -241,5 +239,4 @@ void loop() {
       break;
   }
   current_state = next_state;
-  }
 }
