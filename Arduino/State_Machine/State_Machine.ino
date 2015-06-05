@@ -30,7 +30,6 @@ EthernetUDP udp;
 
 //receivebuffer for the tcp connection
 #define BUFFERLENGTH (3)
-char receiveBuffer[BUFFERLENGTH];
 
 //Define the pins for the fluids
 #define PIN_LIQUID1 (9)
@@ -52,9 +51,6 @@ typedef enum
   DRINK_DONE,
   NOT_CONNECTED
 } state_t;
-
-state_t current_state = NOT_CONNECTED;
-state_t next_state = NOT_CONNECTED;
 
 void setup() {
 
@@ -103,13 +99,13 @@ boolean discoverServer() {
   This function checks if there is any information available,
   and if so, places it into the receiveBuffer.
 */
-boolean receive() {
+boolean receive(char receiveBuffer[], uint8_t bufferLength) {
   if (client.available()) {
     //Read the content into a char array
     int count = 0;
     while (client.available() > 0) {
       char character = (char)client.read();
-      if (count < BUFFERLENGTH) {
+      if (count < bufferLength) {
         receiveBuffer[count] = character;
       }
       count++;
@@ -150,8 +146,8 @@ int chooseLiquid(char liquid) {
   The 'glassIndicatedPin' is connected to a LED that indicates if the
   glass is placed.
 */
-void pourDrink(int pin, int amount) {
-  int realAmount = ((amount * CONST_PULSESPERCL) - CONST_PULSESPERCL) / 10 ;
+void pourDrink(int pin, uint16_t amount) {
+  uint16_t realAmount = ((amount * CONST_PULSESPERCL) - CONST_PULSESPERCL) / 10 ;
   attachInterrupt(PIN_INTERRUPT, addPulse, RISING);
   pulses = 0;
   int oldPulses = 0;
@@ -194,8 +190,13 @@ boolean glassPlaced() {
   action depending on what state it currently is in.
 */
 void loop() {
-  uint8_t chosen_liquid = -1;
+  while(true) {
+  int chosen_liquid;
+  static char receiveBuffer[BUFFERLENGTH];
+  static state_t current_state = NOT_CONNECTED;
+  static state_t next_state = NOT_CONNECTED;
   digitalWrite(PIN_GLASSINDICATED, glassPlaced());
+  
   switch (current_state) {
     case NOT_CONNECTED:
       if (discoverServer()) {
@@ -203,15 +204,15 @@ void loop() {
       }
       break;
     case READY:
-      if (receive()) {
+      if (receive(receiveBuffer, BUFFERLENGTH)) {
         //Choose what liquid to pour based on the first char
-        chosen_liquid = chooseLiquid( (char)receiveBuffer[0]);
+        chosen_liquid = chooseLiquid(receiveBuffer[0]);
 
-        if ( (char)receiveBuffer[0] == 'Q') {
+        if (receiveBuffer[0] == 'Q') {
           client.print("OK\n");
         } else if (chosen_liquid > 0) {
           next_state = POURING_DRINK;
-        } else if ( (char)receiveBuffer[0] == 'K') {
+        } else if (receiveBuffer[0] == 'K') {
           next_state = DRINK_DONE;
         } else {
           client.print("BADFORMAT\n");
@@ -223,7 +224,7 @@ void loop() {
       break;
     case POURING_DRINK:
       if (glassPlaced()) {
-        int amount = 10 * ((int)receiveBuffer[1] - 48)
+        uint16_t amount = 10 * ((int)receiveBuffer[1] - 48)
                      + ((int)receiveBuffer[2] - 48);
         pourDrink(chosen_liquid, amount);
         delay(100);
@@ -240,4 +241,5 @@ void loop() {
       break;
   }
   current_state = next_state;
+  }
 }
