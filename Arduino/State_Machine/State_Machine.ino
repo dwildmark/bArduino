@@ -28,12 +28,8 @@ EthernetClient client;
 
 EthernetUDP udp;
 
-//create a packetbuffer at maximum size of a udp packet
-char packetBuffer[UDP_TX_PACKET_MAX_SIZE];
-
 //receivebuffer for the tcp connection
 #define BUFFERLENGTH (3)
-
 char receiveBuffer[BUFFERLENGTH];
 
 //Define the pins for the fluids
@@ -44,11 +40,9 @@ char receiveBuffer[BUFFERLENGTH];
 #define PIN_GLASSPLACED (5)
 #define PIN_GLASSINDICATED (4)
 #define PIN_INTERRUPT (3)
+#define CONST_PULSESPERCL (35)
 
 volatile int pulses = 0;
-volatile int chosen_liquid;
-
-static int pulsesPerCL = 35;
 
 //define the states used in the state machine
 typedef enum
@@ -91,6 +85,8 @@ void setup() {
   and if so, connect to the IP which sent it.
 */
 boolean discoverServer() {
+  //create a packetbuffer at maximum size of a udp packet
+  char packetBuffer[UDP_TX_PACKET_MAX_SIZE];
   int packetSize = udp.parsePacket();
   if (packetSize) {
     remote = udp.remoteIP();
@@ -127,22 +123,22 @@ boolean receive() {
   Assignt a pin number to the variable 'chosenLiquid'
   based on the input char.
 */
-void chooseLiquid(char liquid) {
+int chooseLiquid(char liquid) {
   switch (liquid) {
     case 'A':
-      chosen_liquid = PIN_LIQUID1;
+      return PIN_LIQUID1;
       break;
     case 'B':
-      chosen_liquid = PIN_LIQUID2;
+      return PIN_LIQUID2;
       break;
     case 'C':
-      chosen_liquid = PIN_LIQUID3;
+      return PIN_LIQUID3;
       break;
     case 'D':
-      chosen_liquid = PIN_LIQUID4;
+      return PIN_LIQUID4;
       break;
     default:
-      chosen_liquid = -1;
+      return -1;
       break;
   }
 }
@@ -155,7 +151,7 @@ void chooseLiquid(char liquid) {
   glass is placed.
 */
 void pourDrink(int pin, int amount) {
-  int realAmount = ((amount * pulsesPerCL) - pulsesPerCL) / 10 ;
+  int realAmount = ((amount * CONST_PULSESPERCL) - CONST_PULSESPERCL) / 10 ;
   attachInterrupt(PIN_INTERRUPT, addPulse, RISING);
   pulses = 0;
   int oldPulses = 0;
@@ -198,6 +194,7 @@ boolean glassPlaced() {
   action depending on what state it currently is in.
 */
 void loop() {
+  uint8_t chosen_liquid = -1;
   while (true) {
     digitalWrite(PIN_GLASSINDICATED, glassPlaced());
     switch (current_state) {
@@ -209,7 +206,7 @@ void loop() {
       case READY:
         if (receive()) {
           //Choose what liquid to pour based on the first char
-          chooseLiquid( (char)receiveBuffer[0]);
+          chosen_liquid = chooseLiquid( (char)receiveBuffer[0]);
           
           if ( (char)receiveBuffer[0] == 'Q') {
             client.print("OK\n");
@@ -237,7 +234,7 @@ void loop() {
         }
         break;
       case DRINK_DONE:
-        if (!glassPlaced) {
+        if (!glassPlaced()) {
           client.print("ACK\n");
           next_state = READY;
         }
