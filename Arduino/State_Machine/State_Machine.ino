@@ -119,7 +119,7 @@ boolean receive(char receiveBuffer[], uint8_t bufferLength) {
   Assignt a pin number to the variable 'chosenLiquid'
   based on the input char.
 */
-int chooseLiquid(char liquid) {
+int8_t chooseLiquid(char liquid) {
   switch (liquid) {
     case 'A':
       return PIN_LIQUID1;
@@ -146,7 +146,7 @@ int chooseLiquid(char liquid) {
   The 'glassIndicatedPin' is connected to a LED that indicates if the
   glass is placed.
 */
-void pourDrink(int pin, uint16_t amount) {
+void pourDrink(int8_t pin, uint16_t amount) {
   uint16_t realAmount = ((amount * CONST_PULSESPERCL) - CONST_PULSESPERCL) / 10 ;
   attachInterrupt(PIN_INTERRUPT, addPulse, RISING);
   pulses = 0;
@@ -189,7 +189,7 @@ boolean glassPlaced() {
   action depending on what state it currently is in.
 */
 void loop() {
-  int chosen_liquid;
+  int8_t chosen_liquid;
   static char receiveBuffer[BUFFERLENGTH];
   static state_t current_state = NOT_CONNECTED;
   static state_t next_state = NOT_CONNECTED;
@@ -222,8 +222,8 @@ void loop() {
       break;
     case POURING_DRINK:
       if (glassPlaced()) {
-        uint16_t amount = 10 * ((int)receiveBuffer[1] - 48)
-                     + ((int)receiveBuffer[2] - 48);
+        uint16_t amount = 10 * ((uint8_t)receiveBuffer[1] - 48)
+                     + ((uint8_t)receiveBuffer[2] - 48);
         pourDrink(chosen_liquid, amount);
         delay(100);
         //Report back to server when done
