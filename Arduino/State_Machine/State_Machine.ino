@@ -57,9 +57,9 @@ state_t current_state = NOT_CONNECTED;
 state_t next_state = NOT_CONNECTED;
 
 void setup() {
-  
+
   byte mac[] = {
-  0xDE, 0xAD, 0xBE, 0xEF, 0xDD, 0xAF
+    0xDE, 0xAD, 0xBE, 0xEF, 0xDD, 0xAF
   };
   //initialize the ethernet shield with DHCP
   Ethernet.begin(mac);
@@ -195,51 +195,49 @@ boolean glassPlaced() {
 */
 void loop() {
   uint8_t chosen_liquid = -1;
-  while (true) {
-    digitalWrite(PIN_GLASSINDICATED, glassPlaced());
-    switch (current_state) {
-      case NOT_CONNECTED:
-        if (discoverServer()) {
-          next_state = READY;
+  digitalWrite(PIN_GLASSINDICATED, glassPlaced());
+  switch (current_state) {
+    case NOT_CONNECTED:
+      if (discoverServer()) {
+        next_state = READY;
+      }
+      break;
+    case READY:
+      if (receive()) {
+        //Choose what liquid to pour based on the first char
+        chosen_liquid = chooseLiquid( (char)receiveBuffer[0]);
+
+        if ( (char)receiveBuffer[0] == 'Q') {
+          client.print("OK\n");
+        } else if (chosen_liquid > 0) {
+          next_state = POURING_DRINK;
+        } else if ( (char)receiveBuffer[0] == 'K') {
+          next_state = DRINK_DONE;
+        } else {
+          client.print("BADFORMAT\n");
         }
-        break;
-      case READY:
-        if (receive()) {
-          //Choose what liquid to pour based on the first char
-          chosen_liquid = chooseLiquid( (char)receiveBuffer[0]);
-          
-          if ( (char)receiveBuffer[0] == 'Q') {
-            client.print("OK\n");
-          } else if (chosen_liquid > 0) {
-            next_state = POURING_DRINK;
-          } else if ( (char)receiveBuffer[0] == 'K') {
-            next_state = DRINK_DONE;
-          } else {
-            client.print("BADFORMAT\n");
-          }
-        } else if (!client.connected()) {
-          client.stop();
-          next_state = NOT_CONNECTED;
-        }
-        break;
-      case POURING_DRINK:
-        if (glassPlaced()) {
-          int amount = 10 * ((int)receiveBuffer[1] - 48)
-                       + ((int)receiveBuffer[2] - 48);
-          pourDrink(chosen_liquid, amount);
-          delay(100);
-          //Report back to server when done
-          client.print("ACK\n");
-          next_state = READY;
-        }
-        break;
-      case DRINK_DONE:
-        if (!glassPlaced()) {
-          client.print("ACK\n");
-          next_state = READY;
-        }
-        break;
-    }
-    current_state = next_state;
+      } else if (!client.connected()) {
+        client.stop();
+        next_state = NOT_CONNECTED;
+      }
+      break;
+    case POURING_DRINK:
+      if (glassPlaced()) {
+        int amount = 10 * ((int)receiveBuffer[1] - 48)
+                     + ((int)receiveBuffer[2] - 48);
+        pourDrink(chosen_liquid, amount);
+        delay(100);
+        //Report back to server when done
+        client.print("ACK\n");
+        next_state = READY;
+      }
+      break;
+    case DRINK_DONE:
+      if (!glassPlaced()) {
+        client.print("ACK\n");
+        next_state = READY;
+      }
+      break;
   }
+  current_state = next_state;
 }
