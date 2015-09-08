@@ -10,3 +10,5 @@ Arduino/led_machine.ino is the Arduino that controls the front panel.
 /Eclipse is the Eclipse project where server code resides.
 
 /Eclipse/src/server/ServerApp.java is the server program entry point.
+
+The Android app source code resides at https://github.com/taurus84/AndroidClient 
